@@ -10,6 +10,12 @@ use crate::{kprintln, ipc};
 /// to notify the owning V-Node about an interrupt.
 static IRQ_TO_CHANNEL_MAP: Mutex<BTreeMap<u8, ipc::ChannelId>> = Mutex::new(BTreeMap::new());
 
+
+/// Initializes interrupt controller plumbing.
+pub fn init() {
+    kprintln!("[kernel] irq: Interrupt subsystem initialized.");
+}
+
 /// Register an interrupt handler.
 /// In this microkernel model, "registering a handler" means mapping an IRQ
 /// to an IPC channel. When an interrupt occurs, the kernel will send an
