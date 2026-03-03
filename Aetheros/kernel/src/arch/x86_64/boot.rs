@@ -4,8 +4,9 @@
 
 use core::arch::asm;
 
+use super::{gdt, idt};
+use crate::interrupts;
 use crate::kprintln;
-use super::{gdt, idt, interrupts};
 
 /// IA32_EFER MSR index.
 pub const IA32_EFER: u32 = 0xC000_0080;

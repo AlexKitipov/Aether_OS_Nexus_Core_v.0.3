@@ -3,7 +3,9 @@
 #![allow(dead_code)]
 
 use x86_64::registers::control::Cr2;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
+use x86_64::structures::idt::{
+    HandlerFunc, InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode,
+};
 
 use crate::{arch::x86_64::gdt, hlt_loop, kprintln};
 
@@ -25,6 +27,13 @@ pub fn init() {
 
         IDT.load();
         kprintln!("[kernel] idt: IDT loaded.");
+    }
+}
+
+/// Registers an external IRQ handler into the IDT at a given vector.
+pub fn set_irq_handler(vector: u8, handler: HandlerFunc) {
+    unsafe {
+        IDT[vector as usize].set_handler_fn(handler);
     }
 }
 
