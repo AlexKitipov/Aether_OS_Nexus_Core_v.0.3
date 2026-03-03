@@ -6,6 +6,7 @@ pub mod idt;
 pub mod paging;
 pub mod dma;
 pub mod irq;
+pub use irq as interrupts;
 
 pub fn init() {
     gdt::init();

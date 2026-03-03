@@ -5,6 +5,7 @@
 use core::arch::asm;
 
 use crate::kprintln;
+use super::{gdt, idt, interrupts};
 
 /// IA32_EFER MSR index.
 pub const IA32_EFER: u32 = 0xC000_0080;
@@ -202,4 +203,17 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
 
     kprintln!("[kernel] boot: Long mode enabled successfully.");
     Ok(())
+}
+
+/// Architecture boot entry point for basic kernel setup orchestration.
+pub fn entry_point() {
+    kernel_main();
+}
+
+/// Minimal kernel bootstrap sequence for descriptor tables and interrupts.
+pub fn kernel_main() {
+    gdt::init();
+    idt::init();
+    interrupts::init();
+    x86_64::instructions::interrupts::enable();
 }
