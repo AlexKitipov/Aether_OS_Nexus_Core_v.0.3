@@ -21,6 +21,7 @@ pub mod elf;
 pub mod vnode_loader;
 pub mod caps;
 pub mod timer;
+pub mod interrupts;
 
 // Initialize the kernel.
 pub fn init(memory_regions: &'static MemoryRegions) {
@@ -33,8 +34,8 @@ pub fn init(memory_regions: &'static MemoryRegions) {
     arch::x86_64::idt::init();
     kprintln!("[kernel] IDT initialized.");
 
-    unsafe { arch::x86_64::irq::init_pic(); }
-    kprintln!("[kernel] PIC initialized.");
+    interrupts::init();
+    kprintln!("[kernel] Interrupts initialized.");
 
     x86_64::instructions::interrupts::enable();
     kprintln!("[kernel] Interrupts enabled.");

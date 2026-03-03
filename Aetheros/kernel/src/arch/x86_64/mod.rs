@@ -1,12 +1,11 @@
 // kernel/src/arch/x86_64/mod.rs
 
 pub mod boot; // Ensure boot module is declared
+pub mod dma;
 pub mod gdt; // Isolated GDT/TSS setup
 pub mod idt;
-pub mod paging;
-pub mod dma;
 pub mod irq;
-pub use irq as interrupts;
+pub mod paging;
 
 pub fn init() {
     gdt::init();
