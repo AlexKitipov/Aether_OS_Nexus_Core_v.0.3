@@ -21,6 +21,8 @@ pub mod elf;
 pub mod vnode_loader;
 pub mod caps;
 pub mod timer;
+pub mod gdt;
+pub mod idt;
 pub mod interrupts;
 
 // Initialize the kernel.
@@ -28,10 +30,10 @@ pub fn init(memory_regions: &'static MemoryRegions) {
     drivers::serial::init();
     kprintln!("[kernel] Serial output initialized.");
 
-    arch::x86_64::gdt::init();
+    gdt::init();
     kprintln!("[kernel] GDT initialized.");
 
-    arch::x86_64::idt::init();
+    idt::init();
     kprintln!("[kernel] IDT initialized.");
 
     interrupts::init();

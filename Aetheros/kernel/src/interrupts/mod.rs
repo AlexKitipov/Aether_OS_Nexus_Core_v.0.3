@@ -4,7 +4,7 @@ pub mod keyboard;
 pub mod pic;
 pub mod timer;
 
-use crate::{arch::x86_64::idt, kprintln};
+use crate::{idt, kprintln};
 
 pub(crate) const IRQ_TIMER: u8 = 0;
 pub(crate) const IRQ_KEYBOARD: u8 = 1;
