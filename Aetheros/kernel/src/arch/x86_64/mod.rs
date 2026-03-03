@@ -1,7 +1,7 @@
 // kernel/src/arch/x86_64/mod.rs
 
 pub mod boot; // Ensure boot module is declared
-pub mod gdt;
+pub mod gdt; // Isolated GDT/TSS setup
 pub mod idt;
 pub mod paging;
 pub mod dma;

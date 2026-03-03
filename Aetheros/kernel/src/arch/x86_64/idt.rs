@@ -3,7 +3,7 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
-use crate::kprintln;
+use crate::{kprintln, arch::x86_64::gdt};
 
 /// Static mutable Interrupt Descriptor Table.
 /// It will be initialized once during boot.
@@ -19,7 +19,9 @@ pub fn init() {
 
         // Set handlers for some common exceptions
         IDT.breakpoint_handler.set_handler_fn(breakpoint_handler);
-        IDT.double_fault_handler.set_handler_fn(double_fault_handler);
+        IDT.double_fault_handler
+            .set_handler_fn(double_fault_handler)
+            .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
 
         // Load the IDT into the CPU
         IDT.load();
