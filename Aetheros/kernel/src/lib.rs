@@ -24,6 +24,7 @@ pub mod timer;
 pub mod gdt;
 pub mod idt;
 pub mod interrupts;
+pub mod usercopy;
 
 // Initialize the kernel.
 pub fn init(memory_regions: &'static MemoryRegions) {

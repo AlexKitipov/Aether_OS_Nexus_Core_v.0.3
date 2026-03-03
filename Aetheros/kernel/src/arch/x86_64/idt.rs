@@ -46,10 +46,20 @@ extern "x86-interrupt" fn page_fault_handler(
     error_code: PageFaultErrorCode,
 ) {
     let accessed_address = Cr2::read();
+    let accessed_address_raw = accessed_address.as_u64() as usize;
     kprintln!("[kernel] EXCEPTION: PAGE FAULT");
     kprintln!("[kernel] Accessed Address: {:?}", accessed_address);
     kprintln!("[kernel] Error Code: {:?}", error_code);
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
+
+    if accessed_address_raw >= crate::config::USER_SPACE_START
+        && accessed_address_raw < crate::config::USER_SPACE_END_EXCLUSIVE
+    {
+        kprintln!("[kernel] page fault: invalid userspace pointer detected; terminating task.");
+        crate::task::scheduler::terminate_current_task();
+        return;
+    }
+
     hlt_loop();
 }
 

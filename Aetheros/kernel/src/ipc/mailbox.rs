@@ -8,6 +8,7 @@ use alloc::vec::Vec;
 use common::channel::id::ChannelId;
 use spin::Mutex;
 use conquer_once::spin::Once;
+use crate::usercopy::{copy_from_user, copy_to_user};
 
 const MAX_MESSAGE_SIZE: usize = 4096; // Maximum size of an IPC message
 
@@ -89,8 +90,9 @@ pub fn create_channel() -> ChannelId {
 pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: usize) -> Result<(), &'static str> {
     let mailbox = MAILBOX.get().expect("Mailbox not initialized");
     if let Some(channel) = mailbox.get_channel(channel_id) {
-        let message = unsafe { core::slice::from_raw_parts(message_ptr, message_len) };
-        channel.send(message)
+        let mut message = vec![0u8; message_len];
+        copy_from_user(&mut message, message_ptr)?;
+        channel.send(&message)
     } else {
         Err("Channel not found")
     }
@@ -104,7 +106,7 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
                 if message.len() > buffer_len {
                     return Err("Buffer too small");
                 }
-                unsafe { core::ptr::copy_nonoverlapping(message.as_ptr(), buffer_ptr, message.len()) };
+                copy_to_user(buffer_ptr, &message)?;
                 return Ok(message.len());
             } else if !blocking {
                 return Ok(0); // No message, non-blocking
@@ -116,4 +118,3 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
         Err("Channel not found")
     }
 }
-
