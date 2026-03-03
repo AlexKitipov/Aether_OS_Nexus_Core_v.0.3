@@ -5,6 +5,7 @@ use alloc::collections::{BTreeMap, VecDeque};
 use spin::Mutex;
 
 use crate::kprintln;
+use crate::memory::page_allocator::PageAllocator;
 use crate::task::tcb::{TaskControlBlock, TaskState};
 
 /// The run queue holds task IDs of tasks that are ready to be scheduled.
@@ -66,9 +67,54 @@ pub fn add_task(task: TaskControlBlock) {
 /// Removes a task from the scheduler's management.
 pub fn remove_task(task_id: u64) {
     kprintln!("[kernel] scheduler: Removing task ID {}.", task_id);
-    TASKS.lock().remove(&task_id);
+    if let Some(task) = TASKS.lock().remove(&task_id) {
+        release_task_resources(&task);
+    }
     // Also remove from run queue if it's there (optional for simple stub)
     RUN_QUEUE.lock().retain(|&id| id != task_id);
+}
+
+/// Terminates a task and cleans up scheduler state and memory resources.
+pub fn terminate_task(task_id: u64) {
+    let task_to_release = {
+        let mut tasks = TASKS.lock();
+        if let Some(task) = tasks.get_mut(&task_id) {
+            task.state = TaskState::Exited;
+        }
+        tasks.remove(&task_id)
+    };
+
+    RUN_QUEUE.lock().retain(|&id| id != task_id);
+
+    if let Some(task) = task_to_release {
+        kprintln!(
+            "[kernel] scheduler: Task '{}' (ID: {}) exited.",
+            task.name,
+            task.id
+        );
+        release_task_resources(&task);
+    }
+}
+
+/// Terminates the currently running task and dispatches the next runnable one.
+pub fn terminate_current_task() {
+    let current_task_id = *CURRENT_TASK_ID.lock();
+    terminate_task(current_task_id);
+    schedule();
+}
+
+fn release_task_resources(task: &TaskControlBlock) {
+    if let Some(kernel_stack) = task.kernel_stack_base {
+        PageAllocator::deallocate_page(kernel_stack);
+    }
+
+    if let Some(user_stack) = task.user_stack_base {
+        PageAllocator::deallocate_page(user_stack);
+    }
+
+    for page in &task.address_space_pages {
+        PageAllocator::deallocate_page(*page);
+    }
 }
 
 /// Blocks the current task and adds it back to the queue as 'Blocked'.
@@ -167,3 +213,68 @@ pub fn get_current_task_tcb() -> TaskControlBlock {
     })
 }
 
+#[cfg(test)]
+pub fn reset_for_tests() {
+    TASKS.lock().clear();
+    RUN_QUEUE.lock().clear();
+    *CURRENT_TASK_ID.lock() = 0;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::caps::Capability;
+    use alloc::string::String;
+
+    #[test]
+    fn terminate_current_task_removes_it_and_switches_to_next() {
+        reset_for_tests();
+
+        let mut current_task =
+            TaskControlBlock::new(1, String::from("current"), vec![Capability::LogWrite]);
+        current_task.state = TaskState::Running;
+
+        let next_task = TaskControlBlock::new(2, String::from("next"), vec![Capability::LogWrite]);
+
+        TASKS.lock().insert(current_task.id, current_task);
+        TASKS.lock().insert(next_task.id, next_task);
+        *CURRENT_TASK_ID.lock() = 1;
+        RUN_QUEUE.lock().push_back(2);
+
+        terminate_current_task();
+
+        assert!(!TASKS.lock().contains_key(&1));
+        assert_eq!(*CURRENT_TASK_ID.lock(), 2);
+        assert_eq!(
+            TASKS.lock().get(&2).map(|task| task.state),
+            Some(TaskState::Running)
+        );
+    }
+
+    #[test]
+    fn terminate_task_cleans_queue_entries() {
+        reset_for_tests();
+
+        let task = TaskControlBlock::new(11, String::from("worker"), vec![Capability::LogWrite]);
+        TASKS.lock().insert(task.id, task);
+
+        {
+            let mut queue = RUN_QUEUE.lock();
+            queue.push_back(11);
+            queue.push_back(42);
+            queue.push_back(11);
+        }
+
+        terminate_task(11);
+
+        assert!(!TASKS.lock().contains_key(&11));
+        assert_eq!(
+            RUN_QUEUE
+                .lock()
+                .iter()
+                .copied()
+                .collect::<alloc::vec::Vec<_>>(),
+            vec![42]
+        );
+    }
+}

@@ -3,6 +3,7 @@
 extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
+use x86_64::VirtAddr;
 
 use crate::caps::Capability;
 
@@ -24,8 +25,9 @@ pub struct TaskControlBlock {
     pub name: String,
     pub state: TaskState,
     pub capabilities: Vec<Capability>,
-    // pub stack_pointer: usize, // Conceptual for context switching
-    // pub cpu_state: CpuState, // Conceptual for saving registers
+    pub kernel_stack_base: Option<VirtAddr>,
+    pub user_stack_base: Option<VirtAddr>,
+    pub address_space_pages: Vec<VirtAddr>,
 }
 
 impl TaskControlBlock {
@@ -36,7 +38,29 @@ impl TaskControlBlock {
             name,
             state: TaskState::Ready, // New tasks start in the Ready state
             capabilities,
+            kernel_stack_base: None,
+            user_stack_base: None,
+            address_space_pages: Vec::new(),
+        }
+    }
+
+    /// Creates a task with explicit stack and address-space mappings.
+    pub fn with_memory_layout(
+        id: u64,
+        name: String,
+        capabilities: Vec<Capability>,
+        kernel_stack_base: Option<VirtAddr>,
+        user_stack_base: Option<VirtAddr>,
+        address_space_pages: Vec<VirtAddr>,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            state: TaskState::Ready,
+            capabilities,
+            kernel_stack_base,
+            user_stack_base,
+            address_space_pages,
         }
     }
 }
-

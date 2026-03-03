@@ -1,7 +1,9 @@
 #![no_std] // We don't link the Rust standard library
 
-use x86_64::VirtAddr;
-use common::syscall::{SYS_LOG, SYS_EXIT, SYS_TIME, SYS_IPC_SEND, SYS_IPC_RECV, SYS_IPC_RECV_NONBLOCKING, SYS_CREATE_CHANNEL, SUCCESS, E_ERROR};
+use common::syscall::{
+    E_ERROR, SUCCESS, SYS_CREATE_CHANNEL, SYS_EXIT, SYS_IPC_RECV, SYS_IPC_RECV_NONBLOCKING,
+    SYS_IPC_SEND, SYS_LOG, SYS_TIME,
+};
 
 extern "C" {
     // Function to handle logging from V-Nodes
@@ -9,7 +11,13 @@ extern "C" {
 }
 
 #[no_mangle]
-pub extern "C" fn syscall_handler(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) -> u64 {
+pub extern "C" fn syscall_handler(
+    syscall_num: u64,
+    arg1: u64,
+    arg2: u64,
+    arg3: u64,
+    arg4: u64,
+) -> u64 {
     match syscall_num {
         SYS_LOG => {
             unsafe {
@@ -17,20 +25,20 @@ pub extern "C" fn syscall_handler(syscall_num: u64, arg1: u64, arg2: u64, arg3: 
                 log_from_vnode(arg1 as *const u8, arg2 as usize);
             }
             SUCCESS
-        },
+        }
         SYS_EXIT => {
-            // TODO: Terminate current V-Node/task
-            loop { x86_64::instructions::hlt(); }
-        },
+            crate::task::scheduler::terminate_current_task();
+            SUCCESS
+        }
         SYS_TIME => {
             // TODO: Implement proper yielding to scheduler
             crate::task::schedule();
             SUCCESS
-        },
+        }
         SYS_CREATE_CHANNEL => {
             let channel_id = crate::ipc::mailbox::create_channel();
             channel_id as u64
-        },
+        }
         SYS_IPC_SEND => {
             let channel_id = arg1 as u32;
             let message_ptr = arg2 as *const u8;
@@ -39,7 +47,7 @@ pub extern "C" fn syscall_handler(syscall_num: u64, arg1: u64, arg2: u64, arg3: 
                 Ok(_) => SUCCESS,
                 Err(_) => E_ERROR,
             }
-        },
+        }
         SYS_IPC_RECV => {
             let channel_id = arg1 as u32;
             let buffer_ptr = arg2 as *mut u8;
@@ -48,7 +56,7 @@ pub extern "C" fn syscall_handler(syscall_num: u64, arg1: u64, arg2: u64, arg3: 
                 Ok(len) => len as u64,
                 Err(_) => E_ERROR,
             }
-        },
+        }
         SYS_IPC_RECV_NONBLOCKING => {
             let channel_id = arg1 as u32;
             let buffer_ptr = arg2 as *mut u8;
@@ -57,8 +65,7 @@ pub extern "C" fn syscall_handler(syscall_num: u64, arg1: u64, arg2: u64, arg3: 
                 Ok(len) => len as u64,
                 Err(_) => E_ERROR,
             }
-        },
+        }
         _ => E_ERROR, // Unknown syscall
     }
 }
-
