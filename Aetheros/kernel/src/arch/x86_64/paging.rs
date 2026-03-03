@@ -25,7 +25,7 @@ pub fn init() {
 
 /// Conceptually maps a virtual address to a physical address.
 /// In a real system, this would involve modifying page table entries.
-pub fn map_page(physical_address: usize, virtual_address: usize, flags: u64) {
+pub fn map(physical_address: usize, virtual_address: usize, flags: u64) {
     kprintln!("[kernel] paging: Mapping physical {:#x} to virtual {:#x} with flags {:#x} (conceptual).",
                physical_address, virtual_address, flags);
     // TODO: Implement actual page table entry modification.
@@ -33,8 +33,17 @@ pub fn map_page(physical_address: usize, virtual_address: usize, flags: u64) {
 
 /// Conceptually unmaps a virtual address.
 /// In a real system, this would involve modifying page table entries.
-pub fn unmap_page(virtual_address: usize) {
+pub fn unmap(virtual_address: usize) {
     kprintln!("[kernel] paging: Unmapping virtual {:#x} (conceptual).", virtual_address);
     // TODO: Implement actual page table entry modification and TLB invalidation.
 }
 
+/// Backward-compatible conceptual alias.
+pub fn map_page(physical_address: usize, virtual_address: usize, flags: u64) {
+    map(physical_address, virtual_address, flags);
+}
+
+/// Backward-compatible conceptual alias.
+pub fn unmap_page(virtual_address: usize) {
+    unmap(virtual_address);
+}
