@@ -1,0 +1,29 @@
+[package]
+name = "dns-resolver"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../../common" }
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+postcard = { version = "1.0", default-features = false, features = ["alloc"] }
+
+[profile.dev]
+panic = "abort" # Abort on panic in development
+
+[profile.release]
+panic = "abort" # Abort on panic in release
+lto = true # Enable Link Time Optimization
+codegen-units = 1 # Reduce number of codegen units to increase optimizations
+
+# Configure cargo to build a no_std binary
+[lib]
+crate-type = ["cdylib"]
+
+# The binary target for the V-Node itself
+[[bin]]
+name = "dns-resolver"
+path = "src/main.rs"
+
+[build-dependencies]
+cargo-binutils = "0.3"

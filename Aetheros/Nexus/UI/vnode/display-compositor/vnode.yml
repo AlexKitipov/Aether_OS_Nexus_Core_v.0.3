@@ -1,0 +1,27 @@
+# vnode/display-compositor/vnode.yml
+vnode:
+  name: "display-compositor"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A network stack is a critical system service
+
+runtime:
+  entrypoint: "bin/display-compositor.vnode"
+  required_mem_mb: 32 # Enough for managing window states and basic framebuffer operations
+  max_cpu_share: 0.15 # Can be CPU-intensive during composition and event handling
+
+capabilities:
+  - CAP_IPC_ACCEPT # To accept UI requests from client V-Nodes
+  - CAP_IPC_CONNECT: "svc://virtio-gpu-driver" # To interact with the GPU driver for rendering
+  - CAP_LOG_WRITE # For logging compositor events and errors
+  - CAP_TIME_READ # For internal timing, animations, and event timestamps
+  - CAP_MEM_SHARE # For zero-copy rendering with client V-Nodes and GPU driver
+
+storage:
+  mounts: [] # As a compositor, it typically doesn't need persistent storage, mostly volatile framebuffers
+
+observability:
+  metrics: [
+    "windows_open_total", "draw_calls_total", "mouse_events_total",
+    "keyboard_events_total", "composition_latency_avg_ns", "memory_usage_mb"
+  ]

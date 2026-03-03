@@ -1,0 +1,39 @@
+
+# vnode/vfs/vnode.yml
+vnode:
+  name: "vfs"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A critical system service for managing filesystem access
+
+runtime:
+  entrypoint: "bin/vfs.vnode"
+  required_mem_mb: 16 # For caching file handles, metadata, etc.
+  max_cpu_share: 0.05 # Primarily forwards requests and manages metadata, so low CPU usage expected
+
+capabilities:
+  - CAP_IPC_ACCEPT # To accept VFS requests from client V-Nodes
+  - CAP_LOG_WRITE # For logging VFS operations and errors
+  - CAP_TIME_READ # For timestamping file events and metadata
+  - StorageAccess: "/" # Full access to the root of the virtual filesystem
+  - CAP_IPC_CONNECT: "svc://aetherfs" # To interact with AetherFS backend
+  - CAP_IPC_CONNECT: "svc://ramdisk-driver" # Conceptual: To interact with RAM disk storage backend
+  - CAP_IPC_CONNECT: "svc://disk-driver" # Conceptual: To interact with block device storage backend
+
+storage:
+  mounts:
+    - path: "/"
+      source: "aetherfs://system-root"
+      options: [ "rw" ] # Read/write access for the root filesystem
+    - path: "/etc"
+      source: "aetherfs://system-config"
+      options: [ "ro" ] # Read-only for system configuration
+    - path: "/var"
+      source: "aetherfs://volatile-data"
+      options: [ "rw" ] # Read/write for volatile data
+    - path: "/home"
+      source: "aetherfs://user-data"
+      options: [ "rw" ] # Read/write for user data
+
+observability:
+  metrics: ["files_open_total", "reads_total", "writes_total", "directories_listed_total", "errors_total", "cache_hits_total"]

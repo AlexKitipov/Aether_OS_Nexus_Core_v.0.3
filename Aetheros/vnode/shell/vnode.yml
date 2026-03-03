@@ -1,0 +1,32 @@
+
+# vnode/shell/vnode.yml
+vnode:
+  name: "shell"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A core system component for user interaction
+
+runtime:
+  entrypoint: "bin/shell.vnode"
+  required_mem_mb: 16 # For command history, IPC buffers, and environmental variables
+  max_cpu_share: 0.05 # Interactive, but typically low CPU unless executing complex scripts
+
+capabilities:
+  - CAP_IPC_ACCEPT # To accept commands from AetherTerminal or other V-Nodes
+  - CAP_IPC_CONNECT: "svc://vfs" # To interact with the VFS for directory operations
+  - CAP_IPC_CONNECT: "svc://init-service" # To start/stop/manage other services
+  - CAP_IPC_CONNECT: "svc://dns-resolver" # For commands requiring network lookups (e.g., ping hostname)
+  - CAP_LOG_WRITE # For logging shell activity and command output
+  - CAP_TIME_READ # For timestamping commands or history
+
+storage:
+  mounts:
+    - path: "/home/<AID>/config/shell" # User-specific shell configuration (e.g., aliases, history)
+      source: "aetherfs://user/<AID>/config/shell"
+      options: [ "rw" ]
+    - path: "/tmp"
+      source: "volatile://ramdisk"
+      size: "4MB" # For temporary files or pipes
+
+observability:
+  metrics: ["commands_executed_total", "cwd_changes_total", "ipc_requests_total", "errors_total"]

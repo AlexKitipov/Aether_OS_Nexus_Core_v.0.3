@@ -1,0 +1,27 @@
+[package]
+name = "aetheros-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+postcard = { version = "1.0", default-features = false, features = ["alloc"] }
+alloc = { path = "./allocator", optional = true }
+
+# libnexus-net is now a direct dependency as NexusNetTransport uses it
+libnexus-net = { path = "../libnexus-net" }
+
+# Dummy crate for `smoltcp` for network stack integration.
+# This would typically be a dependency of the network stack V-Node.
+smoltcp = { version = "0.8", default-features = false, features = ["alloc"], optional = true }
+
+# Placeholder examples dependency
+examples = { path = "./examples", optional = true }
+
+[features]
+# Default feature to enable `alloc` for libcore compatibility
+default = ["alloc"]
+# Feature to enable `smoltcp` related items if needed directly in common
+smoltcp_enabled = ["dep:smoltcp"]
+# Feature to enable `examples` for building test V-Nodes
+examples_enabled = ["dep:examples"]

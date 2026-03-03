@@ -1,0 +1,48 @@
+# AetherOS V-Node Manifest
+# Registry Service (vnode-registry)
+
+vnode:
+  name: "registry"
+  id: "vnode.registry"
+  version: "0.2.0"
+  description: "Aether Local Registry — CAS-based storage for .ax packages and metadata."
+
+runtime:
+  entrypoint: "registry.ax"
+  exec_type: "elf64"
+  memory:
+    heap: 4M
+    stack: 512K
+    shared: 2M
+
+capabilities:
+  - fs.read
+  - fs.write
+  - fs.hash
+  - ipc.send
+  - ipc.recv
+  - time.read
+  - crypto.hash
+  - crypto.sign
+
+ipc:
+  inbox: "registry.inbox"
+  channels:
+    - "vnode.loader"
+    - "vnode.shell"
+    - "vnode.net"
+    - "vnode.dashboard"
+
+storage:
+  cas_root: "/var/aether/registry"
+  index_file: "index.merkle"
+  allow_overwrite: false
+
+security:
+  signature_required: true
+  verify_merkle: true
+  sandbox: true
+
+logging:
+  level: "info"
+  output: "registry.log"

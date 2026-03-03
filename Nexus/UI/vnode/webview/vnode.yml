@@ -1,0 +1,35 @@
+# vnode/webview/vnode.yml
+vnode:
+  name: "webview"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # Applications should run in strict mode for security
+
+runtime:
+  entrypoint: "bin/webview.vnode"
+  required_mem_mb: 64 # For rendering large web pages and caching assets
+  max_cpu_share: 0.20 # Can be CPU-intensive during rendering and script execution
+
+capabilities:
+  - CAP_IPC_CONNECT: "svc://ui-compositor" # To communicate with the UI Compositor for rendering
+  - CAP_IPC_CONNECT: "svc://dns-resolver" # For resolving hostnames in web content
+  - CAP_IPC_CONNECT: "svc://socket-api" # For network requests (HTTP, WebSockets)
+  - CAP_IPC_CONNECT: "svc://vfs" # To load local web assets or cache resources
+  - CAP_LOG_WRITE # For logging web content errors, network activity, etc.
+  - CAP_TIME_READ # For JavaScript timers and network timeouts
+  - CAP_MEM_SHARE # For sharing framebuffer data with the compositor (zero-copy rendering)
+
+storage:
+  mounts:
+    - path: "/cache"
+      source: "aetherfs://user/<AID>/webview_cache"
+      options: [ "rw" ] # Read/write access for caching web resources
+    - path: "/downloads"
+      source: "aetherfs://user/<AID>/downloads"
+      options: [ "rw" ] # For downloading files from the web
+
+observability:
+  metrics: [
+    "pages_loaded_total", "network_requests_total", "js_errors_total",
+    "rendering_latency_avg_ms", "memory_usage_mb", "cpu_usage_percent"
+  ]

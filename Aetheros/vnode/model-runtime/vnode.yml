@@ -1,0 +1,33 @@
+# vnode/model-runtime/vnode.yml
+vnode:
+  name: "model-runtime"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A critical system service for machine learning inference
+
+runtime:
+  entrypoint: "bin/model-runtime.vnode"
+  required_mem_mb: 256 # For loading ML models and processing large inputs/outputs
+  max_cpu_share: 0.50 # Can be very CPU/GPU intensive during inference
+
+capabilities:
+  - CAP_IPC_ACCEPT # To accept inference requests from client V-Nodes
+  - CAP_IPC_CONNECT: "svc://vfs" # To load models from disk, save/load checkpoints
+  - CAP_IPC_CONNECT: "svc://gpu-driver" # Conceptual: To interact with GPU for accelerated inference
+  - CAP_LOG_WRITE # For logging inference requests, performance, and errors
+  - CAP_TIME_READ # For measuring inference latency and managing timeouts
+
+storage:
+  mounts:
+    - path: "/models"
+      source: "aetherfs://system-models"
+      options: [ "ro" ] # Read-only access to pre-trained system models
+    - path: "/home/<AID>/models"
+      source: "aetherfs://user/<AID>/models"
+      options: [ "rw" ] # Read/write access for user-specific models or checkpoints
+    - path: "/tmp"
+      source: "volatile://ramdisk"
+      size: "64MB" # For temporary data, intermediate inference results
+
+observability:
+  metrics: ["inference_requests_total", "inference_success_total", "inference_errors_total", "inference_latency_avg_ms", "model_loads_total", "gpu_utilization_percent"]

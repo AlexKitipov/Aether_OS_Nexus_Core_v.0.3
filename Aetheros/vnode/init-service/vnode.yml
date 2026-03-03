@@ -1,0 +1,30 @@
+# vnode/init-service/vnode.yml
+vnode:
+  name: "init-service"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A critical system service for managing other V-Nodes
+
+runtime:
+  entrypoint: "bin/init-service.vnode"
+  required_mem_mb: 16 # For service configurations, state management, and IPC buffers
+  max_cpu_share: 0.05 # Primarily monitors and dispatches, low CPU usage expected
+
+capabilities:
+  - CAP_IPC_ACCEPT # To accept control requests from privileged V-Nodes/users
+  - CAP_IPC_CONNECT: "svc://aetherfs" # To read /etc/services
+  - CAP_IPC_CONNECT: "svc://kernel-vnode-manager" # To start/stop/monitor other V-Nodes (conceptual kernel IPC)
+  - CAP_LOG_WRITE # For logging service status and events
+  - CAP_TIME_READ # For scheduling or timeout mechanisms
+
+storage:
+  mounts:
+    - path: "/etc/services"
+      source: "aetherfs://system-config/services"
+      options: [ "ro" ] # Read-only access to service definitions
+    - path: "/var/run/init-service"
+      source: "volatile://ramdisk"
+      size: "1MB" # For temporary state like running V-Node PIDs/handles
+
+observability:
+  metrics: ["services_total", "services_running", "services_stopped", "service_starts_total", "service_restarts_total"]

@@ -1,0 +1,6 @@
+id: test
+path: /boot/vnodes/test.ax
+capabilities:
+  - type: SYS_LOG
+  - type: SYS_IPC_SEND
+  - type: SYS_IPC_RECV
