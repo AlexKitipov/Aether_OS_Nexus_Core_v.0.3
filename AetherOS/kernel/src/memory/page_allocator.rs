@@ -15,6 +15,12 @@ pub struct PageAllocator {
     _private: (),
 }
 
+impl Default for PageAllocator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PageAllocator {
     /// Creates a new, uninitialized PageAllocator.
     pub const fn new() -> Self {
@@ -39,7 +45,8 @@ impl PageAllocator {
     pub fn allocate_page() -> Option<VirtAddr> {
         kprintln!("[kernel] page_allocator: Allocating conceptual page...");
         // Dummy return value for now.
-        Some(VirtAddr::new(0xFFFF_8000_0000_0000)) // Example: return a high-half address
+        const CONCEPTUAL_PAGE_ADDR: u64 = 0xFFFF_8000_0000_0000;
+        Some(VirtAddr::new(CONCEPTUAL_PAGE_ADDR)) // Example: return a high-half address
     }
 
     /// Conceptually deallocates a virtual memory page.
@@ -52,4 +59,3 @@ impl PageAllocator {
         // 3. Free the associated physical frame via the frame allocator.
     }
 }
-
