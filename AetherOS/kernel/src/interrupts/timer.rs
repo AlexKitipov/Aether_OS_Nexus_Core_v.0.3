@@ -8,6 +8,9 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
     crate::timer::tick();
 
     unsafe {
+        // SAFETY: We are running in the timer IRQ context, so acknowledging
+        // the corresponding PIC line is required to re-enable future timer
+        // interrupts.
         pic::end_of_interrupt(IRQ_TIMER);
     }
 }
