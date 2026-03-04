@@ -5,6 +5,8 @@ use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
 use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;
 
+const FRAME_SIZE: usize = Size4KiB::SIZE as usize;
+
 /// A FrameAllocator that returns usable frames from the bootloader's memory map.
 ///
 /// This allocator iterates through the memory regions provided by the bootloader
@@ -39,7 +41,7 @@ impl BootInfoFrameAllocator {
         let addr_ranges = regions.map(|r| r.start..r.end);
 
         // Transform to an iterator of frame start addresses
-        let frame_addresses = addr_ranges.flat_map(|r| r.step_by(4096).map(PhysAddr::new));
+        let frame_addresses = addr_ranges.flat_map(|r| r.step_by(FRAME_SIZE).map(PhysAddr::new));
 
         // Create PhysFrame for each address
         frame_addresses.map(|addr| PhysFrame::containing_address(addr))
@@ -52,10 +54,8 @@ unsafe impl FrameAllocator<Size4KiB> for BootInfoFrameAllocator {
     fn allocate_frame(&mut self) -> Option<PhysFrame> {
         // Iterate through usable frames and return the next available one.
         let frame = self.usable_frames().nth(self.next);
-        if frame.is_some() {
+        frame.inspect(|_| {
             self.next += 1;
-        }
-        frame
+        })
     }
 }
-
