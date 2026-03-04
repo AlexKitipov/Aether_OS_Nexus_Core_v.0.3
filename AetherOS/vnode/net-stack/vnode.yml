@@ -1,0 +1,31 @@
+# vnode/net-stack/vnode.yml
+vnode:
+  name: "aethernet-service"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A network stack is a critical system service
+
+runtime:
+  entrypoint: "bin/aethernet-service.vnode"
+  required_mem_mb: 64 # Enough for smoltcp, ARP cache, connection states
+  max_cpu_share: 0.10 # Can be CPU-intensive depending on traffic
+
+capabilities:
+  - NetworkService # High-level capability for providing network services
+  - CAP_IPC_CONNECT: "svc://net-bridge" # Communicate with the net-bridge driver
+  - CAP_IPC_CONNECT: "svc://aetherfs" # Added: To reflect the need for filesystem interaction
+  - CAP_IPC_ACCEPT # Accept connections from higher-level V-Nodes (Socket API)
+  - CAP_MEM_SHARE # For zero-copy packet exchange with net-bridge
+  - CAP_TIME_READ # For internal smoltcp timers and RTT calculation
+
+storage:
+  mounts:
+    - path: "/etc/network"
+      source: "persistent://system-config/network"
+      options: [ "ro" ]
+    - path: "/var/run"
+      source: "volatile://ramdisk"
+      size: "1MB" # For temporary files like DHCP leases
+
+observability:
+  metrics: ["packets_rx_total", "packets_tx_total", "connections_tcp_active", "arp_cache_entries", "latency_avg_ns"]

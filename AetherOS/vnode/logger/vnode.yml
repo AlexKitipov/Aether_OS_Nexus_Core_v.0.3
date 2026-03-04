@@ -1,0 +1,6 @@
+id: logger
+path: /boot/vnodes/logger.ax
+capabilities:
+  - type: SYS_LOG
+  - type: SYS_IPC_SEND
+  - type: SYS_IPC_RECV

@@ -1,0 +1,27 @@
+# vnode/dns-resolver/vnode.yml
+vnode:
+  name: "dns-resolver"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # A critical system service for network functionality
+
+runtime:
+  entrypoint: "bin/dns-resolver.vnode"
+  required_mem_mb: 8 # For DNS cache and IPC buffers
+  max_cpu_share: 0.02 # Primarily forwards requests and processes UDP packets
+
+capabilities:
+  - CAP_IPC_CONNECT: "svc://socket-api" # To communicate with the Socket API V-Node for UDP client functionality
+  - CAP_IPC_ACCEPT # To accept DNS queries from client V-Nodes
+  - CAP_IPC_CONNECT: "svc://aetherfs" # To read /etc/network/resolv.conf
+  - CAP_TIME_READ # For cache TTL management
+  - CAP_LOG_WRITE # For logging DNS resolution events and errors
+
+storage:
+  mounts:
+    - path: "/etc/network/resolv.conf"
+      source: "aetherfs://system-config/network/resolv.conf"
+      options: [ "ro" ] # Read-only access to DNS server configuration
+
+observability:
+  metrics: ["dns_queries_total", "dns_resolutions_success_total", "dns_resolutions_failed_total", "dns_cache_hits_total", "dns_cache_size_bytes"]

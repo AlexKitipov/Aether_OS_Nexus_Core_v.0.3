@@ -1,0 +1,27 @@
+
+# vnode/socket-api/vnode.yml
+vnode:
+  name: "socket-api"
+  version: "0.1.0"
+  maintainer: "aetheros-core-team@aetheros.org"
+  mode: strict # Essential system service for application networking
+
+runtime:
+  entrypoint: "bin/socket-api.vnode"
+  required_mem_mb: 8 # Modest memory for managing file descriptors and IPC buffers
+  max_cpu_share: 0.05 # Primarily forwards requests, so low CPU usage expected
+
+capabilities:
+  - CAP_IPC_CONNECT: "svc://aethernet" # To communicate with the AetherNet Service
+  - CAP_IPC_ACCEPT # To accept requests from client V-Nodes (e.g., applications)
+  - CAP_LOG_WRITE # For logging socket operations and errors
+  - CAP_TIME_READ # For internal timing or timeouts
+
+storage:
+  mounts:
+    - path: "/var/sockets" # Volatile storage for temporary socket state if needed
+      source: "volatile://ramdisk"
+      size: "1MB"
+
+observability:
+  metrics: ["sockets_open_total", "connections_established_total", "bytes_sent_total", "bytes_received_total", "ipc_requests_total"]
