@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use alloc::collections::VecDeque;
-use alloc::sync::{Arc, Weak};
+use alloc::sync::Arc;
 use alloc::vec::Vec;
 use common::channel::id::ChannelId;
 use spin::Mutex;
@@ -88,6 +88,10 @@ pub fn create_channel() -> ChannelId {
 }
 
 pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: usize) -> Result<(), &'static str> {
+    if message_len > MAX_MESSAGE_SIZE {
+        return Err("Message too large");
+    }
+
     let mailbox = MAILBOX.get().expect("Mailbox not initialized");
     if let Some(channel) = mailbox.get_channel(channel_id) {
         let mut message = vec![0u8; message_len];
