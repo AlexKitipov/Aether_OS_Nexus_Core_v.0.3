@@ -1,5 +1,0 @@
-id: echo
-path: /boot/vnodes/echo.ax
-capabilities:
-  - type: SYS_IPC_SEND
-  - type: SYS_IPC_RECV
