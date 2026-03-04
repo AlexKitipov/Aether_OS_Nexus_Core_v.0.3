@@ -4,7 +4,7 @@
 
 extern crate alloc;
 use alloc::vec::Vec;
-use alloc::string::{String, ToString};
+use alloc::string::String;
 use crate::kprintln;
 
 /// Initializes the AetherFS (conceptual).
