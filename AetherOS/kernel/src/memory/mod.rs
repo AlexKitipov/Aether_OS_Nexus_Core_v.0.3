@@ -6,6 +6,10 @@ use bootloader_api::info::MemoryRegions;
 
 /// Initializes the memory management modules.
 /// This function is called early in the kernel's boot process.
+///
+/// # Parameters
+/// - `memory_regions`: Bootloader-provided physical memory map used to seed
+///   the frame allocator.
 pub fn init(memory_regions: &'static MemoryRegions) {
     kprintln!("[kernel] memory: Initializing memory modules...");
 
@@ -23,4 +27,3 @@ pub fn init(memory_regions: &'static MemoryRegions) {
 
     kprintln!("[kernel] memory: All memory modules initialized.");
 }
-
