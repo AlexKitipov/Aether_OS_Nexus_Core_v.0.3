@@ -16,6 +16,8 @@ pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
 
 /// Performs a system call with three arguments.
+#[must_use]
+#[inline(always)]
 pub fn syscall3(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64) -> u64 {
     let ret: u64;
     unsafe {
@@ -33,6 +35,8 @@ pub fn syscall3(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64) -> u64 {
 }
 
 /// Performs a system call with four arguments.
+#[must_use]
+#[inline(always)]
 pub fn syscall4(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) -> u64 {
     let ret: u64;
     unsafe {
