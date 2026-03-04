@@ -1,2 +1,10 @@
 [workspace]
-members = ["Nexus/UI/vnode/display-compositor", "Nexus/UI/vnode/webview", "common", "kernel", "vnode/echo", "vnode/logger", "vnode/test"]
+members = [
+    "Nexus/UI/vnode/display-compositor",
+    "Nexus/UI/vnode/webview",
+    "common",
+    "kernel",
+    "vnode/echo",
+    "vnode/logger",
+    "vnode/test",
+]
