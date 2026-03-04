@@ -79,7 +79,7 @@ impl VNodeChannel {
         // After sending, immediately try to receive the response.
         // This assumes a synchronous request-response pattern.
         match self.recv_blocking() {
-            Ok(data) => postcard::from_bytes(&data).map_err(|_| ())?,
+            Ok(data) => postcard::from_bytes(&data).map_err(|_| ()),
             Err(_) => Err(()),
         }
     }
