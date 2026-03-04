@@ -3,7 +3,6 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 extern crate alloc;
-use alloc::vec::Vec;
 use alloc::string::{String, ToString};
 use crate::kprintln;
 use crate::aetherfs; // To interact with aetherfs for loading binaries
@@ -60,14 +59,42 @@ impl ElfLoader {
     /// Conceptually parses an ELF header from a byte slice.
     fn parse_elf_header(elf_data: &[u8]) -> Result<ElfHeader, String> {
         kprintln!("[kernel] elf: Parsing conceptual ELF header...");
-        // This is a highly simplified stub. A real parser would validate magic numbers,
-        // architecture, and properly deserialize the header fields.
+        // This parser intentionally validates only a small subset of ELF64 headers,
+        // enough to sanity-check binaries before handoff to a fuller loader.
 
-        // For simulation, assume a valid 64-bit ELF executable.
-        // Dummy values.
-        let entry_point = 0x1000000; // Example entry point
-        let program_headers_offset = 0x40;
-        let num_program_headers = 2;
+        if elf_data.len() < 64 {
+            return Err("ELF header is smaller than expected ELF64 size.".to_string());
+        }
+
+        if &elf_data[0..4] != b"\x7FELF" {
+            return Err("Invalid ELF magic bytes.".to_string());
+        }
+
+        // `2` => ELFCLASS64
+        if elf_data[4] != 2 {
+            return Err("Unsupported ELF class: expected 64-bit ELF.".to_string());
+        }
+
+        // `1` => little-endian
+        if elf_data[5] != 1 {
+            return Err("Unsupported ELF endianness: expected little-endian.".to_string());
+        }
+
+        let entry_point = u64::from_le_bytes(
+            elf_data[24..32]
+                .try_into()
+                .map_err(|_| "Failed to parse ELF entry point bytes.".to_string())?,
+        );
+        let program_headers_offset = u64::from_le_bytes(
+            elf_data[32..40]
+                .try_into()
+                .map_err(|_| "Failed to parse ELF program header offset bytes.".to_string())?,
+        );
+        let num_program_headers = u16::from_le_bytes(
+            elf_data[56..58]
+                .try_into()
+                .map_err(|_| "Failed to parse ELF program header count bytes.".to_string())?,
+        );
 
         Ok(ElfHeader {
             entry_point,
