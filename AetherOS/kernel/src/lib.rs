@@ -29,13 +29,14 @@ pub mod usercopy;
 // Initialize the kernel.
 pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static mut FrameBuffer>) {
     drivers::serial::init();
+    drivers::vga_text::init();
     kprintln!("[kernel] Serial output initialized.");
+    kprintln!("Aether OS is running");
 
     if let Some(framebuffer) = framebuffer {
         drivers::framebuffer::init(framebuffer);
         kprintln!("[kernel] Framebuffer output initialized.");
     } else {
-        drivers::vga_text::init();
         kprintln!("[kernel] Framebuffer unavailable; using VGA text mode fallback.");
     }
 

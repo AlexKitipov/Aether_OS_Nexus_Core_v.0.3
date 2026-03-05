@@ -93,3 +93,7 @@ pub fn init() {
 pub fn write_str(text: &str) {
     VGA_WRITER.lock().write_text(text);
 }
+
+pub fn write_fmt(args: fmt::Arguments<'_>) {
+    let _ = VGA_WRITER.lock().write_fmt(args);
+}
