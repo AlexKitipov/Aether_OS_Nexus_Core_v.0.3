@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-=======
-# Aether_OS_Nexus_Core_v.0.3.0
-AetherOS Nexus is the full realization of a next‑generation secure, modular, and transparent operating system. Built in Rust with a Nexus Hybrid microkernel, capability-based security, and immutable V‑Nodes, it establishes a new standard for modern OS design and system integrity.
+# Aether_OS_Nexus_Core_v0.3.0
+AetherOS Nexus is a Rust-first experimental operating-system architecture exploring a Nexus hybrid microkernel, capability security, and immutable V-Nodes.
 
-
->>>>>>> d065ce098c872bf08975420124a1726f0355d472
 # 🌌 AetherOS Alpha — The Nexus Architecture
 
 _Join the Aether. Build the Nexus._

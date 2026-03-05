@@ -6,7 +6,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
-use bootloader_api::info::{MemoryRegion, MemoryRegionKind, MemoryRegions};
+use bootloader_api::info::{FrameBuffer, MemoryRegions};
 
 pub mod arch;
 pub mod drivers;
@@ -27,9 +27,16 @@ pub mod interrupts;
 pub mod usercopy;
 
 // Initialize the kernel.
-pub fn init(memory_regions: &'static MemoryRegions) {
+pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static mut FrameBuffer>) {
     drivers::serial::init();
     kprintln!("[kernel] Serial output initialized.");
+
+    if let Some(framebuffer) = framebuffer {
+        drivers::framebuffer::init(framebuffer);
+        kprintln!("[kernel] Framebuffer output initialized.");
+    } else {
+        kprintln!("[kernel] Framebuffer unavailable; using serial only.");
+    }
 
     gdt::init();
     kprintln!("[kernel] GDT initialized.");

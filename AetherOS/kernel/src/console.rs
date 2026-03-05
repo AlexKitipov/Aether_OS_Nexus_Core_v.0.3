@@ -25,8 +25,8 @@ impl Uart {
 
 impl fmt::Write for Uart {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        // Call into the serial driver's printing function
         crate::drivers::serial::_print(format_args!("{}", s));
+        crate::drivers::framebuffer::write_str(s);
         Ok(())
     }
 }
@@ -37,6 +37,7 @@ static CONSOLE: Mutex<Uart> = Mutex::new(Uart::new());
 // Public interface for the kernel console, which now just calls through to serial
 pub fn print_str(s: &str) {
     crate::drivers::serial::_print(format_args!("{}", s));
+    crate::drivers::framebuffer::write_str(s);
 }
 
 pub fn print_u64(n: u64) {
@@ -62,8 +63,7 @@ macro_rules! kprintln! {
 
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
-    // This function is now just a passthrough to the serial driver's _print
-    crate::drivers::serial::_print(args);
+    let _ = CONSOLE.lock().write_fmt(args);
 }
 
 // Dummy console init function (original from lib.rs, moved here for clarity of previous step)
