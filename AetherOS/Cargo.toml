@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "Nexus/UI/vnode/display-compositor",
     "Nexus/UI/vnode/webview",
