@@ -1,20 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-cd /content/drive/MyDrive/AetherOS/current/aetheros/ || exit 1
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${SCRIPT_DIR}"
 
+cd "${REPO_ROOT}"
 
 echo "Building all V-Nodes..."
 # Compile all V-Node projects within the workspace in release mode
 cargo build --release --workspace --target x86_64-unknown-none
 
-if [ $? -ne 0 ]; then
-    echo "Error: Cargo build failed."
-    exit 1
-fi
-
 echo "Creating initrd staging directory..."
 # Create a staging directory for initrd contents
-mkdir -p ../initrd_staging/vnodes
+STAGING_DIR="${REPO_ROOT}/../initrd_staging/vnodes"
+mkdir -p "${STAGING_DIR}"
 
 # Define V-Nodes and their target names
 VNODES=(
@@ -40,7 +39,7 @@ VNODES=(
 for vnode_info in "${VNODES[@]}"; do
     IFS=':' read -r crate_name target_name <<< "${vnode_info}"
     src_path="target/x86_64-unknown-none/release/${crate_name}"
-    dest_path="../initrd_staging/vnodes/${target_name}"
+    dest_path="${STAGING_DIR}/${target_name}"
     if [ -f "$src_path" ]; then
         echo "Copying $crate_name to $dest_path"
         cp "$src_path" "$dest_path"
@@ -50,7 +49,3 @@ for vnode_info in "${VNODES[@]}"; do
 done
 
 echo "All specified V-Node binaries staged for initrd."
-
-# Return to original directory (optional, for script reusability)
-# cd -
-
