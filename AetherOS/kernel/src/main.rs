@@ -12,7 +12,7 @@ use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
 pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
-    crate::init(&boot_info.memory_regions);
+    crate::init(&boot_info.memory_regions, boot_info.framebuffer.as_mut());
 
     crate::kprintln!("[kernel] Welcome to AetherOS!");
 
