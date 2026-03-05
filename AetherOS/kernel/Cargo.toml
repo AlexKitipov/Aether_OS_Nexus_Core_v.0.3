@@ -23,7 +23,7 @@ default = []
 bare_metal = []
 
 [package.metadata.bootimage]
-default-target = "x86_64-unknown-none"
+default-target = "x86_64-aether_os.json"
 run-command = [
   "qemu-system-x86_64",
   "-machine", "q35",
