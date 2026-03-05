@@ -27,6 +27,7 @@ impl fmt::Write for Uart {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         crate::drivers::serial::_print(format_args!("{}", s));
         crate::drivers::framebuffer::write_str(s);
+        crate::drivers::vga_text::write_str(s);
         Ok(())
     }
 }
@@ -38,6 +39,7 @@ static CONSOLE: Mutex<Uart> = Mutex::new(Uart::new());
 pub fn print_str(s: &str) {
     crate::drivers::serial::_print(format_args!("{}", s));
     crate::drivers::framebuffer::write_str(s);
+    crate::drivers::vga_text::write_str(s);
 }
 
 pub fn print_u64(n: u64) {
