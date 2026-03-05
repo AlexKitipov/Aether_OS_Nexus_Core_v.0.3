@@ -117,6 +117,16 @@ This guide outlines the conceptual steps to build and run AetherOS Nexus Core in
     # This will generate a bootable image at target/x86_64-unknown-none/release/bootimage-aetheros-kernel.bin
     ```
 
+### Bare-metal helper script
+
+For a one-command kernel image build, use:
+
+```bash
+./scripts/build_kernel_image.sh
+```
+
+This script installs required nightly components, builds a bootable image with `bootimage`, and prints the exact QEMU command to launch it.
+
 ### 🚀 Running in QEMU
 
 To see AetherOS Nexus Core in action:

@@ -35,7 +35,8 @@ pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static
         drivers::framebuffer::init(framebuffer);
         kprintln!("[kernel] Framebuffer output initialized.");
     } else {
-        kprintln!("[kernel] Framebuffer unavailable; using serial only.");
+        drivers::vga_text::init();
+        kprintln!("[kernel] Framebuffer unavailable; using VGA text mode fallback.");
     }
 
     gdt::init();
