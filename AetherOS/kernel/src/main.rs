@@ -6,10 +6,13 @@
 use core::panic::PanicInfo;
 use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
 
-/// The main entry point for the AetherOS kernel.
-/// This function is called by the bootloader after setting up basic environment.
+/// Kernel entry point in `no_std`/`no_main` mode.
+///
+/// We export `_start` with `#[no_mangle]` so the symbol name stays exactly `_start`
+/// and the bootloader/CPU can jump to it directly.
 #[no_mangle] // Don't mangle the name of this function, so the bootloader can find it
 pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
+    // Kernel early initialization starts here.
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
     crate::init(&boot_info.memory_regions, boot_info.framebuffer.as_mut());
@@ -35,4 +38,3 @@ fn panic(info: &PanicInfo) -> ! {
         x86_64::instructions::hlt(); // Halt the CPU
     }
 }
-
