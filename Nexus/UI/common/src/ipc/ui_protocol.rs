@@ -1,5 +1,3 @@
-// common/src/ipc/ui_protocol.rs
-
 #![no_std]
 
 extern crate alloc;
@@ -26,6 +24,18 @@ pub enum UiRequest {
         height: u32,
         pixels: Vec<u8>, // RGBA pixel data
     },
+    /// Request to move a window to a new position.
+    MoveWindow {
+        window_id: u32,
+        x: u32,
+        y: u32,
+    },
+    /// Request to resize a window.
+    ResizeWindow {
+        window_id: u32,
+        width: u32,
+        height: u32,
+    },
     /// Request to handle a mouse event.
     MouseEvent {
         window_id: u32,
@@ -36,12 +46,12 @@ pub enum UiRequest {
     },
     /// Request to handle a keyboard event.
     KeyEvent {
-        window_id: u3n,
+        window_id: u32,
         keycode: u16,
         event_type: KeyEventType,
     },
-    /// Request to close a window.
-    CloseWindow {
+    /// Request to destroy/close a window.
+    DestroyWindow {
         window_id: u32,
     },
     /// Request to get information about active windows.
