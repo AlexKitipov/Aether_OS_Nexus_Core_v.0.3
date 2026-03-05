@@ -8,3 +8,6 @@ members = [
     "vnode/logger",
     "vnode/test",
 ]
+
+[workspace.dependencies]
+bootloader = "0.11.2"
