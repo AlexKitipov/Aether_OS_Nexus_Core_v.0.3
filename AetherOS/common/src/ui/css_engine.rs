@@ -1,8 +1,7 @@
 // common/src/ui/css_engine.rs
 
-#![no_std]
-
 extern crate alloc;
+use alloc::vec;
 use alloc::string::String;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
