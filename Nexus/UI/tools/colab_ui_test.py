@@ -1,7 +1,6 @@
 
 import asyncio
 import base64
-import json
 import numpy as np
 from PIL import Image
 from io import BytesIO
@@ -17,8 +16,21 @@ class MockWindow:
         self.framebuffer = np.zeros((height, width, 4), dtype=np.uint8) # RGBA
 
     def draw_to_surface(self, x, y, width, height, pixels):
+        # Validate geometry and clip drawing area to framebuffer boundaries
+        if width <= 0 or height <= 0:
+            raise ValueError("DrawToSurface width and height must be positive")
+
+        expected_len = width * height * 4
+        if len(pixels) != expected_len:
+            raise ValueError(f"Invalid pixel payload length: expected {expected_len}, got {len(pixels)}")
+
+        x_end = x + width
+        y_end = y + height
+        if x < 0 or y < 0 or x_end > self.width or y_end > self.height:
+            raise ValueError("DrawToSurface region is out of framebuffer bounds")
+
         # Convert flattened RGBA byte array to numpy array
-        pixels_np = np.array(pixels, dtype=np.uint8).reshape((height, width, 4))
+        pixels_np = np.frombuffer(pixels, dtype=np.uint8).reshape((height, width, 4))
         # Copy pixels to the window's framebuffer
         self.framebuffer[y:y+height, x:x+width] = pixels_np
 
@@ -53,7 +65,12 @@ class ColabUIRenderer:
             pixels = base64.b64decode(pixels_b64)
 
             if window_id in self.windows:
-                self.windows[window_id].draw_to_surface(x, y, width, height, pixels)
+                try:
+                    self.windows[window_id].draw_to_surface(x, y, width, height, pixels)
+                except ValueError as exc:
+                    print(f"Renderer: Error - {exc}")
+                    return {"type": "Error", "payload": {"message": str(exc)}}
+
                 self.render_all_windows()
                 return {"type": "Success", "payload": {"window_id": window_id}}
             else:
