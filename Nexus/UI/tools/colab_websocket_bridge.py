@@ -5,14 +5,15 @@ import json
 
 # Assuming colab_ui_test.py is in the same directory and has `renderer` and `process_ipc_message` defined.
 # For a true isolated module, you'd import specific functions.
-from colab_ui_test import process_ipc_message, renderer
+from colab_ui_test import process_ipc_message, start_ui_renderer
 
 # In-memory channel for simulated IPC from kernel/V-nodes to the Colab UI
 # This simulates the IPC channel where the kernel/compositor would send messages
 # which are then picked up by the WebSocket server.
 ipc_message_queue = asyncio.Queue()
 
-async def handle_websocket(websocket, path):
+async def handle_websocket(websocket, path=None):
+    path = path or ""
     print(f"WebSocket connection established: {path}")
     try:
         async for message in websocket:
@@ -47,7 +48,7 @@ async def handle_websocket(websocket, path):
 
 async def start_websocket_server(port=8765):
     # Ensure the renderer is initialized and its display method doesn't block
-    renderer.start_ui_renderer() 
+    start_ui_renderer()
 
     server = await websockets.serve(handle_websocket, "0.0.0.0", port)
     print(f"WebSocket server started on ws://0.0.0.0:{port}")
