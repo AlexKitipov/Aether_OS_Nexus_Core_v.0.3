@@ -4,7 +4,6 @@
 #![no_std]
 
 extern crate alloc;
-use alloc::vec::Vec;
 use alloc::string::String;
 
 use serde::{Deserialize, Serialize};
