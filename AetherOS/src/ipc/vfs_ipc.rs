@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 pub type Fd = u32;
 
 // Placeholder for VFS metadata structure
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct VfsMetadata {
     pub is_dir: bool,
     pub size: u64,
@@ -39,6 +39,12 @@ pub enum VfsRequest {
     Stat { path: String },
     /// Close an open file descriptor.
     Close { fd: Fd },
+    /// Delete a file or directory.
+    Delete { path: String },
+    /// Create a new directory.
+    CreateDirectory { path: String },
+    /// Move/rename a file or directory.
+    Move { source: String, destination: String },
 }
 
 /// Represents responses from the VFS V-Node to client V-Nodes.
@@ -54,4 +60,10 @@ pub enum VfsResponse {
     DirectoryEntries(BTreeMap<String, VfsMetadata>),
     /// Indicates an error occurred.
     Error { code: i32, message: String }, // errno-like code and descriptive message
+    /// Indicates successful deletion.
+    DeleteSuccess,
+    /// Indicates successful directory creation.
+    CreateDirectorySuccess,
+    /// Indicates successful move/rename.
+    MoveSuccess,
 }
