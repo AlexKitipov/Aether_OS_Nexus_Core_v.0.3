@@ -6,6 +6,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
+use core::cmp::{max, min};
 
 use crate::syscall::{syscall3, SYS_LOG, SUCCESS};
 use crate::ui::html_parser::DomNode;
@@ -61,8 +62,9 @@ impl LayoutEngine {
                 let mut children_layouts = Vec::new();
                 let mut current_y = 0;
                 for child in children {
+                    let remaining_height = viewport_height.saturating_sub(current_y);
                     // Simple stacking layout
-                    let child_layout = self.layout(child, _computed_styles, viewport_width, viewport_height);
+                    let child_layout = self.layout(child, _computed_styles, viewport_width, remaining_height);
                     children_layouts.push(LayoutBox { 
                         x: 0, y: current_y, 
                         width: child_layout.width, 
@@ -72,13 +74,13 @@ impl LayoutEngine {
                         children: child_layout.children, 
                         debug_name: alloc::format!("{}-child", tag_name) 
                     });
-                    current_y += child_layout.height;
+                    current_y = current_y.saturating_add(child_layout.height);
                 }
                 LayoutBox {
                     x: root_box.x,
                     y: root_box.y,
                     width: root_box.width,
-                    height: root_box.height,
+                    height: min(current_y, root_box.height),
                     content_width: root_box.content_width,
                     content_height: current_y, // Sum of children height for conceptual content height
                     children: children_layouts,
@@ -87,17 +89,20 @@ impl LayoutEngine {
             },
             DomNode::Text(text) => {
                 // Simple text layout: assume a fixed line height and character width
-                let char_width = 8; // Pixels per character
-                let line_height = 20; // Pixels per line
-                let width = (text.len() * char_width).min(viewport_width as usize) as u32;
-                let height = line_height;
+                let char_width: u32 = 8; // Pixels per character
+                let line_height: u32 = 20; // Pixels per line
+                let chars_per_line = max(1, viewport_width / char_width);
+                let text_len = text.len() as u32;
+                let lines = max(1, text_len.div_ceil(chars_per_line));
+                let width = min(text_len, chars_per_line) * char_width;
+                let content_height = lines * line_height;
                 LayoutBox {
                     x: 0,
                     y: 0,
                     width,
-                    height,
+                    height: min(content_height, viewport_height),
                     content_width: width,
-                    content_height: height,
+                    content_height,
                     children: Vec::new(),
                     debug_name: String::from("text"),
                 }
