@@ -1,7 +1,6 @@
 #![no_std] // Don't link the Rust standard library
 #![feature(abi_x86_interrupt)] // Required for x86_64 interrupt handling
-#![feature(alloc_error_handler)] // Required for implementing a custom allocator
-#![feature(const_mut_refs)] // Required for certain const mutable references
+#![cfg_attr(target_os = "none", feature(alloc_error_handler))] // Only needed for bare-metal allocator error hooks
 
 extern crate alloc;
 
@@ -76,6 +75,7 @@ pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static
     kprintln!("[kernel] AetherOS kernel initialized successfully.");
 }
 
+#[cfg(target_os = "none")]
 #[alloc_error_handler]
 fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
     panic!("Allocation error: {:?}", layout)
