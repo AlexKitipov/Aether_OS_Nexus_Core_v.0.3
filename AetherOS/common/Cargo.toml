@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
-alloc = { path = "./allocator", optional = true }
 
 # libnexus-net is now a direct dependency as NexusNetTransport uses it
 libnexus-net = { path = "../libnexus-net" }
@@ -19,8 +18,7 @@ smoltcp = { version = "0.8", default-features = false, features = ["alloc"], opt
 examples = { path = "./examples", optional = true }
 
 [features]
-# Default feature to enable `alloc` for libcore compatibility
-default = ["alloc"]
+default = []
 # Feature to enable `smoltcp` related items if needed directly in common
 smoltcp_enabled = ["dep:smoltcp"]
 # Feature to enable `examples` for building test V-Nodes
