@@ -4,6 +4,7 @@
 
 use core::fmt::{self, Write};
 use spin::Mutex;
+use crate::kprintln;
 
 // We will re-route console output to the serial driver for now.
 // The Uart struct and its methods are no longer directly used for output here,
@@ -48,6 +49,10 @@ pub fn print_u64(n: u64) {
 
 pub fn print_hex(n: u64) {
     crate::drivers::serial::_print(format_args!("{:x}", n));
+}
+
+pub fn print_fmt(args: fmt::Arguments) {
+    _print(args);
 }
 
 // Macro for kernel printing, similar to `println!`

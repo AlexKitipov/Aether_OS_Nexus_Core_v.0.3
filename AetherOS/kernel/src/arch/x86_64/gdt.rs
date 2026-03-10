@@ -4,7 +4,6 @@
 
 use core::ptr::addr_of;
 
-use lazy_static::lazy_static;
 use x86_64::instructions::segmentation::{CS, Segment};
 use x86_64::instructions::tables::load_tss;
 use x86_64::structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector};
@@ -22,39 +21,46 @@ struct Selectors {
     tss_selector: SegmentSelector,
 }
 
-lazy_static! {
-    static ref TSS: TaskStateSegment = {
-        let mut tss = TaskStateSegment::new();
-        static mut DOUBLE_FAULT_STACK: [u8; DOUBLE_FAULT_STACK_SIZE] = [0; DOUBLE_FAULT_STACK_SIZE];
+static mut DOUBLE_FAULT_STACK: [u8; DOUBLE_FAULT_STACK_SIZE] = [0; DOUBLE_FAULT_STACK_SIZE];
+static mut TSS: Option<TaskStateSegment> = None;
+static mut GDT: Option<(GlobalDescriptorTable, Selectors)> = None;
 
+fn ensure_gdt() {
+    unsafe {
+        if GDT.is_some() {
+            return;
+        }
+
+        let mut tss = TaskStateSegment::new();
         let stack_start = VirtAddr::from_ptr(addr_of!(DOUBLE_FAULT_STACK));
         let stack_end = stack_start + DOUBLE_FAULT_STACK_SIZE;
         tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = stack_end;
-        tss
-    };
+        TSS = Some(tss);
 
-    static ref GDT: (GlobalDescriptorTable, Selectors) = {
         let mut gdt = GlobalDescriptorTable::new();
         let code_selector = gdt.add_entry(Descriptor::kernel_code_segment());
-        let tss_selector = gdt.add_entry(Descriptor::tss_segment(&TSS));
+        let tss_selector = gdt.add_entry(Descriptor::tss_segment(TSS.as_ref().expect("TSS initialized")));
 
-        (
+        GDT = Some((
             gdt,
             Selectors {
                 code_selector,
                 tss_selector,
             },
-        )
-    };
+        ));
+    }
 }
 
 pub fn init() {
     kprintln!("[kernel] gdt: Initializing GDT and TSS...");
 
-    GDT.0.load();
+    ensure_gdt();
+
     unsafe {
-        CS::set_reg(GDT.1.code_selector);
-        load_tss(GDT.1.tss_selector);
+        let (gdt, selectors) = GDT.as_ref().expect("GDT initialized");
+        gdt.load();
+        CS::set_reg(selectors.code_selector);
+        load_tss(selectors.tss_selector);
     }
 
     kprintln!("[kernel] gdt: GDT and TSS loaded.");
