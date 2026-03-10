@@ -3,7 +3,6 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 extern crate alloc;
-use alloc::vec::Vec;
 use core::str;
 
 use crate::{kprintln, task, ipc, caps, timer};
@@ -60,7 +59,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
             let channel_id = a1 as ipc::ChannelId;
             let buf = unsafe { core::slice::from_raw_parts(a2 as *const u8, a3 as usize) };
-            if ipc::kernel_send(channel_id, current_task.id, buf).is_ok() {
+            if ipc::kernel_send(channel_id, current_task.id as u32, buf).is_ok() {
                 SUCCESS
             }
             else {

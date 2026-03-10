@@ -8,7 +8,7 @@ use alloc::vec;
 use alloc::vec::Vec;
 use common::channel::id::ChannelId;
 use spin::Mutex;
-use conquer_once::spin::Once;
+use conquer_once::spin::OnceCell;
 use crate::usercopy::{copy_from_user, copy_to_user};
 
 const MAX_MESSAGE_SIZE: usize = 4096; // Maximum size of an IPC message
@@ -88,10 +88,10 @@ impl Mailbox {
     }
 }
 
-static MAILBOX: Once<Mailbox> = Once::new();
+static MAILBOX: OnceCell<Mailbox> = OnceCell::uninit();
 
 pub fn init() {
-    MAILBOX.call_once(|| Mailbox::new());
+    MAILBOX.init_once(|| Mailbox::new());
 }
 
 // --- Public API for IPC syscalls ---
@@ -145,11 +145,11 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
     if let Some(channel) = mailbox.get_channel(channel_id) {
         loop {
             if let Some(message) = channel.recv() {
-                if message.len() > buffer_len {
+                if message.data.len() > buffer_len {
                     return Err("Buffer too small");
                 }
-                copy_to_user(buffer_ptr, &message)?;
-                return Ok(message.len());
+                copy_to_user(buffer_ptr, &message.data)?;
+                return Ok(message.data.len());
             } else if !blocking {
                 return Ok(0); // No message, non-blocking
             }
