@@ -25,7 +25,7 @@ if cargo bootimage --version >/dev/null 2>&1; then
   echo "note: cargo bootimage is not compatible with bootloader 0.11 and fails with metadata errors."
 fi
 
-cargo +nightly -Zbuild-std -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec \
+cargo +nightly -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec \
   build -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --target "${KERNEL_DIR}/x86_64-aether_os.json" --release
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
