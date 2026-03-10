@@ -5,6 +5,7 @@
 
 use core::panic::PanicInfo;
 use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
+use aetheros_kernel::{init, task};
 
 /// Kernel entry point in `no_std`/`no_main` mode.
 ///
@@ -15,14 +16,14 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     // Kernel early initialization starts here.
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
-    crate::init(&boot_info.memory_regions, boot_info.framebuffer.as_mut());
+    init(&boot_info.memory_regions, boot_info.framebuffer.as_mut());
 
-    crate::kprintln!("[kernel] Welcome to AetherOS!");
+    aetheros_kernel::kprintln!("[kernel] Welcome to AetherOS!");
 
     // Enter an infinite loop to keep the kernel running.
     // In a real OS, this would be the idle loop, scheduling tasks.
     loop {
-        crate::task::schedule(); // Give control to the scheduler
+        task::schedule(); // Give control to the scheduler
         x86_64::instructions::hlt(); // Halt the CPU until the next interrupt
     }
 }
@@ -30,8 +31,8 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
 /// This function is called on panic.
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    crate::kprintln!("[kernel] !!! KERNEL PANIC !!!");
-    crate::kprintln!("[kernel] Error: {}", info);
+    aetheros_kernel::kprintln!("[kernel] !!! KERNEL PANIC !!!");
+    aetheros_kernel::kprintln!("[kernel] Error: {}", info);
     // In a production system, this would involve a stack trace, dumping registers,
     // or rebooting. For now, we simply halt the system.
     loop {
