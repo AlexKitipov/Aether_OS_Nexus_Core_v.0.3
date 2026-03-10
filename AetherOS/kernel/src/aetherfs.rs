@@ -3,6 +3,7 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 extern crate alloc;
+use alloc::format;
 use alloc::vec::Vec;
 use alloc::string::String;
 use crate::kprintln;

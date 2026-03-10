@@ -51,18 +51,6 @@ pub fn print_hex(n: u64) {
 }
 
 // Macro for kernel printing, similar to `println!`
-#[macro_export]
-macro_rules! kprint! {
-    ($($arg:tt)*) => ($crate::drivers::serial::_print(format_args!($($arg)*)));
-}
-
-#[macro_export]
-macro_rules! kprintln! {
-    () => ($crate::kprint!("\n"));
-    ($fmt:expr) => ($crate::kprint!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => ($crate::kprint!(concat!($fmt, "\n"), $($arg)*));
-}
-
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     let _ = CONSOLE.lock().write_fmt(args);

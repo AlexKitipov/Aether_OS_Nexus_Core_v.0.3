@@ -3,6 +3,7 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 extern crate alloc;
+use alloc::format;
 use alloc::string::{String, ToString};
 use crate::kprintln;
 use crate::aetherfs; // To interact with aetherfs for loading binaries
