@@ -5,7 +5,6 @@
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use bootloader_api::info::{FrameBuffer, MemoryRegions};
 
 pub mod arch;
@@ -103,14 +102,4 @@ pub fn hlt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
     }
-}
-
-// This function is called on panic.
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    kprintln!("[kernel] !!! KERNEL PANIC !!!");
-    kprintln!("[kernel] Error: {}", info);
-    // In a production system, this would involve a stack trace, dumping registers,
-    // or rebooting. For now, we simply halt the system.
-    hlt_loop();
 }
