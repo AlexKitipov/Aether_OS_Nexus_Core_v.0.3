@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 common = { package = "aetheros-common", path = "../common" }
-bootloader-api = { version = "0.11.2", features = ["framebuffer", "memory_map"] }
+bootloader_api = { version = "0.11.2" }
 bootloader = { workspace = true }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "step_trait"] }
 spin = "0.9.8"
