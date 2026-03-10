@@ -54,3 +54,9 @@ impl Capability {
         }
     }
 }
+
+
+/// Initializes the capability subsystem.
+pub fn init() {
+    kprintln!("[kernel] caps: Initialized.");
+}

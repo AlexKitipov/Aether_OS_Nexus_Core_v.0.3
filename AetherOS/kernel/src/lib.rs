@@ -25,6 +25,7 @@ pub mod gdt;
 pub mod idt;
 pub mod interrupts;
 pub mod usercopy;
+pub mod config;
 
 // Initialize the kernel.
 pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static mut FrameBuffer>) {
