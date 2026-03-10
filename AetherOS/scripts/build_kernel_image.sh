@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KERNEL_DIR="${ROOT_DIR}/kernel"
-IMAGE_PATH="${KERNEL_DIR}/target/x86_64-aether_os/release/bootimage-aetheros-kernel.bin"
+KERNEL_PATH="${KERNEL_DIR}/target/x86_64-aether_os/release/aetheros-kernel"
 RUN_QEMU="${RUN_QEMU:-0}"
 
 pushd "${ROOT_DIR}" >/dev/null
@@ -20,20 +20,22 @@ fi
 rustup component add rust-src --toolchain nightly
 rustup component add llvm-tools-preview --toolchain nightly
 
-if ! cargo bootimage --version >/dev/null 2>&1; then
-  cargo +nightly install bootimage --locked
+if cargo bootimage --version >/dev/null 2>&1; then
+  echo "note: bootimage is installed, but the current kernel uses bootloader 0.11 APIs."
+  echo "note: cargo bootimage is not compatible with bootloader 0.11 and fails with metadata errors."
 fi
 
 cargo +nightly -Zbuild-std -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec \
-  bootimage -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --release
+  build -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --target "${KERNEL_DIR}/x86_64-aether_os.json" --release
 
-echo "Built bootable kernel image: ${IMAGE_PATH}"
+echo "Built kernel artifact: ${KERNEL_PATH}"
+echo "note: this produces the kernel binary only; bootable disk image creation requires a bootloader 0.11 image builder flow."
 
-echo "Run with:"
-echo "qemu-system-x86_64 -machine q35 -m 2G -serial stdio -drive format=raw,file=${IMAGE_PATH}"
+echo "Run with (kernel ELF):"
+echo "qemu-system-x86_64 -machine q35 -m 2G -serial stdio -kernel ${KERNEL_PATH}"
 
 if [[ "${RUN_QEMU}" == "1" ]]; then
-  qemu-system-x86_64 -machine q35 -m 2G -serial stdio -drive format=raw,file="${IMAGE_PATH}"
+  qemu-system-x86_64 -machine q35 -m 2G -serial stdio -kernel "${KERNEL_PATH}"
 fi
 
 popd >/dev/null
