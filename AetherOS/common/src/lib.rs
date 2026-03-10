@@ -8,7 +8,6 @@ pub mod syscall;
 pub mod channel;
 pub mod message;
 pub mod nexus_msg;
-pub mod syscalls;
 
 pub mod ui;
 
