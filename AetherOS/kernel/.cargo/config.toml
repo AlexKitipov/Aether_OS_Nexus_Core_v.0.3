@@ -1,5 +1,5 @@
 [build]
-target = "x86_64-aether_os.json"
+target = "x86_64-aether_os"
 
 [target.x86_64-aether_os]
 runner = "bootimage runner"
@@ -7,3 +7,6 @@ runner = "bootimage runner"
 [unstable]
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
+
+[env]
+RUST_TARGET_PATH = { value = ".", relative = true }
