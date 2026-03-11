@@ -8,7 +8,6 @@ common = { package = "aetheros-common", path = "../../common" }
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 
-# Configure cargo to build a no_std binary
 [[bin]]
 name = "init-service"
 path = "src/main.rs"
