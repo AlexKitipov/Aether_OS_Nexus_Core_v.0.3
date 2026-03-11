@@ -158,3 +158,18 @@ qemu-system-x86_64 \
 All kernel and V-Node logs will be streamed to your console via the `-serial stdio` option.
 
 **Join the Aether. Build the Nexus.**
+
+### Build & Run under QEMU
+
+1. Build kernel and V-Nodes:
+   ```bash
+   ./scripts/build_all.sh
+   ```
+2. Build initrd:
+   ```bash
+   ./scripts/build_initrd.sh
+   ```
+3. Run under QEMU:
+   ```bash
+   ./scripts/run_qemu.sh
+   ```
