@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
-use aetheros_common::ipc::{IpcSend, vnode::VNodeChannel};
-use aetheros_common::syscall::{syscall3, SYS_LOG, SYS_TIME};
+use common::ipc::{IpcSend, vnode::VNodeChannel};
+use common::syscall::{syscall3, SYS_LOG, SYS_TIME};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
