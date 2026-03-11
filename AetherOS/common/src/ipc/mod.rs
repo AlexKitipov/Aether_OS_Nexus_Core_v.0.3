@@ -1,4 +1,6 @@
 pub mod ui_protocol;
+pub mod display;
+pub mod webview;
 pub mod vfs_ipc;
 pub mod vnode;
 pub mod logger_ipc;
