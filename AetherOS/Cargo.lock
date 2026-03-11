@@ -33,6 +33,7 @@ name = "aetheros-echo"
 version = "0.1.0"
 dependencies = [
  "aetheros-common",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -54,6 +55,7 @@ name = "aetheros-logger"
 version = "0.1.0"
 dependencies = [
  "aetheros-common",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -63,6 +65,7 @@ name = "aetheros-test"
 version = "0.1.0"
 dependencies = [
  "aetheros-common",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -261,6 +264,7 @@ version = "0.1.0"
 dependencies = [
  "aetheros-common",
  "cargo-binutils",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -721,6 +725,7 @@ version = "0.1.0"
 dependencies = [
  "aetheros-common",
  "cargo-binutils",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
