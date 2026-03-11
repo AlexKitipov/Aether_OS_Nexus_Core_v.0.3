@@ -1,5 +1,7 @@
 pub struct NodeId(pub [u8; 32]);
 
+pub struct PeerInfo;
+
 pub enum DhtValue {
     Manifest(super::examples::Manifest),
 }
