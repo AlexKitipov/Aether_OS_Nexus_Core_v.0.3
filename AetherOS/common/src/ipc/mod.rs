@@ -6,6 +6,7 @@ pub mod echo_ipc;
 pub mod test_ipc;
 pub mod file_manager_ipc;
 pub mod shell_ipc;
+pub mod init_ipc;
 
 pub trait IpcSend {
     fn send_raw(&mut self, bytes: &[u8]) -> Result<(), ()>;
