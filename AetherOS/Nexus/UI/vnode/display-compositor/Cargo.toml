@@ -8,17 +8,6 @@ common = { package = "aetheros-common", path = "../../../../common" }
 serde = { version = "1.0.198", default-features = false, features = ["derive"] }
 postcard = { version = "1.0.8", features = ["alloc"] }
 
-[profile.dev]
-panic = "abort" # Abort on panic in development
-
-[profile.release]
-panic = "abort" # Abort on panic in release
-lto = true # Enable Link Time Optimization
-codegen-units = 1 # Reduce number of codegen units to increase optimizations
-
-# Configure cargo to build a no_std binary
-crate-type = ["cdylib"]
-
 # The binary target for the V-Node itself
 [[bin]]
 name = "display-compositor"
