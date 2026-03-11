@@ -1,4 +1,3 @@
-#![no_std] // Don't link the Rust standard library
 
 extern crate alloc;
 
@@ -154,7 +153,7 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
                 return Ok(0); // No message, non-blocking
             }
             // If blocking and no message, yield CPU (actual kernel would involve sleeping task)
-            unsafe { common::syscall::syscall3(common::syscall::SYS_TIME, 0, 0, 0); }
+            let _ = common::syscall::syscall3(common::syscall::SYS_TIME, 0, 0, 0);
         }
     } else {
         Err("Channel not found")

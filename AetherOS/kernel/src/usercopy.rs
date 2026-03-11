@@ -1,4 +1,3 @@
-#![no_std]
 
 use crate::config::{USER_SPACE_END_EXCLUSIVE, USER_SPACE_START};
 

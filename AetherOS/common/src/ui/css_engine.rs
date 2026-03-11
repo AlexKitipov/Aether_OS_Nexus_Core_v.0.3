@@ -10,15 +10,13 @@ use crate::syscall::{syscall3, SYS_LOG, SUCCESS};
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 /// Represents a simplified CSS property and value.
