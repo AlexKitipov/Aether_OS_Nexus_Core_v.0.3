@@ -5,7 +5,7 @@ use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use alloc::vec;
 use alloc::vec::Vec;
-use common::channel::id::ChannelId;
+use aetheros_common::channel::id::ChannelId;
 use spin::Mutex;
 use conquer_once::spin::OnceCell;
 use crate::usercopy::{copy_from_user, copy_to_user};
@@ -153,7 +153,7 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
                 return Ok(0); // No message, non-blocking
             }
             // If blocking and no message, yield CPU (actual kernel would involve sleeping task)
-            let _ = common::syscall::syscall3(common::syscall::SYS_TIME, 0, 0, 0);
+            let _ = aetheros_common::syscall::syscall3(aetheros_common::syscall::SYS_TIME, 0, 0, 0);
         }
     } else {
         Err("Channel not found")

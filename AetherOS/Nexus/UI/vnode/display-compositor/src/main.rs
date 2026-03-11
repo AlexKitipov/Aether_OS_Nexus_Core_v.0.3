@@ -27,9 +27,9 @@ use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 
-use common::ipc::{IpcSend, vnode::VNodeChannel};
-use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
-use common::ui_protocol::{UiRequest, UiResponse, WindowInfo, MouseEventType, KeyEventType};
+use aetheros_common::ipc::{IpcSend, vnode::VNodeChannel};
+use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
+use aetheros_common::ui_protocol::{UiRequest, UiResponse, WindowInfo, MouseEventType, KeyEventType};
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
