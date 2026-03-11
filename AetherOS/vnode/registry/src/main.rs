@@ -1,5 +1,5 @@
-use common::ipc::vnode::VNodeChannel;
-use common::syscall::{syscall3, SYS_LOG};
+use aetheros_common::ipc::vnode::VNodeChannel;
+use aetheros_common::syscall::{syscall3, SYS_LOG};
 
 fn log(msg: &str) {
     let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);

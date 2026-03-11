@@ -26,12 +26,12 @@ use alloc::vec::Vec;
 use alloc::format;
 use alloc::string::{String, ToString};
 
-use common::ipc::vnode::VNodeChannel;
-use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
-use common::ui_protocol::{UiRequest, UiResponse, WindowInfo, MouseEventType, KeyEventType};
-use common::ui::html_parser::HtmlParser;
-use common::ui::css_engine::CssEngine;
-use common::ui::layout::LayoutEngine;
+use aetheros_common::ipc::vnode::VNodeChannel;
+use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
+use aetheros_common::ui_protocol::{UiRequest, UiResponse, WindowInfo, MouseEventType, KeyEventType};
+use aetheros_common::ui::html_parser::HtmlParser;
+use aetheros_common::ui::css_engine::CssEngine;
+use aetheros_common::ui::layout::LayoutEngine;
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
