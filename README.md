@@ -138,4 +138,15 @@ qemu-system-x86_64 \
 
 All kernel and V-Node logs will be streamed to your console via the `-serial stdio` option.
 
+## 🔧 Troubleshooting workspace build errors
+
+If you are validating user-space V-Node services (such as `registry` and `init-service`), build those packages directly from the workspace root:
+
+```bash
+cd AetherOS
+cargo build -p registry -p init-service
+```
+
+This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
+
 **Join the Aether. Build the Nexus.**
