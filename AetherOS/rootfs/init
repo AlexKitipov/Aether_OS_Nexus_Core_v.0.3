@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "[initrd] AetherOS init loader started"
+
+if [ -d /vnode ]; then
+  echo "[initrd] available V-Nodes:"
+  ls -1 /vnode || true
+else
+  echo "[initrd] /vnode directory not found"
+fi
+
+# Keep PID 1 alive for now.
+exec sh
