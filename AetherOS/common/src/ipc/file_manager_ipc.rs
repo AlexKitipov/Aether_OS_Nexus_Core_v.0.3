@@ -1,6 +1,5 @@
 // common/src/ipc/file_manager_ipc.rs
 
-#![no_std]
 
 extern crate alloc;
 use alloc::collections::BTreeMap;

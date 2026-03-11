@@ -3,10 +3,8 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use linked_list_allocator::LockedHeap;
-use x86_64::{VirtAddr, PhysAddr};
-use x86_64::structures::paging::{Page, PageTableFlags, Size4KiB, Mapper, FrameAllocator};
+use x86_64::VirtAddr;
 use crate::kprintln;
-use crate::memory::page_allocator::PageAllocator;
 
 /// A dummy global allocator that panics on allocation.
 /// This will be replaced by our `LockedHeap` once memory mapping is ready.
