@@ -8,6 +8,8 @@ members = [
     "vnode/echo",
     "vnode/logger",
     "vnode/test",
+    "vnode/registry",
+    "vnode/init-service",
 ]
 
 [profile.dev]
