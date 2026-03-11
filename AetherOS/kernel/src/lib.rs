@@ -77,8 +77,8 @@ pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static
 
 #[cfg(target_os = "none")]
 #[alloc_error_handler]
-fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
-    panic!("Allocation error: {:?}", layout)
+fn alloc_error_handler(_layout: alloc::alloc::Layout) -> ! {
+    loop {}
 }
 
 // Macros for printing to the console
