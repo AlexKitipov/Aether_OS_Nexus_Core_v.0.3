@@ -18,31 +18,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
-name = "aetheros-common"
-version = "0.1.0"
-dependencies = [
- "examples",
- "libnexus-net",
- "postcard",
- "serde",
- "smoltcp",
-]
-
-[[package]]
-name = "aetheros-echo"
-version = "0.1.0"
-dependencies = [
- "aetheros-common",
- "linked_list_allocator",
- "postcard",
- "serde",
-]
-
-[[package]]
 name = "aetheros-kernel"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
+ "aetheros_common",
  "bootloader_api",
  "conquer-once",
  "linked_list_allocator",
@@ -51,23 +30,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "aetheros-logger"
+name = "aetheros_common"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
- "linked_list_allocator",
+ "examples",
+ "libnexus-net",
  "postcard",
  "serde",
-]
-
-[[package]]
-name = "aetheros-test"
-version = "0.1.0"
-dependencies = [
- "aetheros-common",
- "linked_list_allocator",
- "postcard",
- "serde",
+ "smoltcp",
 ]
 
 [[package]]
@@ -262,7 +232,7 @@ checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 name = "display-compositor"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
+ "aetheros_common",
  "cargo-binutils",
  "linked_list_allocator",
  "postcard",
@@ -349,7 +319,8 @@ dependencies = [
 name = "init-service"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
+ "aetheros_common",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -482,7 +453,8 @@ checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
 name = "registry"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
+ "aetheros_common",
+ "linked_list_allocator",
  "postcard",
  "serde",
 ]
@@ -723,7 +695,7 @@ checksum = "442887c63f2c839b346c192d047a7c87e73d0689c9157b00b53dcc27dd5ea793"
 name = "webview"
 version = "0.1.0"
 dependencies = [
- "aetheros-common",
+ "aetheros_common",
  "cargo-binutils",
  "linked_list_allocator",
  "postcard",
