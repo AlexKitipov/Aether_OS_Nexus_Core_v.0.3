@@ -6,12 +6,28 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+
+use linked_list_allocator::LockedHeap;
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 
-use common::ipc::vnode::VNodeChannel;
+use common::ipc::{IpcSend, vnode::VNodeChannel};
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ui_protocol::{UiRequest, UiResponse, WindowInfo, MouseEventType, KeyEventType};
 
@@ -136,13 +152,14 @@ impl DisplayCompositor {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Assuming channel ID 12 for UI Compositor communication
     let mut compositor_vnode = DisplayCompositor::new(12);
     compositor_vnode.run_loop();
 }
 
 #[panic_handler]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("Display Compositor V-Node panicked! Info: {:?}.", info));
     loop {}
 }

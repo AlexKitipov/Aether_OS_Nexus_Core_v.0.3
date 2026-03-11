@@ -7,6 +7,7 @@ edition = "2021"
 common = { package = "aetheros-common", path = "../../../../common" }
 serde = { version = "1.0.198", default-features = false, features = ["derive"] }
 postcard = { version = "1.0.8", features = ["alloc"] }
+linked_list_allocator = "0.10.5"
 
 # The binary target for the V-Node itself
 [[bin]]
