@@ -79,6 +79,18 @@ This guide outlines the conceptual steps to build and run AetherOS Nexus Core in
 
 ### Prerequisites
 
+### Build prerequisites
+
+1. Install Rust nightly:
+```bash
+rustup toolchain install nightly
+```
+
+2. Build the kernel:
+```bash
+./scripts/build_kernel.sh
+```
+
 *   **Rust Nightly**: Ensure you have a recent nightly Rust toolchain installed.
 *   **`rust-src` component**: `rustup component add rust-src --toolchain nightly`
 *   **`llvm-tools-preview` component**: `rustup component add llvm-tools-preview`

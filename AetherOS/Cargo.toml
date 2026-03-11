@@ -1,21 +1,19 @@
 [workspace]
 resolver = "2"
 members = [
-    "Nexus/UI/vnode/display-compositor",
-    "Nexus/UI/vnode/webview",
-    "common",
     "kernel",
-    "vnode/echo",
-    "vnode/logger",
-    "vnode/test",
+    "common",
     "vnode/registry",
     "vnode/init-service",
+    "Nexus/UI/vnode/display-compositor",
+    "Nexus/UI/vnode/webview"
 ]
 
 [profile.dev]
 panic = "abort"
 
 [profile.release]
-panic = "abort"
+opt-level = "z"
 lto = true
+panic = "abort"
 codegen-units = 1
