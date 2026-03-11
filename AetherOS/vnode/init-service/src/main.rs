@@ -1,4 +1,13 @@
-use std::collections::BTreeMap;
+#![no_std]
+#![no_main]
+
+extern crate alloc;
+
+use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
+use alloc::collections::BTreeMap;
+use alloc::format;
+use alloc::string::String;
 
 use aetheros_common::ipc::{IpcSend, vnode::VNodeChannel};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SYS_TIME};
@@ -21,6 +30,19 @@ enum InitResponse {
         is_running: bool,
         pid: Option<u64>,
     },
+}
+
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
 }
 
 fn log(msg: &str) {
@@ -86,6 +108,13 @@ impl InitService {
     }
 }
 
-fn main() {
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    init_allocator();
     InitService::new(6).run_loop();
+}
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
 }

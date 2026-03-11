@@ -26,7 +26,7 @@ pub unsafe fn init(heap_start: VirtAddr, heap_size: usize) {
 
 /// Initializes a small early heap region used by kernel allocations.
 pub fn init_heap() {
-    const HEAP_START: u64 = 0x_4444_4444_0000;
+    const HEAP_START: u64 = 0x4444_0000;
     const HEAP_SIZE: usize = 1024 * 1024;
 
     // SAFETY: Early bootstrap heap uses a fixed virtual region for conceptual runtime.
