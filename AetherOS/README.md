@@ -94,7 +94,7 @@ rustup toolchain install nightly
 *   **Rust Nightly**: Ensure you have a recent nightly Rust toolchain installed.
 *   **`rust-src` component**: `rustup component add rust-src --toolchain nightly`
 *   **`llvm-tools-preview` component**: `rustup component add llvm-tools-preview`
-*   **`bootimage` cargo subcommand**: `cargo install bootimage`
+*   **No `cargo bootimage` requirement**: the project uses `bootloader_api` 0.11 and runs the kernel ELF directly with QEMU (`-kernel`).
 *   **QEMU**: Version 5.2 or newer, for `x86_64` architecture (`qemu-system-x86_64`).
 
 ### Building AetherOS Nexus Core
@@ -104,29 +104,24 @@ rustup toolchain install nightly
     git clone https://github.com/aetheros/nexus-core.git # (Conceptual URL)
     cd nexus-core
     ```
-2.  **Install `bootimage`**:
-    ```bash
-    cargo install bootimage --version <version>
-    ```
-3.  **Compile V-Node applications**:
+2.  **Compile V-Node applications**:
     Each V-Node (`vnode/*`) is compiled as a separate `no_std` ELF binary.
     ```bash
     # Example for registry V-Node
     cargo build -p vnode-registry --target x86_64-unknown-none --release
     # Repeat for other V-Nodes (net-bridge, net-stack, etc.)
     ```
-4.  **Create `initrd` (Initial RAM Disk)**:
+3.  **Create `initrd` (Initial RAM Disk)**:
     This step bundles your compiled V-Node binaries and their manifests into a single image that the kernel will load at boot.
     ```bash
     # Conceptual: Use a script to package V-Nodes into an initrd image.
     # For v0.1, AetherFS is very basic and might just expect a single V-Node binary for testing.
     ```
-5.  **Build the Kernel**:
-    The `bootimage` tool compiles the `kernel` crate and embeds your `initrd` (if configured) into a bootable `ELF` kernel image.
+4.  **Build the Kernel**:
+    Use the helper script (recommended) or invoke cargo directly for the kernel ELF target.
     ```bash
-    cd kernel
-    cargo bootimage --release
-    # This will generate a bootable image at target/x86_64-unknown-none/release/bootimage-aetheros-kernel.bin
+    ./scripts/build_kernel_image.sh
+    # or: cargo +nightly build -p aetheros-kernel --manifest-path kernel/Cargo.toml --target kernel/x86_64-aether_os.json --release
     ```
 
 ### Bare-metal helper script
@@ -137,7 +132,7 @@ For a one-command kernel image build, use:
 ./scripts/build_kernel_image.sh
 ```
 
-This script installs required nightly components, builds a bootable image with `bootimage`, and prints the exact QEMU command to launch it.
+This script installs nightly components on a best-effort basis, builds the kernel ELF, and prints the exact QEMU command to launch it.
 
 ### 🚀 Running in QEMU
 
@@ -148,7 +143,7 @@ qemu-system-x86_64 \
   -machine q35 \
   -m 2G \
   -serial stdio \
-  -drive format=raw,file=kernel/target/x86_64-unknown-none/release/bootimage-aetheros-kernel.bin \
+  -kernel kernel/target/x86_64-aether_os/release/aetheros-kernel \
   # Add -initrd <path_to_your_initrd> if you have one prepared
   # For network simulation (if enabled and configured):
   -netdev user,id=net0,hostfwd=tcp::8080-:80 \

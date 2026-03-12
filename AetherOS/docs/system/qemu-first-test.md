@@ -21,20 +21,19 @@ qemu-system-x86_64 --version
 rustup toolchain install nightly
 rustup component add rust-src --toolchain nightly
 rustup component add llvm-tools-preview --toolchain nightly
-cargo +nightly install bootimage --locked
 ```
 
-## 3) Построй bootable image с `cargo bootimage`
+## 3) Построй kernel ELF (препоръчано чрез helper скрипта)
 
 ```bash
 cd AetherOS
-cargo +nightly bootimage -p aetheros-kernel --manifest-path kernel/Cargo.toml --release
+bash scripts/build_kernel_image.sh
 ```
 
 Очакван файл:
 
 ```text
-kernel/target/x86_64-aether_os/release/bootimage-aetheros-kernel.bin
+kernel/target/x86_64-aether_os/release/aetheros-kernel
 ```
 
 ## 4) Стартирай в QEMU
@@ -44,7 +43,7 @@ qemu-system-x86_64 \
   -machine q35 \
   -m 2G \
   -serial stdio \
-  -drive format=raw,file=kernel/target/x86_64-aether_os/release/bootimage-aetheros-kernel.bin
+  -kernel kernel/target/x86_64-aether_os/release/aetheros-kernel
 ```
 
 ## Бърз автоматичен вариант
