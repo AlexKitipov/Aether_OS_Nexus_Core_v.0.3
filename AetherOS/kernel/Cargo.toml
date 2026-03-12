@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 aetheros_common = { path = "../common" }
-bootloader = "0.10.4"
 bootloader_api = { version = "0.11.15" }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = "0.9.8"
@@ -16,17 +15,3 @@ conquer-once = { version = "0.4.0", default-features = false }
 [features]
 default = []
 bare_metal = []
-
-[package.metadata.bootimage]
-run-command = [
-  "qemu-system-x86_64",
-  "-machine", "q35",
-  "-m", "2G",
-  "-serial", "stdio",
-  "-drive", "format=raw,file={}"
-]
-
-[package.metadata.bootloader]
-map-physical-memory = true
-kernel-stack-size = 4096
-target = "x86_64-unknown-none"
