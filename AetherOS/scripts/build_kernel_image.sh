@@ -27,8 +27,12 @@ fi
 
 # Best-effort: only install components when nightly is available.
 if [[ "${CARGO_BUILD_CMD[*]}" == "cargo +nightly" ]]; then
-  rustup component add rust-src --toolchain nightly
-  rustup component add llvm-tools-preview --toolchain nightly
+  if ! rustup component add rust-src --toolchain nightly; then
+    echo "warning: unable to install rust-src for nightly; continuing with existing toolchain state." >&2
+  fi
+  if ! rustup component add llvm-tools-preview --toolchain nightly; then
+    echo "warning: unable to install llvm-tools-preview for nightly; continuing with existing toolchain state." >&2
+  fi
 fi
 
 if cargo bootimage --version >/dev/null 2>&1; then
@@ -46,11 +50,9 @@ BASE_ARGS=(
   --release
 )
 
-# Newer toolchains expect JSON target support as a rustc flag via RUSTFLAGS.
-RUSTFLAGS_WITH_JSON="${RUSTFLAGS:-} -Zjson-target-spec"
-if ! RUSTFLAGS="${RUSTFLAGS_WITH_JSON}" "${CARGO_BUILD_CMD[@]}" "${BASE_ARGS[@]}"; then
-  echo "note: initial build attempt failed; retrying with legacy cargo -Zjson-target-spec flag for compatibility."
-  RUSTFLAGS="${RUSTFLAGS_WITH_JSON}" "${CARGO_BUILD_CMD[@]}" -Zjson-target-spec "${BASE_ARGS[@]}"
+if ! "${CARGO_BUILD_CMD[@]}" "${BASE_ARGS[@]}"; then
+  echo "note: initial build attempt failed; retrying with cargo -Zjson-target-spec for JSON target compatibility."
+  "${CARGO_BUILD_CMD[@]}" -Zjson-target-spec "${BASE_ARGS[@]}"
 fi
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
