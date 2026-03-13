@@ -1,5 +1,5 @@
 [build]
-target = "aetheros-x86_64.json"
+target = ".cargo/aetheros-x86_64.json"
 
 [unstable]
 build-std = ["core", "alloc", "compiler_builtins"]
