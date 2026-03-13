@@ -73,98 +73,66 @@ aetheros/
 │  └─ vfs/                      # Virtual File System V-Node
 ```
 
-## 🛠️ Build & Run Guide (Conceptual)
+## 🛠️ Build & Run Guide (bootloader_api 0.11)
 
-This guide outlines the conceptual steps to build and run AetherOS Nexus Core in a simulated environment (QEMU).
+This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `bootimage` commands are not used.
 
 ### Prerequisites
 
-### Build prerequisites
+- Rust nightly
+- `rust-src` and `llvm-tools-preview` components for nightly
+- QEMU (`qemu-system-x86_64`)
 
-1. Install Rust nightly:
 ```bash
 rustup toolchain install nightly
+rustup component add rust-src --toolchain nightly
+rustup component add llvm-tools-preview --toolchain nightly
 ```
 
-2. Build the kernel:
+### Build kernel
+
+From `AetherOS/`:
+
 ```bash
-./scripts/build_kernel.sh
+cargo +nightly build \
+  -Z json-target-spec \
+  -Z build-std=core,alloc,compiler_builtins \
+  -Z build-std-features=compiler-builtins-mem \
+  -p aetheros-kernel \
+  --manifest-path kernel/Cargo.toml \
+  --target kernel/.cargo/aetheros-x86_64.json \
+  --release
 ```
 
-*   **Rust Nightly**: Ensure you have a recent nightly Rust toolchain installed.
-*   **`rust-src` component**: `rustup component add rust-src --toolchain nightly`
-*   **`llvm-tools-preview` component**: `rustup component add llvm-tools-preview`
-*   **No `cargo bootimage` requirement**: the project uses `bootloader_api` 0.11 and runs the kernel ELF directly with QEMU (`-kernel`).
-*   **QEMU**: Version 5.2 or newer, for `x86_64` architecture (`qemu-system-x86_64`).
-
-### Building AetherOS Nexus Core
-
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/aetheros/nexus-core.git # (Conceptual URL)
-    cd nexus-core
-    ```
-2.  **Compile V-Node applications**:
-    Each V-Node (`vnode/*`) is compiled as a separate `no_std` ELF binary.
-    ```bash
-    # Example for registry V-Node
-    cargo build -p vnode-registry --target x86_64-unknown-none --release
-    # Repeat for other V-Nodes (net-bridge, net-stack, etc.)
-    ```
-3.  **Create `initrd` (Initial RAM Disk)**:
-    This step bundles your compiled V-Node binaries and their manifests into a single image that the kernel will load at boot.
-    ```bash
-    # Conceptual: Use a script to package V-Nodes into an initrd image.
-    # For v0.1, AetherFS is very basic and might just expect a single V-Node binary for testing.
-    ```
-4.  **Build the Kernel**:
-    Use the helper script (recommended) or invoke cargo directly for the kernel ELF target.
-    ```bash
-    ./scripts/build_kernel_image.sh
-    # or: cargo +nightly build -p aetheros-kernel --manifest-path kernel/Cargo.toml --target kernel/x86_64-aether_os.json --release
-    ```
-
-### Bare-metal helper script
-
-For a one-command kernel image build, use:
+Or use the helper:
 
 ```bash
 ./scripts/build_kernel_image.sh
 ```
 
-This script installs nightly components on a best-effort basis, builds the kernel ELF, and prints the exact QEMU command to launch it.
-
-### 🚀 Running in QEMU
-
-To see AetherOS Nexus Core in action:
+### Run in QEMU
 
 ```bash
-qemu-system-x86_64 \
-  -machine q35 \
-  -m 2G \
-  -serial stdio \
-  -kernel kernel/target/x86_64-aether_os/release/aetheros-kernel \
-  # Add -initrd <path_to_your_initrd> if you have one prepared
-  # For network simulation (if enabled and configured):
-  -netdev user,id=net0,hostfwd=tcp::8080-:80 \
-  -device virtio-net-pci,netdev=net0,mac=02:00:00:00:00:01
+qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel
 ```
 
-All kernel and V-Node logs will be streamed to your console via the `-serial stdio` option.
+### Workspace helper flow
+
+```bash
+./scripts/build_all.sh
+./scripts/build_initrd.sh
+./scripts/run_qemu.sh
+```
+
+## 🔧 Troubleshooting workspace build errors
+
+If you are validating user-space V-Node services (such as `registry` and `init-service`), build those packages directly from the workspace root:
+
+```bash
+cd AetherOS
+cargo build -p registry -p init-service
+```
+
+This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
 
 **Join the Aether. Build the Nexus.**
-
-### Build & Run under QEMU
-
-1. Build kernel and V-Nodes:
-   ```bash
-   ./scripts/build_all.sh
-   ```
-2. Build initrd:
-   ```bash
-   ./scripts/build_initrd.sh
-   ```
-3. Run under QEMU:
-   ```bash
-   ./scripts/run_qemu.sh
-   ```
