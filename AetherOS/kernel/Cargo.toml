@@ -3,6 +3,9 @@ name = "aetheros-kernel"
 version = "0.1.0"
 edition = "2021"
 
+[package.metadata.bootloader]
+target = "aetheros-x86_64.json"
+
 [dependencies]
 aetheros_common = { path = "../common" }
 bootloader_api = { version = "0.11.15" }
@@ -10,7 +13,6 @@ x86_64 = { version = "0.14.9", default-features = false, features = ["instructio
 spin = "0.9.8"
 linked_list_allocator = "0.10.1"
 conquer-once = { version = "0.4.0", default-features = false }
-
 
 [features]
 default = []
