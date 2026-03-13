@@ -27,14 +27,7 @@ rustup component add llvm-tools-preview --toolchain nightly
 
 ```bash
 cd AetherOS
-cargo +nightly build \
-  -Z json-target-spec \
-  -Z build-std=core,alloc,compiler_builtins \
-  -Z build-std-features=compiler-builtins-mem \
-  -p aetheros-kernel \
-  --manifest-path kernel/Cargo.toml \
-  --target kernel/.cargo/aetheros-x86_64.json \
-  --release
+cargo build --release --target .cargo/aetheros-x86_64.json
 ```
 
 Очакван файл:
