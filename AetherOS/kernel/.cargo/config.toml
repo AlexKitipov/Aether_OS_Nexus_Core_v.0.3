@@ -1,0 +1,6 @@
+[build]
+rustflags = ["-Zunstable-options", "-Zjson-target-spec"]
+
+[unstable]
+build-std = ["core", "alloc", "compiler_builtins"]
+build-std-features = ["compiler-builtins-mem"]
