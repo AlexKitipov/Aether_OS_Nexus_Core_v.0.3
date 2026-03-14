@@ -1,8 +1,5 @@
 [build]
-rustflags = [
-    "-Zunstable-options",
-    "-Zjson-target-spec",
-]
+rustflags = ["-Zunstable-options", "-Zjson-target-spec"]
 
 [unstable]
 build-std = ["core", "alloc", "compiler_builtins"]
