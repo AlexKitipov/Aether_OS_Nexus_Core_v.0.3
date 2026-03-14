@@ -128,4 +128,13 @@ cargo build -p registry -p init-service
 
 This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
 
+If you see:
+
+```text
+WARNING: `CARGO_MANIFEST_DIR` env variable not set
+error: `.json` target specs require -Zjson-target-spec
+```
+
+make sure you run kernel builds from `AetherOS/` and use nightly with `-Zjson-target-spec` (or use `./scripts/build_kernel_image.sh`).
+
 **Join the Aether. Build the Nexus.**
