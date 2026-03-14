@@ -94,10 +94,11 @@ rustup component add llvm-tools-preview --toolchain nightly
 
 ### Build kernel
 
-From `AetherOS/`:
+From repository root, run:
 
 ```bash
-cargo build --release --target .cargo/aetheros-x86_64.json
+cd AetherOS
+cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Or use the helper:
@@ -130,5 +131,14 @@ cargo build -p registry -p init-service
 ```
 
 This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
+
+If you see:
+
+```text
+WARNING: `CARGO_MANIFEST_DIR` env variable not set
+error: `.json` target specs require -Zjson-target-spec
+```
+
+you are likely either outside `AetherOS/` or invoking Cargo without nightly and `-Zjson-target-spec`. Use `./scripts/build_kernel_image.sh` (from `AetherOS/`) or the full nightly command above.
 
 **Join the Aether. Build the Nexus.**
