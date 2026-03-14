@@ -7,7 +7,7 @@ RUN_QEMU="${RUN_QEMU:-0}"
 
 cd "${ROOT_DIR}"
 
-cargo build --release --target .cargo/aetheros-x86_64.json
+cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 echo "Run with:"
