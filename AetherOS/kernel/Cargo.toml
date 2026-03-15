@@ -8,7 +8,7 @@ aetheros_common = { path = "../common" }
 bootloader_api = { version = "0.11.15" }
 # Keep a legacy `bootloader` dependency entry so tools like `bootimage`
 # can detect it when invoked in older workflows.
-bootloader = { version = "0.11.11", optional = true }
+bootloader = { version = "0.11.11" }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = "0.9.8"
 linked_list_allocator = "0.10.1"
