@@ -162,3 +162,24 @@ https://notebooklm.google.com/notebook/be0fd2b7-ed9f-4bbb-9f09-eb93b779d822
 
 NotebookLM служи като **централен knowledge hub**, който улеснява разработката, ревюто и разширяването на AetherOS.
 
+## ⚠️ Current Limitations: Missing CI/CD and Automated Testing
+
+AetherOS Nexus Core v0.3 is currently in an early **alpha** stage.  
+The project lacks automated quality infrastructure, which introduces significant technical debt.
+
+### Identified gaps:
+- No CI/CD pipelines (GitHub Actions)
+- No unit or integration tests
+- No automated linting or formatting
+- No security policies or contribution guidelines
+- Manual builds dependent on local developer environment
+
+### Why this matters:
+Without automated checks, every code change carries regression risk and makes external contributions difficult.
+
+### Roadmap (2026):
+- Implement GitHub Actions for build, test, lint
+- Create a foundational test suite for the kernel and V‑Nodes
+- Introduce strict code standards (fmt, clippy)
+- Add SECURITY.md and CONTRIBUTING.md
+- Establish a GitHub Project roadmap
