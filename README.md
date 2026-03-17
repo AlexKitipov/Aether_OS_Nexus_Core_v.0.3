@@ -142,3 +142,23 @@ error: `.json` target specs require -Zjson-target-spec
 you are likely either outside `AetherOS/` or invoking Cargo without nightly and `-Zjson-target-spec`. Use `./scripts/build_kernel_image.sh` (from `AetherOS/`) or the full nightly command above.
 
 **Join the Aether. Build the Nexus.**
+
+## 📘 NotebookLM – Централизиран Knowledge Hub
+
+За по‑лесна навигация и работа с документацията по проекта, създадохме специален NotebookLM хъб, който агрегира, структурира и анализира всички ключови материали, свързани с **AetherOS Nexus Core v0.3**.
+
+🔗 **NotebookLM (документация, анализи, отчети):**  
+https://notebooklm.google.com/notebook/be0fd2b7-ed9f-4bbb-9f09-eb93b779d822
+
+### Какво съдържа NotebookLM:
+- Архитектурни описания на AetherOS Nexus Core  
+- Документация за сигурност, изолация и криптография  
+- Мрежови механизми и AetherNet спецификации  
+- Анализи на V‑Node архитектурата  
+- Rust безопасност и системни модули  
+- Инфографики, диаграми и визуализации  
+- Автоматично генерирани обобщения, тестове и обучителни материали  
+- Стратегически отчети и технически breakdown-и  
+
+NotebookLM служи като **централен knowledge hub**, който улеснява разработката, ревюто и разширяването на AetherOS.
+
