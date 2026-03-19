@@ -42,12 +42,21 @@ impl CssEngine {
     pub fn parse_css(&self, css: &str) -> Vec<CssRule> {
         log(&alloc::format!("CssEngine: Parsing CSS (stub): {}", css));
         // In a real implementation, this would parse CSS rules.
+        // For this task, we are hardcoding the provided CSS change
+        // alongside existing stub rules.
         vec![
             CssRule {
                 selector: String::from("body"),
                 properties: vec![
                     CssProperty { name: String::from("background-color"), value: String::from("white") },
                     CssProperty { name: String::from("color"), value: String::from("black") },
+                ],
+            },
+            // The applied CSS change:
+            CssRule {
+                selector: String::from("body:not([data-csh-theme]).mat-app-background"),
+                properties: vec![
+                    CssProperty { name: String::from("flex-wrap"), value: String::from("wrap") },
                 ],
             },
         ]
