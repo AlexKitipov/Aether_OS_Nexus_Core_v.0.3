@@ -4,6 +4,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
@@ -14,6 +15,19 @@ use crate::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use crate::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};
 
 // Temporary log function for V-Nodes
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 fn log(msg: &str) {
     unsafe {
         let res = syscall3(
@@ -208,6 +222,7 @@ impl VfsService {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Assuming channel ID 7 for VFS Service for client requests
     // Assuming channel ID 6 for AetherFS backend (conceptual)
     let mut vfs_service = VfsService::new(7, 6);
@@ -215,7 +230,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("VFS V-Node panicked! Info: {:?}.", info));
     // In a production system, this might trigger a system-wide error handler or reboot.
     // For now, it enters an infinite loop to prevent further execution.

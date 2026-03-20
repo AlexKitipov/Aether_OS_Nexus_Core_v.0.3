@@ -1,6 +1,6 @@
 # Първи тест с QEMU
 
-Този документ описва минималните стъпки за първо стартиране на ядрото в QEMU.
+Този документ описва минималните стъпки за първо стартиране на ядрото в QEMU с новия `bootloader_api` 0.11 build flow.
 
 ## 1) Инсталирай QEMU
 
@@ -21,42 +21,30 @@ qemu-system-x86_64 --version
 rustup toolchain install nightly
 rustup component add rust-src --toolchain nightly
 rustup component add llvm-tools-preview --toolchain nightly
-cargo +nightly install bootimage --locked
 ```
 
-## 3) Построй bootable image с `cargo bootimage`
+## 3) Построй kernel ELF
 
 ```bash
 cd AetherOS
-cargo +nightly bootimage -p aetheros-kernel --manifest-path kernel/Cargo.toml --release
+cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Z unstable-options -Z json-target-spec
 ```
 
 Очакван файл:
 
 ```text
-kernel/target/x86_64-aether_os/release/bootimage-aetheros-kernel.bin
+target/aetheros-x86_64/release/aetheros-kernel
 ```
 
 ## 4) Стартирай в QEMU
 
 ```bash
-qemu-system-x86_64 \
-  -machine q35 \
-  -m 2G \
-  -serial stdio \
-  -drive format=raw,file=kernel/target/x86_64-aether_os/release/bootimage-aetheros-kernel.bin
+qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel
 ```
 
 ## Бърз автоматичен вариант
 
-Има и helper скрипт:
-
 ```bash
 bash scripts/build_kernel_image.sh
-```
-
-Ако искаш скриптът директно да стартира QEMU след build:
-
-```bash
 RUN_QEMU=1 bash scripts/build_kernel_image.sh
 ```

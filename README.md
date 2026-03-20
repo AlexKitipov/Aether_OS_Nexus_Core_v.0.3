@@ -76,66 +76,110 @@ aetheros/
 │  └─ vfs/                      # Virtual File System V-Node
 ```
 
-## 🛠️ Build & Run Guide (Conceptual)
+## 🛠️ Build & Run Guide (bootloader_api 0.11)
 
-This guide outlines the conceptual steps to build and run AetherOS Nexus Core in a simulated environment (QEMU).
+This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `bootimage` commands are not used.
 
 ### Prerequisites
 
-*   **Rust Nightly**: Ensure you have a recent nightly Rust toolchain installed.
-*   **`rust-src` component**: `rustup component add rust-src --toolchain nightly`
-*   **`llvm-tools-preview` component**: `rustup component add llvm-tools-preview`
-*   **`bootimage` cargo subcommand**: `cargo install bootimage`
-*   **QEMU**: Version 5.2 or newer, for `x86_64` architecture (`qemu-system-x86_64`).
-
-### Building AetherOS Nexus Core
-
-1.  **Clone the repository**:
-    ```bash
-    git clone https://github.com/aetheros/nexus-core.git # (Conceptual URL)
-    cd nexus-core
-    ```
-2.  **Install `bootimage`**:
-    ```bash
-    cargo install bootimage --version <version>
-    ```
-3.  **Compile V-Node applications**:
-    Each V-Node (`vnode/*`) is compiled as a separate `no_std` ELF binary.
-    ```bash
-    # Example for registry V-Node
-    cargo build -p vnode-registry --target x86_64-unknown-none --release
-    # Repeat for other V-Nodes (net-bridge, net-stack, etc.)
-    ```
-4.  **Create `initrd` (Initial RAM Disk)**:
-    This step bundles your compiled V-Node binaries and their manifests into a single image that the kernel will load at boot.
-    ```bash
-    # Conceptual: Use a script to package V-Nodes into an initrd image.
-    # For v0.1, AetherFS is very basic and might just expect a single V-Node binary for testing.
-    ```
-5.  **Build the Kernel**:
-    The `bootimage` tool compiles the `kernel` crate and embeds your `initrd` (if configured) into a bootable `ELF` kernel image.
-    ```bash
-    cd kernel
-    cargo bootimage --release
-    # This will generate a bootable image at target/x86_64-unknown-none/release/bootimage-aetheros-kernel.bin
-    ```
-
-### 🚀 Running in QEMU
-
-To see AetherOS Nexus Core in action:
+- Rust nightly
+- `rust-src` and `llvm-tools-preview` components for nightly
+- QEMU (`qemu-system-x86_64`)
 
 ```bash
-qemu-system-x86_64 \
-  -machine q35 \
-  -m 2G \
-  -serial stdio \
-  -drive format=raw,file=kernel/target/x86_64-unknown-none/release/bootimage-aetheros-kernel.bin \
-  # Add -initrd <path_to_your_initrd> if you have one prepared
-  # For network simulation (if enabled and configured):
-  -netdev user,id=net0,hostfwd=tcp::8080-:80 \
-  -device virtio-net-pci,netdev=net0,mac=02:00:00:00:00:01
+rustup toolchain install nightly
+rustup component add rust-src --toolchain nightly
+rustup component add llvm-tools-preview --toolchain nightly
 ```
 
-All kernel and V-Node logs will be streamed to your console via the `-serial stdio` option.
+### Build kernel
+
+From repository root, run:
+
+```bash
+cd AetherOS
+cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+```
+
+Or use the helper:
+
+```bash
+./scripts/build_kernel_image.sh
+```
+
+### Run in QEMU
+
+```bash
+qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel
+```
+
+### Workspace helper flow
+
+```bash
+./scripts/build_all.sh
+./scripts/build_initrd.sh
+./scripts/run_qemu.sh
+```
+
+## 🔧 Troubleshooting workspace build errors
+
+If you are validating user-space V-Node services (such as `registry` and `init-service`), build those packages directly from the workspace root:
+
+```bash
+cd AetherOS
+cargo build -p registry -p init-service
+```
+
+This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
+
+If you see:
+
+```text
+WARNING: `CARGO_MANIFEST_DIR` env variable not set
+error: `.json` target specs require -Zjson-target-spec
+```
+
+you are likely either outside `AetherOS/` or invoking Cargo without nightly and `-Zjson-target-spec`. Use `./scripts/build_kernel_image.sh` (from `AetherOS/`) or the full nightly command above.
 
 **Join the Aether. Build the Nexus.**
+
+## 📘 NotebookLM – Централизиран Knowledge Hub
+
+За по‑лесна навигация и работа с документацията по проекта, създадохме специален NotebookLM хъб, който агрегира, структурира и анализира всички ключови материали, свързани с **AetherOS Nexus Core v0.3**.
+
+🔗 **NotebookLM (документация, анализи, отчети):**  
+https://notebooklm.google.com/notebook/be0fd2b7-ed9f-4bbb-9f09-eb93b779d822
+
+### Какво съдържа NotebookLM:
+- Архитектурни описания на AetherOS Nexus Core  
+- Документация за сигурност, изолация и криптография  
+- Мрежови механизми и AetherNet спецификации  
+- Анализи на V‑Node архитектурата  
+- Rust безопасност и системни модули  
+- Инфографики, диаграми и визуализации  
+- Автоматично генерирани обобщения, тестове и обучителни материали  
+- Стратегически отчети и технически breakdown-и  
+
+NotebookLM служи като **централен knowledge hub**, който улеснява разработката, ревюто и разширяването на AetherOS.
+
+## ⚠️ Current Limitations: Missing CI/CD and Automated Testing
+
+AetherOS Nexus Core v0.3 is currently in an early **alpha** stage.  
+The project lacks automated quality infrastructure, which introduces significant technical debt.
+
+### Identified gaps:
+- No CI/CD pipelines (GitHub Actions)
+- No unit or integration tests
+- No automated linting or formatting
+- No security policies or contribution guidelines
+- Manual builds dependent on local developer environment
+
+### Why this matters:
+Without automated checks, every code change carries regression risk and makes external contributions difficult.
+
+### Roadmap (2026):
+- Implement GitHub Actions for build, test, lint
+- Create a foundational test suite for the kernel and V‑Nodes
+- Introduce strict code standards (fmt, clippy)
+- Add SECURITY.md and CONTRIBUTING.md
+- Establish a GitHub Project roadmap

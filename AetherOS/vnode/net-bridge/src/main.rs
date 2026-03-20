@@ -6,6 +6,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::format;
 
@@ -14,6 +15,19 @@ use common::syscall::{syscall3, SYS_LOG, SYS_IRQ_REGISTER, SYS_NET_RX_POLL, SUCC
 use common::ipc::net_ipc::NetPacketMsg;
 
 // Temporary log function for V-Nodes
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 fn log(msg: &str) {
     unsafe {
         let res = syscall3(
@@ -68,6 +82,7 @@ fn net_tx(iface_id: u64, buf_handle: u64, len: u64) -> Result<(), u64> {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Net-bridge's own channel ID (to receive IRQ events from kernel)
     // For simplicity, we'll hardcode it to 2. This channel also receives
     // TxPacket messages from the AetherNet service.
@@ -204,7 +219,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("Net-Bridge V-Node panicked! Info: {:?}.", info));
     loop {}
 }

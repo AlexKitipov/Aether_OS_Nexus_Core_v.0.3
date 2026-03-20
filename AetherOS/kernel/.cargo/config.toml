@@ -1,8 +1,5 @@
 [build]
-target = "x86_64-aether_os.json"
-
-[target.x86_64-aether_os]
-runner = "bootimage runner"
+rustflags = ["-Zunstable-options", "-Zjson-target-spec"]
 
 [unstable]
 build-std = ["core", "alloc", "compiler_builtins"]
