@@ -24,7 +24,7 @@ if ! cargo bootimage --version >/dev/null 2>&1; then
   cargo +nightly install bootimage --locked
 fi
 
-cargo +nightly -Zbuild-std -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec \
+cargo +nightly -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec \
   bootimage -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --release
 
 echo "Built bootable kernel image: ${IMAGE_PATH}"
