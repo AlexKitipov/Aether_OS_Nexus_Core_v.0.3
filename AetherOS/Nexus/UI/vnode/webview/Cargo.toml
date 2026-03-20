@@ -14,5 +14,3 @@ linked_list_allocator = "0.10.5"
 name = "webview"
 path = "src/main.rs"
 
-[build-dependencies]
-cargo-binutils = "0.3"
