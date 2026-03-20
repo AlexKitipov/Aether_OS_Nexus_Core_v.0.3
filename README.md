@@ -87,9 +87,10 @@ This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `
 - QEMU (`qemu-system-x86_64`)
 
 ```bash
-rustup toolchain install nightly
-rustup component add rust-src --toolchain nightly
-rustup component add llvm-tools-preview --toolchain nightly
+rustup toolchain install nightly-2026-03-13
+rustup override set nightly-2026-03-13
+rustup component add rust-src
+rustup component add llvm-tools-preview
 ```
 
 ### Build kernel
@@ -98,7 +99,7 @@ From repository root, run:
 
 ```bash
 cd AetherOS
-cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Or use the helper:
@@ -139,7 +140,7 @@ WARNING: `CARGO_MANIFEST_DIR` env variable not set
 error: `.json` target specs require -Zjson-target-spec
 ```
 
-you are likely either outside `AetherOS/` or invoking Cargo without nightly and `-Zjson-target-spec`. Use `./scripts/build_kernel_image.sh` (from `AetherOS/`) or the full nightly command above.
+you are likely either outside `AetherOS/`, on an unpinned nightly, or invoking Cargo without `-Zjson-target-spec`. This workspace currently pins `nightly-2026-03-13` because newer nightly snapshots can fail during metadata discovery for JSON targets. Use `./scripts/build_kernel_image.sh` (from `AetherOS/`) or the full command above.
 
 **Join the Aether. Build the Nexus.**
 
