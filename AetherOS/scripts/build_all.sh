@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
+TOOLCHAIN="nightly-2026-03-13"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
 VNODE_PKGS=(
@@ -21,7 +22,7 @@ VNODE_ARGS=()
 for pkg in "${VNODE_PKGS[@]}"; do
   VNODE_ARGS+=( -p "${pkg}" )
 done
-cargo build --release "${VNODE_ARGS[@]}"
+cargo +"${TOOLCHAIN}" build --release "${VNODE_ARGS[@]}"
 
 mkdir -p "${ROOTFS_DIR}/vnode" target
 
