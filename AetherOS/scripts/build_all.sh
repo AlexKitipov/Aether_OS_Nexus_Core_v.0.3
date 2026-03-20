@@ -4,6 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
+TOOLCHAIN="nightly-2026-03-13"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
 VNODE_PKGS=(
@@ -14,14 +15,14 @@ VNODE_PKGS=(
 )
 
 echo "[build_all] Building kernel (${KERNEL_PKG})"
-cargo build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 
 echo "[build_all] Building V-Nodes on host target: ${VNODE_PKGS[*]}"
 VNODE_ARGS=()
 for pkg in "${VNODE_PKGS[@]}"; do
   VNODE_ARGS+=( -p "${pkg}" )
 done
-cargo build --release "${VNODE_ARGS[@]}"
+cargo +"${TOOLCHAIN}" build --release "${VNODE_ARGS[@]}"
 
 mkdir -p "${ROOTFS_DIR}/vnode" target
 
