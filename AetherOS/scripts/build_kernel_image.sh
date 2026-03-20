@@ -17,10 +17,11 @@ if ! rustup toolchain list | rg -q "^${TOOLCHAIN}"; then
   rustup toolchain install "${TOOLCHAIN}"
 fi
 
-rustup component add --toolchain "${TOOLCHAIN}" rust-src
-rustup component add --toolchain "${TOOLCHAIN}" llvm-tools-preview || true
+rustup override set "${TOOLCHAIN}"
+rustup component add rust-src
+rustup component add llvm-tools-preview || true
 
-cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
+cargo build --release --target .cargo/aetheros-x86_64.json \
   -Zbuild-std=core,alloc,compiler_builtins \
   -Zbuild-std-features=compiler-builtins-mem \
   -Zjson-target-spec
