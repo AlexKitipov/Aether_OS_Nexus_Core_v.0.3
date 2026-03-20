@@ -3,6 +3,7 @@
 #![allow(dead_code)]
 
 use core::arch::asm;
+use core::arch::x86_64::__cpuid;
 
 use crate::kprintln;
 
@@ -20,10 +21,18 @@ const EFER_LME: u64 = 1 << 8;
 const EFER_LMA: u64 = 1 << 10;
 const EFER_NXE: u64 = 1 << 11;
 
+const CPUID_FEATURE_LEAF: u32 = 0x0000_0001;
+const CPUID_EXTENDED_MAX_LEAF: u32 = 0x8000_0000;
+const CPUID_EXTENDED_FEATURE_LEAF: u32 = 0x8000_0001;
+const CPUID_CR4_PGE_BIT: u32 = 1 << 13;
+const CPUID_NX_BIT: u32 = 1 << 20;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BootError {
     UnalignedPageTableAddress(u64),
     InvalidPhysicalAddress(u64),
+    MissingPgeSupport,
+    MissingNxeSupport,
     FailedToEnterLongMode(u64),
 }
 
@@ -165,6 +174,23 @@ fn validate_pml4_addr(pml4_phys_addr: u64) -> Result<(), BootError> {
     Ok(())
 }
 
+#[inline]
+fn cpu_supports_pge() -> bool {
+    let features = unsafe { __cpuid(CPUID_FEATURE_LEAF) };
+    (features.edx & CPUID_CR4_PGE_BIT) != 0
+}
+
+#[inline]
+fn cpu_supports_nx() -> bool {
+    let extended_max_leaf = unsafe { __cpuid(CPUID_EXTENDED_MAX_LEAF) }.eax;
+    if extended_max_leaf < CPUID_EXTENDED_FEATURE_LEAF {
+        return false;
+    }
+
+    let extended_features = unsafe { __cpuid(CPUID_EXTENDED_FEATURE_LEAF) };
+    (extended_features.edx & CPUID_NX_BIT) != 0
+}
+
 /// Performs long mode activation:
 /// 1. Enable PAE in CR4.
 /// 2. Load PML4 physical base into CR3.
@@ -177,6 +203,9 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
 
     let mut cr4 = read_cr4() | CR4_PAE;
     if config.enable_global_pages {
+        if !cpu_supports_pge() {
+            return Err(BootError::MissingPgeSupport);
+        }
         cr4 |= CR4_PGE;
     }
     write_cr4(cr4);
@@ -185,6 +214,9 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
 
     let mut efer = read_msr(IA32_EFER) | EFER_LME;
     if config.enable_nxe {
+        if !cpu_supports_nx() {
+            return Err(BootError::MissingNxeSupport);
+        }
         efer |= EFER_NXE;
     }
     write_msr(IA32_EFER, efer);
