@@ -1,6 +1,5 @@
 // common/src/ipc/vnode.rs
 
-#![no_std]
 
 extern crate alloc;
 
@@ -20,14 +19,12 @@ impl VNodeChannel {
 
     pub fn recv_blocking(&mut self) -> Result<Vec<u8>, ()> {
         loop {
-            let len = unsafe {
-                syscall3(
-                    SYS_IPC_RECV,
-                    self.id as u64,
-                    self.buffer.as_mut_ptr() as u64,
-                    self.buffer.len() as u64 // Pass max capacity
-                )
-            };
+            let len = syscall3(
+                SYS_IPC_RECV,
+                self.id as u64,
+                self.buffer.as_mut_ptr() as u64,
+                self.buffer.len() as u64 // Pass max capacity
+            );
             match len {
                 l if l > SUCCESS => { // Message received, 'l' is the length
                     return Ok(self.buffer[..l as usize].to_vec());
@@ -48,14 +45,12 @@ impl VNodeChannel {
     }
 
     pub fn recv_non_blocking(&mut self) -> Result<Option<Vec<u8>>, ()> {
-        let len = unsafe {
-            syscall3(
-                SYS_IPC_RECV_NONBLOCKING,
-                self.id as u64,
-                self.buffer.as_mut_ptr() as u64,
-                self.buffer.len() as u64 // Pass max capacity
-            )
-        };
+        let len = syscall3(
+            SYS_IPC_RECV_NONBLOCKING,
+            self.id as u64,
+            self.buffer.as_mut_ptr() as u64,
+            self.buffer.len() as u64 // Pass max capacity
+        );
         match len {
             l if l > SUCCESS => { // Message received
                 Ok(Some(self.buffer[..l as usize].to_vec()))
@@ -87,15 +82,13 @@ impl VNodeChannel {
 
 impl IpcSend for VNodeChannel {
     fn send_raw(&mut self, bytes: &[u8]) -> Result<(), ()> {
-        unsafe {
-            let res = syscall3(
-                SYS_IPC_SEND,
-                self.id as u64,
-                bytes.as_ptr() as u64,
-                bytes.len() as u64,
-            );
-            if res == SUCCESS { Ok(()) } else { Err(()) }
-        }
+        let res = syscall3(
+            SYS_IPC_SEND,
+            self.id as u64,
+            bytes.as_ptr() as u64,
+            bytes.len() as u64,
+        );
+        if res == SUCCESS { Ok(()) } else { Err(()) }
     }
 
     fn send<T: serde::Serialize>(&mut self, msg: &T) -> Result<(), ()> {

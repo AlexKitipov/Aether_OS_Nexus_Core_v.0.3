@@ -1,9 +1,8 @@
-#![no_std]
 
 use serde::{Deserialize, Serialize};
 use alloc::string::String;
 
-pub use crate::logger_ipc::LogLevel;
+pub use crate::ipc::logger_ipc::LogLevel;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub enum TestRequest {

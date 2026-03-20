@@ -1,11 +1,9 @@
 #![no_std] // Don't link the Rust standard library
 #![feature(abi_x86_interrupt)] // Required for x86_64 interrupt handling
-#![feature(alloc_error_handler)] // Required for implementing a custom allocator
-#![feature(const_mut_refs)] // Required for certain const mutable references
+#![cfg_attr(target_os = "none", feature(alloc_error_handler))] // Only needed for bare-metal allocator error hooks
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use bootloader_api::info::{FrameBuffer, MemoryRegions};
 
 pub mod arch;
@@ -25,6 +23,7 @@ pub mod gdt;
 pub mod idt;
 pub mod interrupts;
 pub mod usercopy;
+pub mod config;
 
 // Initialize the kernel.
 pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static mut FrameBuffer>) {
@@ -76,9 +75,10 @@ pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static
     kprintln!("[kernel] AetherOS kernel initialized successfully.");
 }
 
+#[cfg(target_os = "none")]
 #[alloc_error_handler]
-fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
-    panic!("Allocation error: {:?}", layout)
+fn alloc_error_handler(_layout: alloc::alloc::Layout) -> ! {
+    loop {}
 }
 
 // Macros for printing to the console
@@ -102,14 +102,4 @@ pub fn hlt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
     }
-}
-
-// This function is called on panic.
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    kprintln!("[kernel] !!! KERNEL PANIC !!!");
-    kprintln!("[kernel] Error: {}", info);
-    // In a production system, this would involve a stack trace, dumping registers,
-    // or rebooting. For now, we simply halt the system.
-    hlt_loop();
 }

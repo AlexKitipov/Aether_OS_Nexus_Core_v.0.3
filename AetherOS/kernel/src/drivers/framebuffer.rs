@@ -107,6 +107,7 @@ impl FrameBufferWriter {
                 buf[idx] = color[0] / 3 + color[1] / 3 + color[2] / 3;
             }
             PixelFormat::Unknown { .. } => {}
+            _ => {}
         }
     }
 }

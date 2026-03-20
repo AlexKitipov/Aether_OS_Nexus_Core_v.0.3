@@ -1,4 +1,3 @@
-#![no_std] // We don't want the Rust standard library in our common library.
 
 /// System call numbers.
 pub const SYS_LOG: u64 = 1;

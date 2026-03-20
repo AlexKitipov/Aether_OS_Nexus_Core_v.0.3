@@ -6,6 +6,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
@@ -17,6 +18,19 @@ use common::ipc::socket_ipc::{SocketRequest, SocketResponse, SocketFd};
 use common::ipc::dns_ipc::{DnsRequest, DnsResponse};
 
 // Temporary log function for V-Nodes
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 fn log(msg: &str) {
     unsafe {
         let res = syscall3(
@@ -200,6 +214,7 @@ impl DnsResolver {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Assuming channel IDs:
     // 5 for DNS Resolver Service client requests
     // 4 for Socket API Service
@@ -209,7 +224,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("DNS Resolver V-Node panicked! Info: {:?}.", info));
     // In a production system, this might trigger a system-wide error handler or reboot.
     // For now, it enters an infinite loop to prevent further execution.

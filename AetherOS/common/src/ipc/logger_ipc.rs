@@ -1,4 +1,3 @@
-#![no_std]
 
 use serde::{Deserialize, Serialize};
 use alloc::string::String;
