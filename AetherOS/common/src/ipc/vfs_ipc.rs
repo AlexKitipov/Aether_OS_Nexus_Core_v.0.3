@@ -1,6 +1,5 @@
 // common/src/ipc/vfs_ipc.rs
 
-#![no_std]
 
 extern crate alloc;
 use alloc::vec::Vec;

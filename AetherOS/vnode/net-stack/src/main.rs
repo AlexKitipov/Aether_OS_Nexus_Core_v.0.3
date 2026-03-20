@@ -4,6 +4,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
@@ -22,6 +23,19 @@ mod aethernet_device;
 use aethernet_device::AetherNetDevice;
 
 // Temporary log function for V-Nodes
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 fn log(msg: &str) {
     unsafe {
         let res = syscall3(
@@ -41,6 +55,7 @@ fn get_current_time_ms() -> u64 {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Channel for requests from other V-Nodes (Socket API)
     let mut own_chan = VNodeChannel::new(3);
     // Channel for data plane communication with net-bridge (RxPackets, TxPacketAcks)
@@ -276,7 +291,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-pub extern "C" fn panic(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("AetherNet Service V-Node panicked! Info: {:?}", info));
     loop {}
 }

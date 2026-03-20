@@ -3,10 +3,8 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use linked_list_allocator::LockedHeap;
-use x86_64::{VirtAddr, PhysAddr};
-use x86_64::structures::paging::{Page, PageTableFlags, Size4KiB, Mapper, FrameAllocator};
+use x86_64::VirtAddr;
 use crate::kprintln;
-use crate::memory::page_allocator::PageAllocator;
 
 /// A dummy global allocator that panics on allocation.
 /// This will be replaced by our `LockedHeap` once memory mapping is ready.
@@ -24,3 +22,13 @@ pub unsafe fn init(heap_start: VirtAddr, heap_size: usize) {
 }
 
 
+
+
+/// Initializes a small early heap region used by kernel allocations.
+pub fn init_heap() {
+    const HEAP_START: u64 = 0x4444_0000;
+    const HEAP_SIZE: usize = 1024 * 1024;
+
+    // SAFETY: Early bootstrap heap uses a fixed virtual region for conceptual runtime.
+    unsafe { init(VirtAddr::new(HEAP_START), HEAP_SIZE) };
+}

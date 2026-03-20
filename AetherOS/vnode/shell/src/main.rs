@@ -7,6 +7,7 @@
 extern crate alloc;
 
 use core::panic::PanicInfo;
+use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
@@ -24,6 +25,19 @@ use common::test_ipc::{TestRequest, TestResponse};
 use common::channel::id::ChannelId; // Import ChannelId
 
 // Temporary log function for V-Nodes
+
+const VNODE_HEAP_SIZE: usize = 64 * 1024;
+static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
+
+#[global_allocator]
+static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+
+fn init_allocator() {
+    unsafe {
+        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+    }
+}
+
 fn log(msg: &str) {
     unsafe {
         let res = syscall3(
@@ -283,6 +297,7 @@ impl ShellService {
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    init_allocator();
     // Assuming channel IDs:
     // 8 for Shell Service client requests (e.g., AetherTerminal)
     // 7 for VFS Service
@@ -296,7 +311,7 @@ pub extern "C" fn _start() -> ! {
 }
 
 #[panic_handler]
-pub extern "C" fn panic(_info: &PanicInfo) -> ! {
+fn panic(_info: &PanicInfo) -> ! {
     log("Shell V-Node panicked!");
     loop {}
 }
