@@ -19,5 +19,3 @@ crate-type = ["cdylib"]
 name = "vfs"
 path = "src/main.rs"
 
-[build-dependencies]
-cargo-binutils = "0.3"
