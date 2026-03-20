@@ -84,9 +84,10 @@ This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `
 - QEMU (`qemu-system-x86_64`)
 
 ```bash
-rustup toolchain install nightly
-rustup component add rust-src --toolchain nightly
-rustup component add llvm-tools-preview --toolchain nightly
+rustup toolchain install nightly-2026-03-13
+rustup override set nightly-2026-03-13
+rustup component add rust-src
+rustup component add llvm-tools-preview
 ```
 
 ### Build kernel
@@ -94,7 +95,7 @@ rustup component add llvm-tools-preview --toolchain nightly
 From `AetherOS/`:
 
 ```bash
-cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Or use the helper:
@@ -135,8 +136,8 @@ WARNING: `CARGO_MANIFEST_DIR` env variable not set
 error: unknown unstable option: `json-target-spec`
 ```
 
-you are likely using `bootimage`/legacy metadata flow. This repo uses `bootloader_api` and
-`cargo build` directly. Run `./scripts/build_kernel_image.sh` (or the build command above)
+you are likely using `bootimage`/legacy metadata flow or an unpinned nightly toolchain. This repo uses `bootloader_api` and
+`cargo build` directly with a pinned `nightly-2026-03-13` toolchain. Run `./scripts/build_kernel_image.sh` (or the build command above)
 instead of `cargo bootimage`.
 
 **Join the Aether. Build the Nexus.**
