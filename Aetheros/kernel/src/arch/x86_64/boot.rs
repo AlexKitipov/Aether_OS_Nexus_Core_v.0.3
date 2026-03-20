@@ -215,5 +215,13 @@ pub fn kernel_main() {
     gdt::init();
     idt::init();
     interrupts::init();
+    kprintln!(
+        "[kernel] boot: Deferring CPU interrupt enable until hardware IRQ vectors are installed."
+    );
+}
+
+/// Enables CPU interrupts once hardware IRQ vectors are installed.
+pub fn enable_interrupts() {
     x86_64::instructions::interrupts::enable();
+    kprintln!("[kernel] boot: CPU interrupts enabled.");
 }
