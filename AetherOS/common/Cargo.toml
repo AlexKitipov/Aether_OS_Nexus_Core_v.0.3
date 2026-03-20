@@ -1,5 +1,5 @@
 [package]
-name = "aetheros-common"
+name = "aetheros_common"
 version = "0.1.0"
 edition = "2021"
 

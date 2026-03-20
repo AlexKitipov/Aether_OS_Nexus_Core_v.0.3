@@ -4,6 +4,7 @@
 
 use core::fmt::{self, Write};
 use spin::Mutex;
+use crate::kprintln;
 
 // We will re-route console output to the serial driver for now.
 // The Uart struct and its methods are no longer directly used for output here,
@@ -50,19 +51,11 @@ pub fn print_hex(n: u64) {
     crate::drivers::serial::_print(format_args!("{:x}", n));
 }
 
+pub fn print_fmt(args: fmt::Arguments) {
+    _print(args);
+}
+
 // Macro for kernel printing, similar to `println!`
-#[macro_export]
-macro_rules! kprint! {
-    ($($arg:tt)*) => ($crate::drivers::serial::_print(format_args!($($arg)*)));
-}
-
-#[macro_export]
-macro_rules! kprintln! {
-    () => ($crate::kprint!("\n"));
-    ($fmt:expr) => ($crate::kprint!(concat!($fmt, "\n")));
-    ($fmt:expr, $($arg:tt)*) => ($crate::kprint!(concat!($fmt, "\n"), $($arg)*));
-}
-
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     let _ = CONSOLE.lock().write_fmt(args);

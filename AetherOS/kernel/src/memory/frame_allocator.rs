@@ -2,7 +2,7 @@
 
 use crate::kprintln;
 use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
-use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
+use x86_64::structures::paging::{FrameAllocator, PageSize, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;
 
 const FRAME_SIZE: usize = Size4KiB::SIZE as usize;

@@ -7,3 +7,5 @@ edition = "2021"
 common = { package = "aetheros-common", path = "../../common" }
 postcard = { version = "1.0.8", features = ["alloc"] }
 serde = { version = "1.0.198", default-features = false, features = ["derive"] }
+
+linked_list_allocator = "0.10.5"
