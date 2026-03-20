@@ -17,16 +17,12 @@ if ! rustup toolchain list | rg -q '^nightly'; then
 fi
 
 rustup component add rust-src --toolchain nightly
-rustup component add llvm-tools-preview --toolchain nightly
+rustup component add llvm-tools-preview --toolchain nightly || true
 
-if ! cargo bootimage --version >/dev/null 2>&1; then
-  cargo +nightly install bootimage --locked
-fi
-
-cargo +nightly bootimage -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --release \
-  -Zbuild-std -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
-
-echo "Built bootable kernel image: ${IMAGE_PATH}"
+cargo +nightly build --release --target .cargo/aetheros-x86_64.json \
+  -Zbuild-std=core,alloc,compiler_builtins \
+  -Zbuild-std-features=compiler-builtins-mem \
+  -Zjson-target-spec
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 echo "Run with:"
