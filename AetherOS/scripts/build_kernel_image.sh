@@ -7,7 +7,26 @@ RUN_QEMU="${RUN_QEMU:-0}"
 
 cd "${ROOT_DIR}"
 
-cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Z unstable-options -Z json-target-spec
+if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
+  echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
+fi
+
+if ! rustup toolchain list | rg -q '^nightly'; then
+  echo "Nightly toolchain is not available. Installing nightly..."
+  rustup toolchain install nightly
+fi
+
+rustup component add rust-src --toolchain nightly
+rustup component add llvm-tools-preview --toolchain nightly
+
+if ! cargo bootimage --version >/dev/null 2>&1; then
+  cargo +nightly install bootimage --locked
+fi
+
+cargo +nightly bootimage -p aetheros-kernel --manifest-path "${KERNEL_DIR}/Cargo.toml" --release \
+  -- -Zbuild-std -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+
+echo "Built bootable kernel image: ${IMAGE_PATH}"
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 echo "Run with:"
