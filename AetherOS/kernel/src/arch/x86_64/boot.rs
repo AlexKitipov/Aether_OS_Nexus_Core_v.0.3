@@ -268,7 +268,7 @@ pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
 
 /// Architecture boot entry point for setup orchestration with an explicit
 /// PML4 physical address provided by the bootloader/bootstrap stage.
-pub fn entry_point_with_pml4(pml4_phys_addr: u64) {
+pub fn entry_point(pml4_phys_addr: u64) {
     kprintln!("[kernel] boot: Starting bootstrap sequence.");
     let config = LongModeConfig::new(pml4_phys_addr);
 
@@ -284,11 +284,12 @@ pub fn entry_point_with_pml4(pml4_phys_addr: u64) {
     }
 }
 
-/// Backward-compatible bootstrap entry point that discovers the active PML4.
-pub fn entry_point() {
+/// Backward-compatible bootstrap entry point that discovers the active PML4
+/// when an explicit bootloader hand-off is not yet wired.
+pub fn entry_point_from_current_cr3() {
     paging::init();
     let pml4_addr = paging::get_kernel_pml4();
-    entry_point_with_pml4(pml4_addr);
+    entry_point(pml4_addr);
 }
 
 /// Minimal kernel runtime hand-off after successful bootstrap.
