@@ -3,13 +3,13 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use crate::kprintln;
-use super::boot;
+use x86_64::registers::control::Cr3;
 
 /// Initializes the paging system.
 /// This includes setting up the initial page tables for the kernel's address space
 /// (e.g., identity mapping for lower memory, higher-half mapping for kernel code/data).
 pub fn init() {
-    kprintln!("[kernel] paging: Initializing paging (conceptual)...");
+    kprintln!("[kernel] paging: Initializing hardware paging...");
 
     // TODO: In a real implementation:
     // 1. Get the current physical frame allocator.
@@ -21,17 +21,24 @@ pub fn init() {
     // 7. Enable paging by setting the PG bit in CR0.
 
     kprintln!("[kernel] paging: Higher-half kernel setup simulated.");
-    kprintln!("[kernel] paging: Paging conceptually enabled.");
+    kprintln!("[kernel] paging: Paging initialized (bootstrap stage).");
 }
 
 /// Returns the physical base address of the currently active kernel PML4 table.
-///
-/// For now this uses the active CR3 value as a pragmatic bridge between
-/// conceptual paging setup and boot-time long mode orchestration.
 pub fn get_kernel_pml4() -> u64 {
-    let pml4 = boot::read_cr3() & !0xFFF;
+    let (level_4_table_frame, _) = Cr3::read();
+    let pml4 = level_4_table_frame.start_address().as_u64();
     kprintln!("[kernel] paging: Active kernel PML4 at physical {:#x}.", pml4);
     pml4
+}
+
+/// Best-effort virtual-to-physical translation for bootstrap paths.
+///
+/// At this stage, we still use identity/direct-map semantics as a fallback.
+/// Once full page-table walking is implemented, this function should traverse
+/// PML4/PDPT/PD/PT entries and return the resolved physical address.
+pub fn virt_to_phys(virt_addr: u64) -> u64 {
+    virt_addr
 }
 
 /// Conceptually maps a virtual address to a physical address.

@@ -8,7 +8,7 @@ use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU64, Ordering};
 use spin::Mutex;
 use crate::kprintln;
-use crate::memory::virt_to_phys;
+use crate::arch::x86_64::paging;
 
 /// A simple DMA buffer manager for simulation.
 /// In a real system, this would manage physically contiguous memory pages
@@ -70,8 +70,22 @@ pub fn get_phys_addr(handle: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
     buffers.get(&handle).map(|buf| {
         let virt_addr = buf.as_ptr() as u64;
-        virt_to_phys(virt_addr)
+        paging::virt_to_phys(virt_addr)
     })
+}
+
+
+/// Clears a DMA buffer by zeroing all bytes.
+///
+/// This is useful when recycling buffers to avoid leaking stale data.
+pub fn clear_buffer(handle: u64) {
+    let mut buffers = DMA_BUFFERS.lock();
+    if let Some(buf) = buffers.get_mut(&handle) {
+        buf.fill(0);
+        kprintln!("[kernel] dma: Cleared buffer with handle {}.", handle);
+    } else {
+        kprintln!("[kernel] dma: Attempted to clear non-existent buffer with handle {}.", handle);
+    }
 }
 
 /// Returns the current capacity (allocated size) of the DMA buffer.
