@@ -37,6 +37,9 @@ pub fn init() {
         kprintln!("[kernel] interrupts: PIC remapped to vectors 32-47.");
     }
 
+    crate::timer::init();
+    kprintln!("[kernel] interrupts: PIT initialized.");
+
     idt::set_irq_handler(irq_vector(IRQ_TIMER), timer::handler);
     idt::set_irq_handler(irq_vector(IRQ_KEYBOARD), keyboard::handler);
 
