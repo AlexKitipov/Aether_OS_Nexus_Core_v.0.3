@@ -30,6 +30,9 @@ jobs:
             ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+
       - name: Format check
         run: cargo fmt --all -- --check
 
