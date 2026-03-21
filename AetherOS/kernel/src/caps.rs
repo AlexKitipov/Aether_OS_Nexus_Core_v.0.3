@@ -31,28 +31,23 @@ pub enum Capability {
 }
 
 impl Capability {
-    /// A placeholder for a more sophisticated capability checking mechanism.
-    /// In a real system, this would involve checking a V-Node's capability table.
-    pub fn check(&self, _task_id: u64) -> bool {
-        // For the current alpha stub, we'll implement simple checks.
-        // In a production system, this would consult the actual capability store
-        // associated with the task/V-Node making the syscall.
-        match self {
-            Capability::LogWrite => true, // Logging is generally permitted for V-Nodes for debugging
-            Capability::TimeRead => true, // Reading time is generally permitted
-            Capability::NetworkAccess => true, // Temporarily granted for network V-Nodes development
-            Capability::IrqRegister(_) => true, // Temporarily granted for driver V-Nodes
-            Capability::DmaAlloc => true, // Temporarily granted for driver V-Nodes
-            Capability::DmaAccess => true, // Temporarily granted for driver V-Nodes
-            Capability::IrqAck(_) => true, // Temporarily granted for driver V-Nodes
-            Capability::IpcManage => true, // Temporarily granted for general IPC usage
-            Capability::StorageAccess => false, // Deny by default until VFS is fully robust
-            // _ => {
-            //     kprintln!("[kernel] caps: Capability {:?} not explicitly granted.", self);
-            //     false
-            // }
-        }
+    /// Checks whether the provided task currently holds this capability.
+    #[inline]
+    pub fn check(&self, task_id: u64) -> bool {
+        has_capability(task_id, *self)
     }
+
+    /// Checks whether the currently scheduled task holds this capability.
+    #[inline]
+    pub fn check_current(&self) -> bool {
+        has_current_task_capability(*self)
+    }
+}
+
+/// Returns true if the currently scheduled task holds `cap`.
+pub fn has_current_task_capability(cap: Capability) -> bool {
+    let current_task_id = crate::task::scheduler::get_current_task_id();
+    has_capability(current_task_id, cap)
 }
 
 /// Returns true if a given task currently holds `cap`.
