@@ -8,7 +8,7 @@ use x86_64::instructions::interrupts;
 
 use crate::kprintln;
 use crate::memory::page_allocator::PageAllocator;
-use crate::task::tcb::{TaskControlBlock, TaskState};
+use crate::task::tcb::{Context, TaskControlBlock, TaskState};
 
 /// The run queue holds task IDs of tasks that are ready to be scheduled.
 /// This uses a simple `VecDeque` for a round-robin like behavior.
@@ -197,12 +197,14 @@ pub fn schedule() {
             if let Some(next_task) = tasks.get_mut(&next_task_id) {
                 next_task.state = TaskState::Running;
                 *current_id_guard = next_task_id;
+                let next_context = next_task.context;
+                let next_address_space = next_task.address_space_root;
                 kprintln!(
                     "[kernel] scheduler: Context switch: from {} to {}.",
                     old_task_id,
                     next_task_id
                 );
-                // In a real scheduler, actual CPU context switch would occur here.
+                restore_task_context(next_context, next_address_space);
                 return;
             }
 
@@ -219,6 +221,31 @@ pub fn schedule() {
         *current_id_guard = old_task_id;
         kprintln!("[kernel] scheduler: Run queue empty. Continuing task {}.", old_task_id);
     });
+}
+
+/// Saves a hardware trap-frame snapshot into the currently running task.
+pub fn save_current_context(snapshot: Context) {
+    let current_id = *CURRENT_TASK_ID.lock();
+    if let Some(task) = TASKS.lock().get_mut(&current_id) {
+        task.context = snapshot;
+    }
+}
+
+/// Returns the context snapshot for a task if present.
+pub fn get_task_context(task_id: u64) -> Option<Context> {
+    TASKS.lock().get(&task_id).map(|task| task.context)
+}
+
+fn restore_task_context(context: Context, address_space_root: u64) {
+    // CR3 reload / low-level register restore lives in architecture assembly glue.
+    // For now we expose deterministic observability for scheduler decisions.
+    kprintln!(
+        "[kernel] scheduler: restore rip={:#x}, rsp={:#x}, rflags={:#x}, as_root={:#x}.",
+        context.rip,
+        context.rsp,
+        context.rflags,
+        address_space_root
+    );
 }
 
 /// Returns a cloned `TaskControlBlock` for the currently executing task.

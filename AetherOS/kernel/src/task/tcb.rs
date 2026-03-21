@@ -19,15 +19,33 @@ pub enum TaskState {
 /// A simplified Task Control Block (TCB) for a V-Node or kernel thread.
 /// In a real microkernel, this would hold much more state (registers, memory map, capabilities).
 /// For initial implementation, focus on `id`, `name`, `state`, and `capabilities` as placeholders.
+#[derive(Debug, Clone, Copy, Default)]
+#[repr(C)]
+pub struct Context {
+    pub r15: u64,
+    pub r14: u64,
+    pub r13: u64,
+    pub r12: u64,
+    pub rbp: u64,
+    pub rbx: u64,
+    pub rsi: u64,
+    pub rdi: u64,
+    pub rip: u64,
+    pub rsp: u64,
+    pub rflags: u64,
+}
+
 #[derive(Debug, Clone)] // Derive Clone for easier passing around in mocks/stubs
 pub struct TaskControlBlock {
     pub id: u64,
     pub name: String,
     pub state: TaskState,
+    pub context: Context,
     pub capabilities: Vec<Capability>,
     pub kernel_stack_base: Option<VirtAddr>,
     pub user_stack_base: Option<VirtAddr>,
     pub address_space_pages: Vec<VirtAddr>,
+    pub address_space_root: u64,
 }
 
 impl TaskControlBlock {
@@ -37,10 +55,12 @@ impl TaskControlBlock {
             id,
             name,
             state: TaskState::Ready, // New tasks start in the Ready state
+            context: Context::default(),
             capabilities,
             kernel_stack_base: None,
             user_stack_base: None,
             address_space_pages: Vec::new(),
+            address_space_root: crate::arch::x86_64::paging::get_kernel_pml4(),
         }
     }
 
@@ -49,18 +69,52 @@ impl TaskControlBlock {
         id: u64,
         name: String,
         capabilities: Vec<Capability>,
+        context: Context,
         kernel_stack_base: Option<VirtAddr>,
         user_stack_base: Option<VirtAddr>,
         address_space_pages: Vec<VirtAddr>,
+        address_space_root: u64,
     ) -> Self {
         Self {
             id,
             name,
             state: TaskState::Ready,
+            context,
             capabilities,
             kernel_stack_base,
             user_stack_base,
             address_space_pages,
+            address_space_root,
+        }
+    }
+
+    /// Creates a runnable user task with an initialized first-run CPU context.
+    pub fn new_user_task(
+        id: u64,
+        name: String,
+        capabilities: Vec<Capability>,
+        entry_point: VirtAddr,
+        stack_top: VirtAddr,
+        address_space_root: u64,
+    ) -> Self {
+        let context = Context {
+            rip: entry_point.as_u64(),
+            rsp: stack_top.as_u64(),
+            rflags: 0x202, // IF=1, reserved bit set
+            ..Context::default()
+        };
+        let user_stack_base = VirtAddr::new(stack_top.as_u64().saturating_sub(4096));
+
+        Self {
+            id,
+            name,
+            state: TaskState::Ready,
+            context,
+            capabilities,
+            kernel_stack_base: None,
+            user_stack_base: Some(user_stack_base),
+            address_space_pages: Vec::new(),
+            address_space_root,
         }
     }
 }
