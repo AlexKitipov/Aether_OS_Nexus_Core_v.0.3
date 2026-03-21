@@ -4,6 +4,8 @@
 
 use core::arch::asm;
 
+use bootloader_api::BootInfo;
+
 use super::{gdt, idt, paging};
 use crate::interrupts;
 use crate::kprintln;
@@ -266,14 +268,33 @@ pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
     Ok(())
 }
 
-/// Architecture boot entry point for setup orchestration with an explicit
-/// PML4 physical address provided by the bootloader/bootstrap stage.
-pub fn entry_point(pml4_phys_addr: u64) {
+/// Architecture boot entry point for setup orchestration with full bootloader
+/// hand-off information.
+pub fn entry_point(boot_info: &'static mut BootInfo) {
     kprintln!("[kernel] boot: Starting bootstrap sequence.");
+
+    crate::memory::init(&boot_info.memory_regions);
+    kprintln!("[kernel] boot: Memory map wired into frame allocator.");
+
+    let physical_memory_offset = boot_info
+        .physical_memory_offset
+        .into_option()
+        .unwrap_or(0);
+    let pml4_phys_addr = paging::get_kernel_pml4();
     let config = LongModeConfig::new(pml4_phys_addr);
 
     match architecture_init(config) {
         Ok(()) => {
+            if physical_memory_offset != 0 {
+                kprintln!(
+                    "[kernel] boot: Direct map physical memory offset = {:#x}.",
+                    physical_memory_offset
+                );
+            } else {
+                kprintln!(
+                    "[kernel] boot: No physical memory offset provided; using identity fallback."
+                );
+            }
             kprintln!("[kernel] boot: System is ready.");
             kernel_main();
         }
@@ -289,7 +310,17 @@ pub fn entry_point(pml4_phys_addr: u64) {
 pub fn entry_point_from_current_cr3() {
     paging::init();
     let pml4_addr = paging::get_kernel_pml4();
-    entry_point(pml4_addr);
+    let config = LongModeConfig::new(pml4_addr);
+    match architecture_init(config) {
+        Ok(()) => {
+            kprintln!("[kernel] boot: System is ready.");
+            kernel_main();
+        }
+        Err(error) => {
+            kprintln!("[kernel] boot ERROR: {:?}", error);
+            h_loop();
+        }
+    }
 }
 
 /// Minimal kernel runtime hand-off after successful bootstrap.

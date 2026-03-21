@@ -7,6 +7,8 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use crate::kprintln;
 use spin::Mutex;
 use x86_64::registers::control::Cr3;
+use x86_64::structures::paging::{OffsetPageTable, PageTable};
+use x86_64::{PhysAddr, VirtAddr};
 
 const FRAME_SIZE: u64 = 4096;
 const DMA_PHYS_START: u64 = 0x0010_0000;
@@ -43,6 +45,21 @@ pub fn get_kernel_pml4() -> u64 {
     let pml4 = level_4_table_frame.start_address().as_u64();
     kprintln!("[kernel] paging: Active kernel PML4 at physical {:#x}.", pml4);
     pml4
+}
+
+/// Initializes a hardware-backed view of the currently active paging tables.
+///
+/// # Safety
+/// The caller must guarantee that `physical_memory_offset` is a valid direct
+/// mapping base for all physical memory and remains stable for the returned
+/// `OffsetPageTable` lifetime.
+pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+    let (level_4_table_frame, _) = Cr3::read();
+    let phys = level_4_table_frame.start_address();
+    let virt = physical_memory_offset + phys.as_u64();
+    let page_table_ptr: *mut PageTable = virt.as_mut_ptr();
+    let level_4_table = &mut *page_table_ptr;
+    OffsetPageTable::new(level_4_table, physical_memory_offset)
 }
 
 /// Allocates a contiguous run of synthetic physical frames.
@@ -114,6 +131,12 @@ pub fn virt_to_phys(virt_addr: u64) -> u64 {
     }
 
     virt_addr
+}
+
+/// Direct-map helper variant used by DMA paths that already have a known
+/// physical memory offset.
+pub fn virt_to_phys_with_offset(virt: u64, offset: u64) -> PhysAddr {
+    PhysAddr::new(virt.saturating_sub(offset))
 }
 
 /// Strict bootstrap virtual-to-physical translation.
