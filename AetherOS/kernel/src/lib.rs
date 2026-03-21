@@ -97,9 +97,6 @@ pub fn init(
     caps::init();
     kprintln!("[kernel] Capability system initialized.");
 
-    timer::init();
-    kprintln!("[kernel] Timer initialized.");
-
     kprintln!("[kernel] AetherOS kernel initialized successfully.");
 }
 

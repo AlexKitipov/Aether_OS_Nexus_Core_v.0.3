@@ -5,6 +5,7 @@
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use x86_64::instructions::port::Port;
+use x86_64::instructions::{hlt, interrupts};
 
 use crate::kprintln;
 
@@ -64,4 +65,24 @@ pub const fn frequency_hz() -> u32 {
 #[inline]
 pub fn uptime_ms() -> u64 {
     get_current_ticks().saturating_mul(1_000) / PIT_FREQUENCY_HZ as u64
+}
+
+/// Sleeps for at least `ms` milliseconds using the PIT tick counter.
+///
+/// This uses `hlt` while interrupts are enabled to avoid busy-spinning.
+pub fn sleep_ms(ms: u64) {
+    let ticks_per_ms = PIT_FREQUENCY_HZ as u64;
+    let required_ticks = ms.saturating_mul(ticks_per_ms).div_ceil(1_000);
+    if required_ticks == 0 {
+        return;
+    }
+
+    let deadline = get_current_ticks().saturating_add(required_ticks);
+    while get_current_ticks() < deadline {
+        if interrupts::are_enabled() {
+            hlt();
+        } else {
+            core::hint::spin_loop();
+        }
+    }
 }
