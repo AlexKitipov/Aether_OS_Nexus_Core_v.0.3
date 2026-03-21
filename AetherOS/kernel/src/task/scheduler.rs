@@ -237,6 +237,17 @@ pub fn get_task_context(task_id: u64) -> Option<Context> {
     TASKS.lock().get(&task_id).map(|task| task.context)
 }
 
+
+/// Returns the ID of the currently executing task.
+pub fn get_current_task_id() -> u64 {
+    *CURRENT_TASK_ID.lock()
+}
+
+/// Returns a cloned task by id if it exists.
+pub fn get_task(task_id: u64) -> Option<TaskControlBlock> {
+    get_task_by_id(task_id)
+}
+
 /// Returns a cloned task by id if it exists.
 pub fn get_task_by_id(task_id: u64) -> Option<TaskControlBlock> {
     TASKS.lock().get(&task_id).cloned()
