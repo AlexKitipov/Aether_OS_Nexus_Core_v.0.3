@@ -4,7 +4,7 @@
 
 extern crate alloc;
 
-use bootloader_api::info::{FrameBuffer, MemoryRegions};
+use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
 
 pub mod arch;
 pub mod drivers;
@@ -26,7 +26,11 @@ pub mod usercopy;
 pub mod config;
 
 // Initialize the kernel.
-pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static mut FrameBuffer>) {
+pub fn init(
+    memory_regions: &'static MemoryRegions,
+    framebuffer: Option<&'static mut FrameBuffer>,
+    physical_memory_offset: Optional<u64>,
+) {
     drivers::serial::init();
     drivers::vga_text::init();
     kprintln!("[kernel] Serial output initialized.");
@@ -54,8 +58,32 @@ pub fn init(memory_regions: &'static MemoryRegions, framebuffer: Option<&'static
     memory::init(memory_regions);
     kprintln!("[kernel] Memory manager initialized.");
 
-    heap::init_heap();
-    kprintln!("[kernel] Heap initialized.");
+    if let Some(offset) = physical_memory_offset.into_option() {
+        let heap_result = memory::with_frame_allocator(|frame_allocator| {
+            let mut mapper = unsafe { arch::x86_64::paging::init_mapper(x86_64::VirtAddr::new(offset)) };
+            arch::x86_64::paging::map_heap_region(
+                &mut mapper,
+                frame_allocator,
+                x86_64::VirtAddr::new(heap::HEAP_START),
+                heap::HEAP_SIZE,
+            )
+        });
+
+        match heap_result {
+            Some(Ok(())) => {
+                heap::init_heap();
+                kprintln!("[kernel] Heap initialized.");
+            }
+            Some(Err(error)) => {
+                panic!("[kernel] heap mapping failed: {}", error);
+            }
+            None => {
+                panic!("[kernel] heap mapping failed: frame allocator unavailable");
+            }
+        }
+    } else {
+        panic!("[kernel] heap mapping failed: physical_memory_offset is unavailable");
+    }
 
     task::init();
     kprintln!("[kernel] Task scheduler initialized.");

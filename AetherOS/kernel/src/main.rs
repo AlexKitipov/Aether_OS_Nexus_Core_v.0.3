@@ -19,7 +19,11 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     // Kernel early initialization starts here.
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
-    init(&boot_info.memory_regions, boot_info.framebuffer.as_mut());
+    init(
+        &boot_info.memory_regions,
+        boot_info.framebuffer.as_mut(),
+        boot_info.physical_memory_offset,
+    );
 
     aetheros_kernel::kprintln!("[kernel] Welcome to AetherOS!");
 
