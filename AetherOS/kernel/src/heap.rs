@@ -8,6 +8,9 @@ use crate::kprintln;
 
 pub const HEAP_START: u64 = 0x4444_0000;
 pub const HEAP_SIZE: usize = 1024 * 1024;
+pub const HEAP_GUARD_PAGES: u64 = 1;
+pub const HEAP_PAGE_SIZE: u64 = 4096;
+pub const HEAP_MAPPED_START: u64 = HEAP_START + HEAP_GUARD_PAGES * HEAP_PAGE_SIZE;
 
 /// A dummy global allocator that panics on allocation.
 /// This will be replaced by our `LockedHeap` once memory mapping is ready.
@@ -29,6 +32,6 @@ pub unsafe fn init(heap_start: VirtAddr, heap_size: usize) {
 
 /// Initializes a small early heap region used by kernel allocations.
 pub fn init_heap() {
-    // SAFETY: Early bootstrap heap uses a fixed virtual region for conceptual runtime.
-    unsafe { init(VirtAddr::new(HEAP_START), HEAP_SIZE) };
+    // SAFETY: The mapped heap starts after one guard page to help catch overflows.
+    unsafe { init(VirtAddr::new(HEAP_MAPPED_START), HEAP_SIZE) };
 }
