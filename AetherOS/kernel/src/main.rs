@@ -30,7 +30,9 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     // Enter an infinite loop to keep the kernel running.
     // In a real OS, this would be the idle loop, scheduling tasks.
     loop {
-        task::schedule(); // Give control to the scheduler
+        if task::scheduler::take_reschedule_request() {
+            task::schedule(); // Perform scheduling only when requested (e.g. from timer IRQ)
+        }
         x86_64::instructions::hlt(); // Halt the CPU until the next interrupt
     }
 }
