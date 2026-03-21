@@ -2,8 +2,21 @@
 
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
+use alloc::collections::BTreeMap;
+use core::sync::atomic::{AtomicU64, Ordering};
 use crate::kprintln;
+use spin::Mutex;
 use x86_64::registers::control::Cr3;
+
+const FRAME_SIZE: u64 = 4096;
+const DMA_PHYS_START: u64 = 0x0010_0000;
+
+/// Synthetic frame allocator state for early bootstrap components that need
+/// stable "physical" addresses before the full MMU path is implemented.
+static NEXT_FREE_FRAME: AtomicU64 = AtomicU64::new(DMA_PHYS_START);
+
+/// Bootstrap virtual->physical page mappings used by DMA buffers.
+static BOOTSTRAP_TRANSLATIONS: Mutex<BTreeMap<u64, u64>> = Mutex::new(BTreeMap::new());
 
 /// Initializes the paging system.
 /// This includes setting up the initial page tables for the kernel's address space
@@ -32,12 +45,74 @@ pub fn get_kernel_pml4() -> u64 {
     pml4
 }
 
+/// Allocates a contiguous run of synthetic physical frames.
+///
+/// This is a bootstrap helper and not a replacement for a real physical frame
+/// allocator wired to the bootloader memory map.
+pub fn alloc_frame_range(size_bytes: usize) -> u64 {
+    let needed_frames = if size_bytes == 0 {
+        1
+    } else {
+        ((size_bytes as u64) + (FRAME_SIZE - 1)) / FRAME_SIZE
+    };
+    let allocation_size = needed_frames * FRAME_SIZE;
+
+    let start = NEXT_FREE_FRAME.fetch_add(allocation_size, Ordering::SeqCst);
+    kprintln!(
+        "[kernel] paging: reserved {} frame(s) [{} bytes] at phys {:#x}.",
+        needed_frames,
+        allocation_size,
+        start
+    );
+    start
+}
+
+/// Registers bootstrap translations for a virtually contiguous memory region.
+pub fn register_virt_mapping(virt_addr: u64, phys_addr: u64, size_bytes: usize) {
+    let page_count = if size_bytes == 0 {
+        1
+    } else {
+        ((size_bytes as u64) + (FRAME_SIZE - 1)) / FRAME_SIZE
+    };
+
+    let virt_base = virt_addr & !(FRAME_SIZE - 1);
+    let phys_base = phys_addr & !(FRAME_SIZE - 1);
+
+    let mut mappings = BOOTSTRAP_TRANSLATIONS.lock();
+    for page in 0..page_count {
+        mappings.insert(virt_base + page * FRAME_SIZE, phys_base + page * FRAME_SIZE);
+    }
+}
+
+/// Removes previously registered bootstrap translations.
+pub fn unregister_virt_mapping(virt_addr: u64, size_bytes: usize) {
+    let page_count = if size_bytes == 0 {
+        1
+    } else {
+        ((size_bytes as u64) + (FRAME_SIZE - 1)) / FRAME_SIZE
+    };
+    let virt_base = virt_addr & !(FRAME_SIZE - 1);
+
+    let mut mappings = BOOTSTRAP_TRANSLATIONS.lock();
+    for page in 0..page_count {
+        mappings.remove(&(virt_base + page * FRAME_SIZE));
+    }
+}
+
 /// Best-effort virtual-to-physical translation for bootstrap paths.
 ///
 /// At this stage, we still use identity/direct-map semantics as a fallback.
 /// Once full page-table walking is implemented, this function should traverse
 /// PML4/PDPT/PD/PT entries and return the resolved physical address.
 pub fn virt_to_phys(virt_addr: u64) -> u64 {
+    let page_base = virt_addr & !(FRAME_SIZE - 1);
+    let page_offset = virt_addr & (FRAME_SIZE - 1);
+
+    let mappings = BOOTSTRAP_TRANSLATIONS.lock();
+    if let Some(phys_base) = mappings.get(&page_base) {
+        return *phys_base + page_offset;
+    }
+
     virt_addr
 }
 

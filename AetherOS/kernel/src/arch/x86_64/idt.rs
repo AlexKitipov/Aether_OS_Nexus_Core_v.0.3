@@ -8,6 +8,7 @@ use x86_64::structures::idt::{
 };
 
 use crate::{arch::x86_64::gdt, hlt_loop, kprintln};
+use crate::interrupts::pic;
 
 /// Static Interrupt Descriptor Table, initialized during early boot.
 static mut IDT: InterruptDescriptorTable = InterruptDescriptorTable::new();
@@ -24,8 +25,10 @@ pub fn init() {
         IDT.double_fault
             .set_handler_fn(double_fault_handler)
             .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
+        IDT[pic::PIC_1_OFFSET as usize].set_handler_fn(timer_interrupt_handler);
 
         IDT.load();
+        pic::remap();
         kprintln!("[kernel] idt: IDT loaded.");
     }
 }
@@ -81,4 +84,10 @@ extern "x86-interrupt" fn double_fault_handler(
     kprintln!("[kernel] Error Code: {}", error_code);
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
     hlt_loop();
+}
+
+extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: InterruptStackFrame) {
+    unsafe {
+        pic::end_of_interrupt(0);
+    }
 }

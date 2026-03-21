@@ -18,9 +18,15 @@ use crate::arch::x86_64::paging;
 /// Static counter for generating unique DMA buffer handles.
 static NEXT_HANDLE: AtomicU64 = AtomicU64::new(1);
 
+#[derive(Debug)]
+struct DmaBuffer {
+    bytes: Vec<u8>,
+    phys_base: u64,
+}
+
 /// Stores the allocated DMA buffers, mapped by their unique handles.
 /// The `Vec<u8>` acts as the memory backing for the DMA buffer.
-static DMA_BUFFERS: Mutex<BTreeMap<u64, Vec<u8>>> = Mutex::new(BTreeMap::new());
+static DMA_BUFFERS: Mutex<BTreeMap<u64, DmaBuffer>> = Mutex::new(BTreeMap::new());
 
 /// Allocates a new DMA-capable buffer of the specified `size`.
 /// Returns a unique handle to the buffer, or `None` if allocation fails.
@@ -34,7 +40,17 @@ pub fn alloc_dma_buffer(size: usize) -> Option<u64> {
     // This avoids exposing stale memory contents to DMA consumers.
     let mut buffer = Vec::with_capacity(size);
     buffer.resize(size, 0);
-    buffers.insert(handle, buffer);
+    let virt_addr = buffer.as_ptr() as u64;
+    let phys_base = paging::alloc_frame_range(size);
+    paging::register_virt_mapping(virt_addr, phys_base, size);
+
+    buffers.insert(
+        handle,
+        DmaBuffer {
+            bytes: buffer,
+            phys_base,
+        },
+    );
 
     kprintln!(
         "[kernel] dma: Allocated & zeroed buffer handle {} ({} bytes).",
@@ -47,7 +63,10 @@ pub fn alloc_dma_buffer(size: usize) -> Option<u64> {
 /// Frees the DMA buffer associated with the given `handle`.
 pub fn free_dma_buffer(handle: u64) {
     let mut buffers = DMA_BUFFERS.lock();
-    if buffers.remove(&handle).is_some() {
+    if let Some(buf) = buffers.remove(&handle) {
+        let virt_addr = buf.bytes.as_ptr() as u64;
+        let size = buf.bytes.capacity();
+        paging::unregister_virt_mapping(virt_addr, size);
         kprintln!("[kernel] dma: Freed buffer with handle {}.", handle);
     } else {
         kprintln!("[kernel] dma: Attempted to free non-existent buffer with handle {}.", handle);
@@ -59,7 +78,7 @@ pub fn free_dma_buffer(handle: u64) {
 /// but for the kernel, it's the direct address of the `Vec`'s data.
 pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
     let mut buffers = DMA_BUFFERS.lock();
-    buffers.get_mut(&handle).map(|buf| buf.as_mut_ptr())
+    buffers.get_mut(&handle).map(|buf| buf.bytes.as_mut_ptr())
 }
 
 /// Returns the (conceptual) physical address of a DMA buffer.
@@ -68,10 +87,7 @@ pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
 /// virtual kernel pointer.
 pub fn get_phys_addr(handle: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
-    buffers.get(&handle).map(|buf| {
-        let virt_addr = buf.as_ptr() as u64;
-        paging::virt_to_phys(virt_addr)
-    })
+    buffers.get(&handle).map(|buf| buf.phys_base)
 }
 
 
@@ -81,7 +97,7 @@ pub fn get_phys_addr(handle: u64) -> Option<u64> {
 pub fn clear_buffer(handle: u64) {
     let mut buffers = DMA_BUFFERS.lock();
     if let Some(buf) = buffers.get_mut(&handle) {
-        buf.fill(0);
+        buf.bytes.fill(0);
         kprintln!("[kernel] dma: Cleared buffer with handle {}.", handle);
     } else {
         kprintln!("[kernel] dma: Attempted to clear non-existent buffer with handle {}.", handle);
@@ -91,7 +107,7 @@ pub fn clear_buffer(handle: u64) {
 /// Returns the current capacity (allocated size) of the DMA buffer.
 pub fn get_dma_buffer_capacity(handle: u64) -> Option<usize> {
     let buffers = DMA_BUFFERS.lock();
-    buffers.get(&handle).map(|buf| buf.capacity())
+    buffers.get(&handle).map(|buf| buf.bytes.capacity())
 }
 
 /// Sets the effective length of the data within the DMA buffer.
@@ -99,14 +115,14 @@ pub fn get_dma_buffer_capacity(handle: u64) -> Option<usize> {
 pub fn set_dma_buffer_len(handle: u64, len: usize) -> Result<(), &'static str> {
     let mut buffers = DMA_BUFFERS.lock();
     if let Some(buf) = buffers.get_mut(&handle) {
-        if len <= buf.capacity() {
+        if len <= buf.bytes.capacity() {
             // SAFETY: We checked `len <= capacity`, so this is safe.
             // This is crucial for `Vec` to function correctly as a buffer.
-            unsafe { buf.set_len(len); }
+            unsafe { buf.bytes.set_len(len); }
             kprintln!("[kernel] dma: Set length for handle {} to {}.", handle, len);
             Ok(())
         } else {
-            kprintln!("[kernel] dma: Error setting length for handle {}: {} exceeds capacity {}.", handle, len, buf.capacity());
+            kprintln!("[kernel] dma: Error setting length for handle {}: {} exceeds capacity {}.", handle, len, buf.bytes.capacity());
             Err("Length exceeds capacity")
         }
     } else {
@@ -118,15 +134,15 @@ pub fn set_dma_buffer_len(handle: u64, len: usize) -> Result<(), &'static str> {
 /// Returns the current length (used size) of the DMA buffer.
 pub fn get_dma_buffer_len(handle: u64) -> Option<usize> {
     let buffers = DMA_BUFFERS.lock();
-    buffers.get(&handle).map(|buf| buf.len())
+    buffers.get(&handle).map(|buf| buf.bytes.len())
 }
 
 /// Copies data from a source slice into the DMA buffer.
 pub fn write_to_buffer(handle: u64, data: &[u8], offset: usize) -> Result<(), &'static str> {
     let mut buffers = DMA_BUFFERS.lock();
     if let Some(buf) = buffers.get_mut(&handle) {
-        if offset + data.len() <= buf.len() {
-            buf[offset..offset + data.len()].copy_from_slice(data);
+        if offset + data.len() <= buf.bytes.len() {
+            buf.bytes[offset..offset + data.len()].copy_from_slice(data);
             Ok(())
         } else {
             Err("Out of bounds write")
@@ -144,8 +160,8 @@ pub fn read_from_buffer(
 ) -> Result<(), &'static str> {
     let buffers = DMA_BUFFERS.lock();
     if let Some(buf) = buffers.get(&handle) {
-        if offset + out_data.len() <= buf.len() {
-            out_data.copy_from_slice(&buf[offset..offset + out_data.len()]);
+        if offset + out_data.len() <= buf.bytes.len() {
+            out_data.copy_from_slice(&buf.bytes[offset..offset + out_data.len()]);
             Ok(())
         } else {
             Err("Out of bounds read")
