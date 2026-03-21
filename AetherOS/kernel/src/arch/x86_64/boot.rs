@@ -7,7 +7,7 @@ use core::arch::asm;
 use bootloader_api::BootInfo;
 
 use super::{gdt, idt, paging};
-use crate::interrupts;
+use crate::{heap, interrupts, memory};
 use crate::kprintln;
 
 /// IA32_EFER MSR index.
@@ -280,7 +280,7 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
         kprintln!("[kernel] boot: BootInfo framebuffer unavailable.");
     }
 
-    crate::memory::init(&boot_info.memory_regions);
+    memory::init(&boot_info.memory_regions);
     kprintln!("[kernel] boot: Memory map wired into frame allocator.");
 
     let physical_memory_offset = boot_info
@@ -293,6 +293,31 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
             let _ = paging::init_mapper(physical_memory_offset);
         }
         kprintln!("[kernel] boot: Active mapper initialized from direct map offset.");
+
+        let heap_result = memory::with_frame_allocator(|frame_allocator| {
+            let mut mapper = unsafe { paging::init_mapper(physical_memory_offset) };
+            paging::map_heap_region(
+                &mut mapper,
+                frame_allocator,
+                x86_64::VirtAddr::new(heap::HEAP_START),
+                heap::HEAP_SIZE,
+            )
+        });
+
+        match heap_result {
+            Some(Ok(())) => {
+                heap::init_heap();
+                kprintln!("[kernel] boot: Heap is ready. Dynamic allocation enabled.");
+            }
+            Some(Err(error)) => {
+                kprintln!("[kernel] boot ERROR: heap mapping failed: {}", error);
+                h_loop();
+            }
+            None => {
+                kprintln!("[kernel] boot ERROR: heap mapping failed: frame allocator unavailable");
+                h_loop();
+            }
+        }
     }
 
     // Reuse the active bootloader-provided root table directly from CR3.

@@ -48,6 +48,15 @@ pub fn alloc_frame_addr() -> Option<PhysAddr> {
     alloc_frame().map(|frame| frame.start_address())
 }
 
+/// Provides mutable access to the global frame allocator.
+pub fn with_frame_allocator<R>(
+    f: impl FnOnce(&mut frame_allocator::BootInfoFrameAllocator) -> R,
+) -> Option<R> {
+    let mut slot = FRAME_ALLOCATOR.lock();
+    let allocator = slot.as_mut()?;
+    Some(f(allocator))
+}
+
 /// Conceptually translates a virtual address to a physical address.
 ///
 /// At this stage of the project, paging is still mostly simulated, so we use

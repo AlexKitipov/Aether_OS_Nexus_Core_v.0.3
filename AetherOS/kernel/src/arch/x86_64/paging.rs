@@ -7,7 +7,9 @@ use core::sync::atomic::{AtomicU64, Ordering};
 use crate::kprintln;
 use spin::Mutex;
 use x86_64::registers::control::Cr3;
-use x86_64::structures::paging::{OffsetPageTable, PageTable};
+use x86_64::structures::paging::{
+    FrameAllocator, Mapper, OffsetPageTable, Page, PageTable, PageTableFlags, Size4KiB,
+};
 use x86_64::{PhysAddr, VirtAddr};
 
 const FRAME_SIZE: u64 = 4096;
@@ -69,6 +71,36 @@ pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPage
 /// The caller must provide a valid direct physical memory mapping base.
 pub unsafe fn init_mapper(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
     init_active_paging(physical_memory_offset)
+}
+
+/// Maps a virtual heap region onto newly allocated physical frames.
+pub fn map_heap_region(
+    mapper: &mut impl Mapper<Size4KiB>,
+    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+    start_addr: VirtAddr,
+    size: usize,
+) -> Result<(), &'static str> {
+    let page_range = {
+        let heap_start_page = Page::containing_address(start_addr);
+        let heap_end = start_addr + (size as u64) - 1;
+        let heap_end_page = Page::containing_address(heap_end);
+        Page::range_inclusive(heap_start_page, heap_end_page)
+    };
+
+    for page in page_range {
+        let frame = frame_allocator
+            .allocate_frame()
+            .ok_or("No more physical frames for heap")?;
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+        unsafe {
+            mapper
+                .map_to(page, frame, flags, frame_allocator)
+                .map_err(|_| "Failed to map heap page")?
+                .flush();
+        }
+    }
+
+    Ok(())
 }
 
 /// Allocates a contiguous run of synthetic physical frames.
