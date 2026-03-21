@@ -81,15 +81,13 @@ pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
     buffers.get_mut(&handle).map(|buf| buf.bytes.as_mut_ptr())
 }
 
-/// Returns the (conceptual) physical address of a DMA buffer.
-///
-/// In real hardware interaction, devices require a physical address, not a
-/// virtual kernel pointer.
-pub fn get_phys_addr(handle: u64) -> Option<u64> {
+/// Returns the physical address of a DMA buffer using an explicit direct-map
+/// offset supplied by the caller.
+pub fn get_phys_addr(handle: u64, mem_offset: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
     buffers.get(&handle).and_then(|buf| {
         let virt_addr = buf.bytes.as_ptr() as u64;
-        let translated = paging::try_virt_to_phys(virt_addr)?;
+        let translated = paging::virt_to_phys_with_offset(virt_addr, mem_offset).as_u64();
 
         if translated != buf.phys_base {
             kprintln!(
@@ -102,6 +100,15 @@ pub fn get_phys_addr(handle: u64) -> Option<u64> {
         }
 
         Some(translated)
+    })
+}
+
+/// Backward-compatible helper that attempts to use explicit bootstrap mappings.
+pub fn get_phys_addr_bootstrap(handle: u64) -> Option<u64> {
+    let buffers = DMA_BUFFERS.lock();
+    buffers.get(&handle).and_then(|buf| {
+        let virt_addr = buf.bytes.as_ptr() as u64;
+        paging::try_virt_to_phys(virt_addr)
     })
 }
 
