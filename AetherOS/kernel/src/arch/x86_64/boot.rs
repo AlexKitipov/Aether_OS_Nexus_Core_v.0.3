@@ -22,11 +22,16 @@ const EFER_LME: u64 = 1 << 8;
 const EFER_LMA: u64 = 1 << 10;
 const EFER_NXE: u64 = 1 << 11;
 
+const CPUID_EXTENDED_FUNCTION_INFO: u32 = 0x8000_0001;
+const CPUID_EXTENDED_MAX_LEAF: u32 = 0x8000_0000;
+const CPUID_EDX_LONG_MODE: u32 = 1 << 29;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BootError {
     UnalignedPageTableAddress(u64),
     InvalidPhysicalAddress(u64),
     FailedToEnterLongMode(u64),
+    CpuDoesNotSupportLongMode,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -167,6 +172,44 @@ fn validate_pml4_addr(pml4_phys_addr: u64) -> Result<(), BootError> {
     Ok(())
 }
 
+/// Checks whether the CPU supports long mode via CPUID.
+pub fn check_cpu_support() -> Result<(), BootError> {
+    let max_extended_leaf: u32;
+    unsafe {
+        asm!(
+            "cpuid",
+            inout("eax") CPUID_EXTENDED_MAX_LEAF => max_extended_leaf,
+            lateout("ebx") _,
+            lateout("ecx") _,
+            lateout("edx") _,
+            options(nomem, nostack)
+        );
+    }
+
+    if max_extended_leaf < CPUID_EXTENDED_FUNCTION_INFO {
+        return Err(BootError::CpuDoesNotSupportLongMode);
+    }
+
+    let mut eax = CPUID_EXTENDED_FUNCTION_INFO;
+    let edx_features: u32;
+    unsafe {
+        asm!(
+            "cpuid",
+            inout("eax") eax,
+            lateout("ebx") _,
+            lateout("ecx") _,
+            lateout("edx") edx_features,
+            options(nomem, nostack)
+        );
+    }
+
+    if (edx_features & CPUID_EDX_LONG_MODE) == 0 {
+        return Err(BootError::CpuDoesNotSupportLongMode);
+    }
+
+    Ok(())
+}
+
 /// Performs long mode activation:
 /// 1. Enable PAE in CR4.
 /// 2. Load PML4 physical base into CR3.
@@ -206,15 +249,37 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
     Ok(())
 }
 
-/// Architecture boot entry point for basic kernel setup orchestration.
-pub fn entry_point() {
-    kernel_main();
-}
+/// Full architecture initialization pipeline for booting into kernel mode.
+pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
+    check_cpu_support()?;
+    long_mode_init(config)?;
 
-/// Minimal kernel bootstrap sequence for descriptor tables and interrupts.
-pub fn kernel_main() {
     gdt::init();
     idt::init();
     interrupts::init();
+
+    kprintln!("[kernel] boot: Architecture initialized.");
+    Ok(())
+}
+
+/// Architecture boot entry point for setup orchestration.
+pub fn entry_point(pml4_addr: u64) {
+    let config = LongModeConfig::new(pml4_addr);
+
+    match architecture_init(config) {
+        Ok(()) => {
+            kprintln!("[kernel] boot: System is ready.");
+            kernel_main();
+        }
+        Err(error) => {
+            kprintln!("[kernel] boot ERROR: {:?}", error);
+            h_loop();
+        }
+    }
+}
+
+/// Minimal kernel runtime hand-off after successful bootstrap.
+pub fn kernel_main() {
     x86_64::instructions::interrupts::enable();
+    kprintln!("[kernel] boot: Interrupts enabled. Main loop starting...");
 }
