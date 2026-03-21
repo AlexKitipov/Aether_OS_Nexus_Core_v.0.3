@@ -162,7 +162,7 @@ pub fn set_cr4_bits(mask: u64) {
 
 #[inline]
 fn validate_pml4_addr(pml4_phys_addr: u64) -> Result<(), BootError> {
-    if pml4_phys_addr & 0xFFF != 0 {
+    if pml4_phys_addr % 4096 != 0 {
         return Err(BootError::UnalignedPageTableAddress(pml4_phys_addr));
     }
 
