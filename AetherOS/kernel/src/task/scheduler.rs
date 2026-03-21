@@ -2,6 +2,7 @@
 
 extern crate alloc;
 use alloc::collections::{BTreeMap, VecDeque};
+use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Mutex;
 
 use crate::kprintln;
@@ -17,6 +18,7 @@ static TASKS: Mutex<BTreeMap<u64, TaskControlBlock>> = Mutex::new(BTreeMap::new(
 
 /// The ID of the currently executing task.
 static CURRENT_TASK_ID: Mutex<u64> = Mutex::new(0); // Starts with kernel as task 0
+static RESCHEDULE_REQUESTED: AtomicBool = AtomicBool::new(true);
 
 /// Initializes the scheduler, setting up necessary data structures.
 pub fn init() {
@@ -101,6 +103,21 @@ pub fn terminate_current_task() {
     let current_task_id = *CURRENT_TASK_ID.lock();
     terminate_task(current_task_id);
     schedule();
+}
+
+/// Marks that the current CPU should perform a scheduling decision soon.
+///
+/// This is intended to be called from interrupt context (e.g. timer IRQ),
+/// where taking scheduler locks directly can deadlock.
+#[inline]
+pub fn request_reschedule_from_irq() {
+    RESCHEDULE_REQUESTED.store(true, Ordering::Release);
+}
+
+/// Returns whether a reschedule was requested and clears the request flag.
+#[inline]
+pub fn take_reschedule_request() -> bool {
+    RESCHEDULE_REQUESTED.swap(false, Ordering::AcqRel)
 }
 
 fn release_task_resources(task: &TaskControlBlock) {
