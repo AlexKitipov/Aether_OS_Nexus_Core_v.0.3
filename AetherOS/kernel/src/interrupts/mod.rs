@@ -34,6 +34,7 @@ unsafe fn unmask_irq(irq: u8) {
 pub fn init() {
     unsafe {
         pic::remap();
+        kprintln!("[kernel] interrupts: PIC remapped to vectors 32-47.");
     }
 
     idt::set_irq_handler(irq_vector(IRQ_TIMER), timer::handler);
