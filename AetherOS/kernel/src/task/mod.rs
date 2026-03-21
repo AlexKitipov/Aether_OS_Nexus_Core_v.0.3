@@ -7,6 +7,7 @@ use alloc::vec::Vec;
 use x86_64::VirtAddr;
 
 use crate::caps::Capability;
+use crate::memory::page_allocator::PageAllocator;
 
 pub mod scheduler;
 pub mod tcb;
@@ -42,6 +43,43 @@ pub fn create_user_task(
         address_space_root,
     );
     scheduler::add_task(tcb);
+}
+
+/// Loads a conceptual binary from AetherFS and spawns a runnable user task.
+///
+/// This helper ties together three subsystems:
+/// - AetherFS (binary lookup)
+/// - Paging/Page allocator (user stack allocation)
+/// - Scheduler (task registration)
+pub fn spawn_from_file(path: &str, id: u64, name: &str, capabilities: Vec<Capability>) -> Result<(), String> {
+    let code = crate::aetherfs::read_file(path)?;
+    if code.is_empty() {
+        return Err(String::from("Refusing to spawn empty binary"));
+    }
+
+    // Conceptual fixed user mapping layout until ELF segment mapping lands.
+    let entry_point = VirtAddr::new(0x0000_0000_4000_0000);
+    let stack_base = PageAllocator::allocate_page()
+        .ok_or_else(|| String::from("Failed to allocate user stack page"))?;
+    let stack_top = stack_base + 4096u64;
+
+    let address_space_root = crate::arch::x86_64::paging::get_kernel_pml4();
+    create_user_task(
+        id,
+        name,
+        capabilities,
+        entry_point,
+        stack_top,
+        address_space_root,
+    );
+
+    crate::kprintln!(
+        "[kernel] task: Spawned task {} from {} ({} bytes)",
+        id,
+        path,
+        code.len()
+    );
+    Ok(())
 }
 
 /// Returns a clone of the currently executing task's TCB.
