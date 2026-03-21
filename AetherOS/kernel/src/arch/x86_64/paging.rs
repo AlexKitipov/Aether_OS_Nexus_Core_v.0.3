@@ -62,6 +62,15 @@ pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPage
     OffsetPageTable::new(level_4_table, physical_memory_offset)
 }
 
+/// Initializes a direct-map backed page-table mapper from the currently active
+/// CR3 root table.
+///
+/// # Safety
+/// The caller must provide a valid direct physical memory mapping base.
+pub unsafe fn init_mapper(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+    init_active_paging(physical_memory_offset)
+}
+
 /// Allocates a contiguous run of synthetic physical frames.
 ///
 /// This is a bootstrap helper and not a replacement for a real physical frame
