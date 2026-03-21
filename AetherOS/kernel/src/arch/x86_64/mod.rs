@@ -8,10 +8,12 @@ pub mod irq;
 pub mod paging;
 
 pub fn init() {
+    // 1) GDT/TSS
     gdt::init();
+    // 2) IDT
     idt::init();
+    // 3) Paging bootstrap (CR3-backed structures)
     paging::init();
-    // long_mode_init() from boot module would be called here in a real system
-    // boot::long_mode_init(); // Conceptual call for boot mode setup
-    // Initialize other architecture-specific components here
+    // 4) IRQ/IPC bridge wiring for hardware interrupts
+    irq::init();
 }

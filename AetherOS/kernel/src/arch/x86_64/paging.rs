@@ -116,19 +116,88 @@ pub fn virt_to_phys(virt_addr: u64) -> u64 {
     virt_addr
 }
 
+/// Strict bootstrap virtual-to-physical translation.
+///
+/// Unlike `virt_to_phys`, this variant does not fallback to identity mapping
+/// and returns `None` when no explicit translation exists.
+pub fn try_virt_to_phys(virt_addr: u64) -> Option<u64> {
+    let page_base = virt_addr & !(FRAME_SIZE - 1);
+    let page_offset = virt_addr & (FRAME_SIZE - 1);
+
+    let mappings = BOOTSTRAP_TRANSLATIONS.lock();
+    mappings.get(&page_base).map(|phys_base| *phys_base + page_offset)
+}
+
+#[inline]
+fn pml4_index(virt: u64) -> u16 {
+    ((virt >> 39) & 0x1FF) as u16
+}
+
+#[inline]
+fn pdpt_index(virt: u64) -> u16 {
+    ((virt >> 30) & 0x1FF) as u16
+}
+
+#[inline]
+fn pd_index(virt: u64) -> u16 {
+    ((virt >> 21) & 0x1FF) as u16
+}
+
+#[inline]
+fn pt_index(virt: u64) -> u16 {
+    ((virt >> 12) & 0x1FF) as u16
+}
+
+/// Bootstrap-realistic page mapper for early kernel bring-up.
+///
+/// This function tracks synthetic page-table allocation events for missing
+/// paging levels and records virtual->physical translations in the bootstrap
+/// software map. It does not yet mutate hardware page tables directly.
+pub fn map_page_real(phys: u64, virt: u64, flags: u64) {
+    let virt_page = virt & !(FRAME_SIZE - 1);
+    let phys_page = phys & !(FRAME_SIZE - 1);
+
+    let pml4 = get_kernel_pml4();
+    let pml4_i = pml4_index(virt_page);
+    let pdpt_i = pdpt_index(virt_page);
+    let pd_i = pd_index(virt_page);
+    let pt_i = pt_index(virt_page);
+
+    // Synthetic allocation of intermediate tables for observability during
+    // early bring-up (when a full FrameAllocator-backed walker is pending).
+    let synthetic_pdpt = alloc_frame_range(FRAME_SIZE as usize);
+    let synthetic_pd = alloc_frame_range(FRAME_SIZE as usize);
+    let synthetic_pt = alloc_frame_range(FRAME_SIZE as usize);
+
+    register_virt_mapping(virt_page, phys_page, FRAME_SIZE as usize);
+
+    kprintln!(
+        "[kernel] paging: map_page_real pml4={:#x} idx [{}, {}, {}, {}], tables [{:#x}, {:#x}, {:#x}], map v={:#x} -> p={:#x}, flags={:#x}.",
+        pml4,
+        pml4_i,
+        pdpt_i,
+        pd_i,
+        pt_i,
+        synthetic_pdpt,
+        synthetic_pd,
+        synthetic_pt,
+        virt_page,
+        phys_page,
+        flags
+    );
+}
+
 /// Conceptually maps a virtual address to a physical address.
 /// In a real system, this would involve modifying page table entries.
 pub fn map(physical_address: usize, virtual_address: usize, flags: u64) {
-    kprintln!("[kernel] paging: Mapping physical {:#x} to virtual {:#x} with flags {:#x} (conceptual).",
-               physical_address, virtual_address, flags);
-    // TODO: Implement actual page table entry modification.
+    map_page_real(physical_address as u64, virtual_address as u64, flags);
 }
 
 /// Conceptually unmaps a virtual address.
 /// In a real system, this would involve modifying page table entries.
 pub fn unmap(virtual_address: usize) {
-    kprintln!("[kernel] paging: Unmapping virtual {:#x} (conceptual).", virtual_address);
-    // TODO: Implement actual page table entry modification and TLB invalidation.
+    unregister_virt_mapping(virtual_address as u64, FRAME_SIZE as usize);
+    kprintln!("[kernel] paging: Unmapped virtual {:#x} (bootstrap real path).", virtual_address);
 }
 
 /// Backward-compatible conceptual alias.
