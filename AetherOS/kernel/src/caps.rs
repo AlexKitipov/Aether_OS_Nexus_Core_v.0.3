@@ -55,6 +55,20 @@ impl Capability {
     }
 }
 
+/// Returns true if a given task currently holds `cap`.
+pub fn has_capability(task_id: u64, cap: Capability) -> bool {
+    crate::task::scheduler::task_has_capability(task_id, cap)
+}
+
+/// Grants `cap` from one task to another if the source task already has it.
+/// Returns `true` when the destination task gained the capability.
+pub fn transfer_capability(from_task_id: u64, to_task_id: u64, cap: Capability) -> bool {
+    if !has_capability(from_task_id, cap) {
+        return false;
+    }
+    crate::task::scheduler::grant_capability(to_task_id, cap)
+}
+
 
 /// Initializes the capability subsystem.
 pub fn init() {
