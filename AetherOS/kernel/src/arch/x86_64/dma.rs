@@ -87,9 +87,9 @@ pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
 /// virtual kernel pointer.
 pub fn get_phys_addr(handle: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
-    buffers.get(&handle).map(|buf| {
+    buffers.get(&handle).and_then(|buf| {
         let virt_addr = buf.bytes.as_ptr() as u64;
-        let translated = paging::virt_to_phys(virt_addr);
+        let translated = paging::try_virt_to_phys(virt_addr)?;
 
         if translated != buf.phys_base {
             kprintln!(
@@ -101,7 +101,7 @@ pub fn get_phys_addr(handle: u64) -> Option<u64> {
             );
         }
 
-        translated
+        Some(translated)
     })
 }
 
