@@ -10,6 +10,8 @@ use crate::kprintln;
 use crate::elf;
 use crate::task;
 use crate::caps::Capability;
+use crate::memory::page_allocator::PageAllocator;
+use crate::arch::x86_64::paging;
 
 /// Initializes the V-Node loader.
 pub fn init() {
@@ -42,10 +44,22 @@ pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(),
     };
     kprintln!("[kernel] vnode_loader: ELF loaded for {}. Entry point: {:#x}.", vnode_name, elf_header.entry_point);
 
-    // 3. Create a new task (V-Node) for the loaded ELF.
+    // 3. Allocate a dedicated user stack and create a user task for the loaded ELF.
     // Assign a dummy task ID for now. In a real system, task IDs would be managed centrally.
     let dummy_task_id = 1000 + vnode_name.as_bytes()[0] as u64; // Simple dummy ID
-    task::create_task(dummy_task_id, vnode_name, capabilities);
+    let stack_base = PageAllocator::allocate_page()
+        .ok_or_else(|| format!("Failed to allocate user stack for V-Node '{}'.", vnode_name))?;
+    let stack_top = stack_base + 4096u64;
+    let address_space_root = paging::get_kernel_pml4();
+
+    task::create_user_task(
+        dummy_task_id,
+        vnode_name,
+        capabilities,
+        x86_64::VirtAddr::new(elf_header.entry_point),
+        stack_top,
+        address_space_root,
+    );
     kprintln!("[kernel] vnode_loader: Task created for V-Node {} (ID: {}).", vnode_name, dummy_task_id);
 
     // TODO: In a real system, the V-Node's entry point would be set up as the task's starting point.

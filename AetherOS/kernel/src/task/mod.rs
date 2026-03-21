@@ -4,13 +4,14 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
+use x86_64::VirtAddr;
 
 use crate::caps::Capability;
 
 pub mod scheduler;
 pub mod tcb;
 
-pub use tcb::{TaskControlBlock, TaskState};
+pub use tcb::{Context, TaskControlBlock, TaskState};
 
 /// Initializes the task management system, which includes the scheduler.
 pub fn init() {
@@ -20,6 +21,26 @@ pub fn init() {
 /// Creates a new task and adds it to the scheduler.
 pub fn create_task(id: u64, name: &str, capabilities: Vec<Capability>) {
     let tcb = TaskControlBlock::new(id, String::from(name), capabilities);
+    scheduler::add_task(tcb);
+}
+
+/// Creates a user task with first-run context initialized for entry and stack.
+pub fn create_user_task(
+    id: u64,
+    name: &str,
+    capabilities: Vec<Capability>,
+    entry_point: VirtAddr,
+    stack_top: VirtAddr,
+    address_space_root: u64,
+) {
+    let tcb = TaskControlBlock::new_user_task(
+        id,
+        String::from(name),
+        capabilities,
+        entry_point,
+        stack_top,
+        address_space_root,
+    );
     scheduler::add_task(tcb);
 }
 
@@ -41,4 +62,9 @@ pub fn unblock_task_on_channel(task_id: u64) {
 /// Explicitly yields CPU to another task.
 pub fn schedule() {
     scheduler::schedule();
+}
+
+/// Saves CPU register snapshot for the currently running task.
+pub fn save_current_context(snapshot: Context) {
+    scheduler::save_current_context(snapshot);
 }
