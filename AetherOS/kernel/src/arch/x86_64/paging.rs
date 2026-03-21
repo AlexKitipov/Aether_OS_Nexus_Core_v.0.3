@@ -3,6 +3,7 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use crate::kprintln;
+use super::boot;
 
 /// Initializes the paging system.
 /// This includes setting up the initial page tables for the kernel's address space
@@ -21,6 +22,16 @@ pub fn init() {
 
     kprintln!("[kernel] paging: Higher-half kernel setup simulated.");
     kprintln!("[kernel] paging: Paging conceptually enabled.");
+}
+
+/// Returns the physical base address of the currently active kernel PML4 table.
+///
+/// For now this uses the active CR3 value as a pragmatic bridge between
+/// conceptual paging setup and boot-time long mode orchestration.
+pub fn get_kernel_pml4() -> u64 {
+    let pml4 = boot::read_cr3() & !0xFFF;
+    kprintln!("[kernel] paging: Active kernel PML4 at physical {:#x}.", pml4);
+    pml4
 }
 
 /// Conceptually maps a virtual address to a physical address.

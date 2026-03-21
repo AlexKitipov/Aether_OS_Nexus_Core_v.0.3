@@ -4,7 +4,7 @@
 
 use core::arch::asm;
 
-use super::{gdt, idt};
+use super::{gdt, idt, paging};
 use crate::interrupts;
 use crate::kprintln;
 
@@ -173,7 +173,7 @@ fn validate_pml4_addr(pml4_phys_addr: u64) -> Result<(), BootError> {
 }
 
 /// Checks whether the CPU supports long mode via CPUID.
-pub fn check_cpu_support() -> Result<(), BootError> {
+pub fn check_long_mode_support() -> Result<(), BootError> {
     let max_extended_leaf: u32;
     unsafe {
         asm!(
@@ -208,6 +208,11 @@ pub fn check_cpu_support() -> Result<(), BootError> {
     }
 
     Ok(())
+}
+
+/// Backward-compatible alias.
+pub fn check_cpu_support() -> Result<(), BootError> {
+    check_long_mode_support()
 }
 
 /// Performs long mode activation:
@@ -251,11 +256,10 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
 
 /// Full architecture initialization pipeline for booting into kernel mode.
 pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
-    check_cpu_support()?;
-    long_mode_init(config)?;
-
     gdt::init();
     idt::init();
+    check_long_mode_support()?;
+    long_mode_init(config)?;
     interrupts::init();
 
     kprintln!("[kernel] boot: Architecture initialized.");
@@ -263,7 +267,10 @@ pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
 }
 
 /// Architecture boot entry point for setup orchestration.
-pub fn entry_point(pml4_addr: u64) {
+pub fn entry_point() {
+    kprintln!("[kernel] boot: Starting bootstrap sequence.");
+    paging::init();
+    let pml4_addr = paging::get_kernel_pml4();
     let config = LongModeConfig::new(pml4_addr);
 
     match architecture_init(config) {
