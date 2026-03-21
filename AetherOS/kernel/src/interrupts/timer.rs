@@ -6,7 +6,6 @@ use crate::interrupts::{pic, IRQ_TIMER};
 
 pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
     crate::timer::tick();
-    crate::task::scheduler::request_reschedule_from_irq();
 
     unsafe {
         // SAFETY: We are running in the timer IRQ context, so acknowledging

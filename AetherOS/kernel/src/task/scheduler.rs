@@ -4,6 +4,7 @@ extern crate alloc;
 use alloc::collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Mutex;
+use x86_64::instructions::interrupts;
 
 use crate::kprintln;
 use crate::memory::page_allocator::PageAllocator;
@@ -26,7 +27,7 @@ pub fn init() {
 
     // Create a dummy kernel task and add it to the task list.
     // In a real system, the initial kernel thread would be set up differently.
-    let kernel_task = TaskControlBlock::new(
+    let mut kernel_task = TaskControlBlock::new(
         0,
         alloc::string::String::from("kernel"),
         // Grant full capabilities to the kernel task for simulation purposes.
@@ -43,6 +44,8 @@ pub fn init() {
             crate::caps::Capability::StorageAccess,
         ],
     );
+
+    kernel_task.state = TaskState::Running;
 
     {
         let mut tasks = TASKS.lock();
@@ -173,44 +176,49 @@ pub fn unblock_task(task_id: u64) {
 
 /// Simulates a context switch to the next ready task (round-robin).
 pub fn schedule() {
-    let mut run_queue = RUN_QUEUE.lock();
-    let mut current_id_guard = CURRENT_TASK_ID.lock();
-    let mut tasks = TASKS.lock();
+    interrupts::without_interrupts(|| {
+        let mut run_queue = RUN_QUEUE.lock();
+        let mut current_id_guard = CURRENT_TASK_ID.lock();
+        let mut tasks = TASKS.lock();
 
-    let old_task_id = *current_id_guard;
+        let old_task_id = *current_id_guard;
 
-    // If the old task is still running, set its state to Ready and put it back in the queue.
-    // (Unless it explicitly blocked itself)
-    if let Some(old_task) = tasks.get_mut(&old_task_id) {
-        if old_task.state == TaskState::Running {
-            old_task.state = TaskState::Ready;
-            run_queue.push_back(old_task_id);
+        // If the old task is still running, set its state to Ready and put it back in the queue.
+        // (Unless it explicitly blocked itself)
+        if let Some(old_task) = tasks.get_mut(&old_task_id) {
+            if old_task.state == TaskState::Running {
+                old_task.state = TaskState::Ready;
+                run_queue.push_back(old_task_id);
+            }
         }
-    }
 
-    // Get the next task from the run queue.
-    while let Some(next_task_id) = run_queue.pop_front() {
-        if let Some(next_task) = tasks.get_mut(&next_task_id) {
-            next_task.state = TaskState::Running;
-            *current_id_guard = next_task_id;
+        // Get the next task from the run queue.
+        while let Some(next_task_id) = run_queue.pop_front() {
+            if let Some(next_task) = tasks.get_mut(&next_task_id) {
+                next_task.state = TaskState::Running;
+                *current_id_guard = next_task_id;
+                kprintln!(
+                    "[kernel] scheduler: Context switch: from {} to {}.",
+                    old_task_id,
+                    next_task_id
+                );
+                // In a real scheduler, actual CPU context switch would occur here.
+                return;
+            }
+
             kprintln!(
-                "[kernel] scheduler: Context switch: from {} to {}.",
-                old_task_id,
+                "[kernel] scheduler: ERROR: Next task ID {} not found in TASKS. Skipping.",
                 next_task_id
             );
-            // In a real scheduler, actual CPU context switch would occur here.
-            return;
         }
 
-        kprintln!(
-            "[kernel] scheduler: ERROR: Next task ID {} not found in TASKS. Skipping.",
-            next_task_id
-        );
-    }
-
-    // No tasks in run queue. System might idle or panic.
-    kprintln!("[kernel] scheduler: Run queue empty. Idling.");
-    // In a real system, this would ideally lead to an idle loop or halt.
+        // No task was runnable; keep current task active as idle fallback.
+        if let Some(old_task) = tasks.get_mut(&old_task_id) {
+            old_task.state = TaskState::Running;
+        }
+        *current_id_guard = old_task_id;
+        kprintln!("[kernel] scheduler: Run queue empty. Continuing task {}.", old_task_id);
+    });
 }
 
 /// Returns a cloned `TaskControlBlock` for the currently executing task.
