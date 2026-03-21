@@ -161,7 +161,32 @@ https://notebooklm.google.com/notebook/be0fd2b7-ed9f-4bbb-9f09-eb93b779d822
 - Автоматично генерирани обобщения, тестове и обучителни материали  
 - Стратегически отчети и технически breakdown-и  
 
-NotebookLM служи като **централен knowledge hub**, който улеснява разработката, ревюто и разширяването на AetherOS.
+NotebookLM служи като **централен knowledge hub**, който улеснява разработката, ревюто и разширяването на AetherOS
+
+📘 NotebookLM – Centralized Knowledge Hub
+To simplify navigation and improve workflow across all project documentation, we created a dedicated NotebookLM hub that aggregates, structures, and analyzes all key materials related to AetherOS Nexus Core v0.3.
+
+🔗 NotebookLM (documentation, analyses, reports):  
+https://notebooklm.google.com/notebook/be0fd2b7-ed9f-4bbb-9f09-eb93b779d822
+
+What the NotebookLM hub includes:
+Architectural descriptions of AetherOS Nexus Core
+
+Documentation on security, isolation, and cryptography
+
+Networking mechanisms and AetherNet specifications
+
+Analyses of the V‑Node architecture
+
+Rust safety patterns and system modules
+
+Infographics, diagrams, and visualizations
+
+Automatically generated summaries, tests, and learning materials
+
+Strategic reports and technical breakdowns
+
+NotebookLM serves as a central knowledge hub that streamlines development, review, and expansion of AetherOS.
 
 ## ⚠️ Current Limitations: Missing CI/CD and Automated Testing
 
