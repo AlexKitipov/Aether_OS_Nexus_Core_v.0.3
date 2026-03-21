@@ -8,6 +8,7 @@ use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU64, Ordering};
 use spin::Mutex;
 use crate::kprintln;
+use crate::memory::virt_to_phys;
 
 /// A simple DMA buffer manager for simulation.
 /// In a real system, this would manage physically contiguous memory pages
@@ -29,11 +30,17 @@ pub fn alloc_dma_buffer(size: usize) -> Option<u64> {
     let handle = NEXT_HANDLE.fetch_add(1, Ordering::SeqCst);
     let mut buffers = DMA_BUFFERS.lock();
 
-    // Allocate a Vec with the given capacity. This simulates a contiguous memory block.
-    let buffer = Vec::with_capacity(size);
+    // Allocate and explicitly zero the backing storage.
+    // This avoids exposing stale memory contents to DMA consumers.
+    let mut buffer = Vec::with_capacity(size);
+    buffer.resize(size, 0);
     buffers.insert(handle, buffer);
 
-    kprintln!("[kernel] dma: Allocated buffer with handle {} and size {}.", handle, size);
+    kprintln!(
+        "[kernel] dma: Allocated & zeroed buffer handle {} ({} bytes).",
+        handle,
+        size
+    );
     Some(handle)
 }
 
@@ -53,6 +60,18 @@ pub fn free_dma_buffer(handle: u64) {
 pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
     let mut buffers = DMA_BUFFERS.lock();
     buffers.get_mut(&handle).map(|buf| buf.as_mut_ptr())
+}
+
+/// Returns the (conceptual) physical address of a DMA buffer.
+///
+/// In real hardware interaction, devices require a physical address, not a
+/// virtual kernel pointer.
+pub fn get_phys_addr(handle: u64) -> Option<u64> {
+    let buffers = DMA_BUFFERS.lock();
+    buffers.get(&handle).map(|buf| {
+        let virt_addr = buf.as_ptr() as u64;
+        virt_to_phys(virt_addr)
+    })
 }
 
 /// Returns the current capacity (allocated size) of the DMA buffer.
@@ -86,4 +105,38 @@ pub fn set_dma_buffer_len(handle: u64, len: usize) -> Result<(), &'static str> {
 pub fn get_dma_buffer_len(handle: u64) -> Option<usize> {
     let buffers = DMA_BUFFERS.lock();
     buffers.get(&handle).map(|buf| buf.len())
+}
+
+/// Copies data from a source slice into the DMA buffer.
+pub fn write_to_buffer(handle: u64, data: &[u8], offset: usize) -> Result<(), &'static str> {
+    let mut buffers = DMA_BUFFERS.lock();
+    if let Some(buf) = buffers.get_mut(&handle) {
+        if offset + data.len() <= buf.len() {
+            buf[offset..offset + data.len()].copy_from_slice(data);
+            Ok(())
+        } else {
+            Err("Out of bounds write")
+        }
+    } else {
+        Err("Invalid handle")
+    }
+}
+
+/// Copies data from the DMA buffer into a destination slice.
+pub fn read_from_buffer(
+    handle: u64,
+    out_data: &mut [u8],
+    offset: usize,
+) -> Result<(), &'static str> {
+    let buffers = DMA_BUFFERS.lock();
+    if let Some(buf) = buffers.get(&handle) {
+        if offset + out_data.len() <= buf.len() {
+            out_data.copy_from_slice(&buf[offset..offset + out_data.len()]);
+            Ok(())
+        } else {
+            Err("Out of bounds read")
+        }
+    } else {
+        Err("Invalid handle")
+    }
 }

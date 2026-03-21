@@ -27,3 +27,13 @@ pub fn init(memory_regions: &'static MemoryRegions) {
 
     kprintln!("[kernel] memory: All memory modules initialized.");
 }
+
+/// Conceptually translates a virtual address to a physical address.
+///
+/// At this stage of the project, paging is still mostly simulated, so we use
+/// identity translation as a predictable fallback.
+/// Once full page-table walking is available, this function should read the
+/// active page tables and return the mapped physical address.
+pub fn virt_to_phys(virtual_address: u64) -> u64 {
+    virtual_address
+}
