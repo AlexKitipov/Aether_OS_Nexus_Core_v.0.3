@@ -64,7 +64,7 @@ pub fn init(
             arch::x86_64::paging::map_heap_region(
                 &mut mapper,
                 frame_allocator,
-                x86_64::VirtAddr::new(heap::HEAP_START),
+                x86_64::VirtAddr::new(heap::HEAP_MAPPED_START),
                 heap::HEAP_SIZE,
             )
         });
