@@ -9,6 +9,7 @@ use x86_64::instructions::interrupts;
 use crate::kprintln;
 use crate::memory::page_allocator::PageAllocator;
 use crate::task::tcb::{Context, TaskControlBlock, TaskState};
+use crate::caps::Capability;
 
 /// The run queue holds task IDs of tasks that are ready to be scheduled.
 /// This uses a simple `VecDeque` for a round-robin like behavior.
@@ -234,6 +235,32 @@ pub fn save_current_context(snapshot: Context) {
 /// Returns the context snapshot for a task if present.
 pub fn get_task_context(task_id: u64) -> Option<Context> {
     TASKS.lock().get(&task_id).map(|task| task.context)
+}
+
+/// Returns a cloned task by id if it exists.
+pub fn get_task_by_id(task_id: u64) -> Option<TaskControlBlock> {
+    TASKS.lock().get(&task_id).cloned()
+}
+
+/// Checks whether a task holds a specific capability.
+pub fn task_has_capability(task_id: u64, cap: Capability) -> bool {
+    TASKS
+        .lock()
+        .get(&task_id)
+        .map(|task| task.capabilities.iter().any(|c| *c == cap))
+        .unwrap_or(false)
+}
+
+/// Grants a capability to a task when not already present.
+pub fn grant_capability(task_id: u64, cap: Capability) -> bool {
+    let mut tasks = TASKS.lock();
+    if let Some(task) = tasks.get_mut(&task_id) {
+        if !task.capabilities.iter().any(|c| *c == cap) {
+            task.capabilities.push(cap);
+            return true;
+        }
+    }
+    false
 }
 
 fn restore_task_context(context: Context, address_space_root: u64) {

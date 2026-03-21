@@ -36,7 +36,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
 
     match n {
         SYS_LOG => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::LogWrite) {
+            if !caps::has_capability(current_task.id, caps::Capability::LogWrite) {
                 return E_ACC_DENIED;
             }
             let ptr = a1 as *const u8;
@@ -54,7 +54,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
         }
         SYS_IPC_SEND => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::IpcManage) {
+            if !caps::has_capability(current_task.id, caps::Capability::IpcManage) {
                 return E_ACC_DENIED;
             }
             let channel_id = a1 as ipc::ChannelId;
@@ -67,7 +67,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
         }
         SYS_IPC_RECV | SYS_IPC_RECV_NONBLOCKING => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::IpcManage) {
+            if !caps::has_capability(current_task.id, caps::Capability::IpcManage) {
                 return E_ACC_DENIED;
             }
             let channel_id = a1 as ipc::ChannelId;
@@ -109,7 +109,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             SUCCESS
         }
         SYS_TIME => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::TimeRead) {
+            if !caps::has_capability(current_task.id, caps::Capability::TimeRead) {
                 return E_ACC_DENIED;
             }
             timer::get_current_ticks()
@@ -117,7 +117,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
         SYS_IRQ_REGISTER => {
             let irq_num = a1 as u8;
             let channel_id = a2 as u32;
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::IrqRegister(irq_num) || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::IrqRegister(irq_num)) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                 // NetworkAccess is a broad capability that implies IRQ registration for network devices.
                 return E_ACC_DENIED;
             }
@@ -127,7 +127,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
         SYS_NET_RX_POLL => {
             // This syscall is highly dependent on specific hardware/driver.
             // For now, it remains a simulation for a network device.
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::NetworkAccess) {
+            if !caps::has_capability(current_task.id, caps::Capability::NetworkAccess) {
                 return E_ACC_DENIED;
             }
 
@@ -186,7 +186,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
         }
         SYS_NET_ALLOC_BUF => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::DmaAlloc || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::DmaAlloc) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                 return E_ACC_DENIED;
             }
             let size = a1 as usize;
@@ -198,14 +198,14 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
         }
         SYS_NET_FREE_BUF => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::DmaAlloc || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::DmaAlloc) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                 return E_ACC_DENIED;
             }
             dma::free_dma_buffer(a1);
             SUCCESS
         }
         SYS_NET_TX => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::NetworkAccess) {
+            if !caps::has_capability(current_task.id, caps::Capability::NetworkAccess) {
                 return E_ACC_DENIED;
             }
             // In a real system, this would queue the DMA buffer for transmission by the NIC driver.
@@ -214,14 +214,14 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
         }
         SYS_IRQ_ACK => {
             let irq_num = a1 as u8;
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::IrqAck(irq_num) || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::IrqAck(irq_num)) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                 return E_ACC_DENIED;
             }
             irq::acknowledge_irq(irq_num);
             SUCCESS
         }
         SYS_GET_DMA_BUF_PTR => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::DmaAccess || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::DmaAccess) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                  return E_ACC_DENIED;
             }
             if let Some(ptr) = dma::get_dma_buffer_ptr(a1) {
@@ -232,7 +232,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
         }
         SYS_SET_DMA_BUF_LEN => {
-            if !current_task.capabilities.iter().any(|cap| *cap == caps::Capability::DmaAccess || *cap == caps::Capability::NetworkAccess) {
+            if !(caps::has_capability(current_task.id, caps::Capability::DmaAccess) || caps::has_capability(current_task.id, caps::Capability::NetworkAccess)) {
                  return E_ACC_DENIED;
             }
             if dma::set_dma_buffer_len(a1, a2 as usize).is_ok() {
