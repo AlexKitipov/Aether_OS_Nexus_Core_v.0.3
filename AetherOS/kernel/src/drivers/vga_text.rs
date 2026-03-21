@@ -84,16 +84,21 @@ impl Write for VgaTextWriter {
     }
 }
 
-static VGA_WRITER: Mutex<VgaTextWriter> = Mutex::new(VgaTextWriter::new());
+pub static WRITER: Mutex<VgaTextWriter> = Mutex::new(VgaTextWriter::new());
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments<'_>) {
+    let _ = WRITER.lock().write_fmt(args);
+}
 
 pub fn init() {
-    VGA_WRITER.lock().clear_screen();
+    WRITER.lock().clear_screen();
 }
 
 pub fn write_str(text: &str) {
-    VGA_WRITER.lock().write_text(text);
+    WRITER.lock().write_text(text);
 }
 
 pub fn write_fmt(args: fmt::Arguments<'_>) {
-    let _ = VGA_WRITER.lock().write_fmt(args);
+    _print(args);
 }
