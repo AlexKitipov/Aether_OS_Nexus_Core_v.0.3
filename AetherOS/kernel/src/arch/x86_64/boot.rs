@@ -295,7 +295,12 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
         kprintln!("[kernel] boot: Active mapper initialized from direct map offset.");
     }
 
-    let pml4_phys_addr = paging::get_kernel_pml4();
+    // Reuse the active bootloader-provided root table directly from CR3.
+    let pml4_phys_addr = read_cr3() & !0xFFF;
+    kprintln!(
+        "[kernel] boot: Active CR3 root (PML4) at physical {:#x}.",
+        pml4_phys_addr
+    );
     let config = LongModeConfig::new(pml4_phys_addr);
 
     match architecture_init(config) {
