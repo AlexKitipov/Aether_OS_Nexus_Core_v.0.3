@@ -83,11 +83,11 @@ pub fn get_dma_buffer_ptr(handle: u64) -> Option<*mut u8> {
 
 /// Returns the physical address of a DMA buffer using an explicit direct-map
 /// offset supplied by the caller.
-pub fn get_phys_addr(handle: u64, mem_offset: u64) -> Option<u64> {
+pub fn get_phys_addr(handle: u64, physical_memory_offset: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
-    buffers.get(&handle).and_then(|buf| {
+    buffers.get(&handle).map(|buf| {
         let virt_addr = buf.bytes.as_ptr() as u64;
-        let translated = paging::virt_to_phys_with_offset(virt_addr, mem_offset).as_u64();
+        let translated = virt_addr.saturating_sub(physical_memory_offset);
 
         if translated != buf.phys_base {
             kprintln!(
@@ -99,7 +99,7 @@ pub fn get_phys_addr(handle: u64, mem_offset: u64) -> Option<u64> {
             );
         }
 
-        Some(translated)
+        translated
     })
 }
 

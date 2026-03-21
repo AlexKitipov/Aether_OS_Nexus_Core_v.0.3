@@ -273,6 +273,13 @@ pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
 pub fn entry_point(boot_info: &'static mut BootInfo) {
     kprintln!("[kernel] boot: Starting bootstrap sequence.");
 
+    if let Some(framebuffer) = boot_info.framebuffer.as_mut() {
+        crate::drivers::framebuffer::init(framebuffer);
+        kprintln!("[kernel] boot: Framebuffer initialized from BootInfo.");
+    } else {
+        kprintln!("[kernel] boot: BootInfo framebuffer unavailable.");
+    }
+
     crate::memory::init(&boot_info.memory_regions);
     kprintln!("[kernel] boot: Memory map wired into frame allocator.");
 
@@ -280,6 +287,14 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
         .physical_memory_offset
         .into_option()
         .unwrap_or(0);
+    if physical_memory_offset != 0 {
+        let physical_memory_offset = x86_64::VirtAddr::new(physical_memory_offset);
+        unsafe {
+            let _ = paging::init_mapper(physical_memory_offset);
+        }
+        kprintln!("[kernel] boot: Active mapper initialized from direct map offset.");
+    }
+
     let pml4_phys_addr = paging::get_kernel_pml4();
     let config = LongModeConfig::new(pml4_phys_addr);
 
