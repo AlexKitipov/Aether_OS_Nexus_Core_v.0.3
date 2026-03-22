@@ -5,6 +5,7 @@ extern crate alloc;
 pub mod ipc;
 pub mod syscall;
 pub mod swarm_engine;
+pub mod nexus_net_transport;
 pub mod arp_dht;
 pub mod trust;
 pub mod examples;
