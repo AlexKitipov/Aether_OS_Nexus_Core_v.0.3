@@ -25,7 +25,7 @@ pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
         boot_info.physical_memory_offset,
     );
 
-    aetheros_kernel::kprintln!("[kernel] Welcome to AetherOS!");
+    aetheros_kernel::kprintln!("[kernel] Boot sequence complete, entering scheduler loop.");
 
     // Enter an infinite loop to keep the kernel running.
     // In a real OS, this would be the idle loop, scheduling tasks.

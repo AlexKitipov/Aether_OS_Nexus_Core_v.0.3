@@ -25,23 +25,13 @@ pub mod interrupts;
 pub mod usercopy;
 pub mod config;
 
-// Initialize the kernel.
+/// Initialize all kernel subsystems in a deterministic startup order.
 pub fn init(
     memory_regions: &'static MemoryRegions,
     framebuffer: Option<&'static mut FrameBuffer>,
     physical_memory_offset: Optional<u64>,
 ) {
-    drivers::serial::init();
-    drivers::vga_text::init();
-    kprintln!("[kernel] Serial output initialized.");
-    kprintln!("Aether OS is running");
-
-    if let Some(framebuffer) = framebuffer {
-        drivers::framebuffer::init(framebuffer);
-        kprintln!("[kernel] Framebuffer output initialized.");
-    } else {
-        kprintln!("[kernel] Framebuffer unavailable; using VGA text mode fallback.");
-    }
+    init_console(framebuffer);
 
     gdt::init();
     kprintln!("[kernel] GDT initialized.");
@@ -52,6 +42,31 @@ pub fn init(
     interrupts::init();
     kprintln!("[kernel] Interrupts initialized.");
 
+    init_memory_and_heap(memory_regions, physical_memory_offset);
+    init_runtime_subsystems();
+
+    x86_64::instructions::interrupts::enable();
+    kprintln!("[kernel] Interrupts enabled.");
+    kprintln!("[kernel] Nexus Core v0.3 READY.");
+}
+
+fn init_console(framebuffer: Option<&'static mut FrameBuffer>) {
+    drivers::serial::init();
+    drivers::vga_text::init();
+    kprintln!("[kernel] Console: serial + VGA text initialized.");
+
+    if let Some(framebuffer) = framebuffer {
+        drivers::framebuffer::init(framebuffer);
+        kprintln!("[kernel] Console: framebuffer initialized.");
+    } else {
+        kprintln!("[kernel] Console: framebuffer unavailable; using text fallback.");
+    }
+}
+
+fn init_memory_and_heap(
+    memory_regions: &'static MemoryRegions,
+    physical_memory_offset: Optional<u64>,
+) {
     memory::init(memory_regions);
     kprintln!("[kernel] Memory manager initialized.");
 
@@ -81,7 +96,9 @@ pub fn init(
     } else {
         panic!("[kernel] heap mapping failed: physical_memory_offset is unavailable");
     }
+}
 
+fn init_runtime_subsystems() {
     task::init();
     kprintln!("[kernel] Task scheduler initialized.");
 
@@ -96,11 +113,6 @@ pub fn init(
 
     syscall::init();
     kprintln!("[kernel] Syscall interface initialized.");
-
-    x86_64::instructions::interrupts::enable();
-    kprintln!("[kernel] Interrupts enabled.");
-
-    kprintln!("[kernel] AetherOS kernel initialized successfully.");
 }
 
 #[cfg(target_os = "none")]
