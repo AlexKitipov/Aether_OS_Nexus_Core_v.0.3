@@ -46,15 +46,37 @@ extern "x86-interrupt" fn page_fault_handler(
 ) {
     let accessed_address = Cr2::read();
     let accessed_address_raw = accessed_address.as_u64() as usize;
+    let caused_by_user_mode = error_code.contains(PageFaultErrorCode::USER_MODE);
+    let is_protection_violation = error_code.contains(PageFaultErrorCode::PROTECTION_VIOLATION);
+    let is_write = error_code.contains(PageFaultErrorCode::CAUSED_BY_WRITE);
+    let is_instruction_fetch = error_code.contains(PageFaultErrorCode::INSTRUCTION_FETCH);
+
     kprintln!("[kernel] EXCEPTION: PAGE FAULT");
     kprintln!("[kernel] Accessed Address: {:?}", accessed_address);
     kprintln!("[kernel] Error Code: {:?}", error_code);
+    kprintln!(
+        "[kernel] page fault details: mode={}, access={}, reason={}, fetch={}",
+        if caused_by_user_mode { "user" } else { "kernel" },
+        if is_write { "write" } else { "read" },
+        if is_protection_violation {
+            "protection violation"
+        } else {
+            "non-present page"
+        },
+        if is_instruction_fetch { "yes" } else { "no" }
+    );
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
 
-    if accessed_address_raw >= crate::config::USER_SPACE_START
-        && accessed_address_raw < crate::config::USER_SPACE_END_EXCLUSIVE
+    let in_user_space_range = accessed_address_raw >= crate::config::USER_SPACE_START
+        && accessed_address_raw < crate::config::USER_SPACE_END_EXCLUSIVE;
+    let current_task_id = crate::task::scheduler::get_current_task_id();
+
+    if caused_by_user_mode && in_user_space_range && current_task_id != 0
     {
-        kprintln!("[kernel] page fault: invalid userspace pointer detected; terminating task.");
+        kprintln!(
+            "[kernel] page fault: terminating task {} due to invalid userspace memory access.",
+            current_task_id
+        );
         crate::task::scheduler::terminate_current_task();
         return;
     }
@@ -81,4 +103,3 @@ extern "x86-interrupt" fn double_fault_handler(
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
     hlt_loop();
 }
-
