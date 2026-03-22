@@ -135,7 +135,9 @@ pub fn create_channel() -> ChannelId {
 pub fn send(channel_id: ChannelId, sender: u32, message: &[u8]) -> Result<(), &'static str> {
     let mailbox = MAILBOX.get().expect("Mailbox not initialized");
     if let Some(channel) = mailbox.get_channel(channel_id) {
-        channel.send(sender, message)
+        channel.send(sender, message)?;
+        mailbox.wake_one_waiter(channel_id);
+        Ok(())
     } else {
         Err("Channel not found")
     }
@@ -177,6 +179,14 @@ pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: 
     } else {
         Err("Channel not found")
     }
+}
+
+/// Injects a kernel-originated hardware event into a mailbox channel.
+///
+/// This path bypasses userspace buffer copying and capability checks because the
+/// event data is already owned by the kernel and arrives from an IRQ context.
+pub fn inject_hardware_event(channel_id: ChannelId, irq: u8, payload: &[u8]) -> Result<(), &'static str> {
+    send(channel_id, irq as u32, payload)
 }
 
 pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usize, blocking: bool) -> Result<usize, &'static str> {

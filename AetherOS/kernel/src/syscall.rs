@@ -5,33 +5,31 @@
 extern crate alloc;
 use core::str;
 use alloc::vec;
+use aetheros_common::syscall::{
+    E_ACC_DENIED,
+    E_ERROR,
+    E_UNKNOWN_SYSCALL,
+    SUCCESS,
+    SYS_BLOCK_ON_CHAN,
+    SYS_CAP_GRANT,
+    SYS_GET_DMA_BUF_PTR,
+    SYS_IPC_RECV,
+    SYS_IPC_RECV_NONBLOCKING,
+    SYS_IPC_SEND,
+    SYS_IRQ_ACK,
+    SYS_IRQ_REGISTER,
+    SYS_LOG,
+    SYS_NET_ALLOC_BUF,
+    SYS_NET_FREE_BUF,
+    SYS_NET_RX_POLL,
+    SYS_NET_TX,
+    SYS_SET_DMA_BUF_LEN,
+    SYS_TIME,
+};
 
 use crate::{kprintln, task, ipc, caps, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
 use crate::usercopy::copy_from_user;
-
-// Error codes
-pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
-pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
-pub const E_ERROR: u64 = 1;
-pub const SUCCESS: u64 = 0;
-
-// Syscall numbers
-pub const SYS_LOG: u64 = 0;
-pub const SYS_IPC_SEND: u64 = 1;
-pub const SYS_IPC_RECV: u64 = 2;
-pub const SYS_BLOCK_ON_CHAN: u64 = 3;
-pub const SYS_TIME: u64 = 4;
-pub const SYS_IRQ_REGISTER: u64 = 5;
-pub const SYS_NET_RX_POLL: u64 = 6;
-pub const SYS_NET_ALLOC_BUF: u64 = 7;
-pub const SYS_NET_FREE_BUF: u64 = 8;
-pub const SYS_NET_TX: u64 = 9;
-pub const SYS_IRQ_ACK: u64 = 10;
-pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
-pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
-pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
-pub const SYS_CAP_GRANT: u64 = 14;
 const SYS_LOG_MAX_LEN: usize = 1024;
 
 const CAP_LOG_WRITE: u64 = 0;
