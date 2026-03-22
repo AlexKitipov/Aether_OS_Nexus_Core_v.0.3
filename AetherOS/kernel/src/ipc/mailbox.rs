@@ -2,6 +2,7 @@
 extern crate alloc;
 
 use alloc::collections::VecDeque;
+use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -59,6 +60,7 @@ impl Channel {
 pub struct Mailbox {
     next_channel_id: Mutex<ChannelId>,
     channels: Mutex<Vec<Arc<Channel>>>,
+    waiters: Mutex<BTreeMap<ChannelId, Vec<u64>>>,
 }
 
 impl Mailbox {
@@ -66,6 +68,7 @@ impl Mailbox {
         Mailbox {
             next_channel_id: Mutex::new(1),
             channels: Mutex::new(Vec::new()),
+            waiters: Mutex::new(BTreeMap::new()),
         }
     }
 
@@ -84,6 +87,36 @@ impl Mailbox {
     // Get a channel by its ID. Returns an Arc to the channel if found.
     pub fn get_channel(&self, id: ChannelId) -> Option<Arc<Channel>> {
         self.channels.lock().iter().find(|c| c.id == id).cloned()
+    }
+
+    fn register_waiter(&self, channel_id: ChannelId, task_id: u64) {
+        let mut waiters = self.waiters.lock();
+        let channel_waiters = waiters.entry(channel_id).or_default();
+        if !channel_waiters.contains(&task_id) {
+            channel_waiters.push(task_id);
+        }
+    }
+
+    fn wake_one_waiter(&self, channel_id: ChannelId) {
+        let waiter = {
+            let mut waiters = self.waiters.lock();
+            let Some(channel_waiters) = waiters.get_mut(&channel_id) else {
+                return;
+            };
+            let task = if channel_waiters.is_empty() {
+                None
+            } else {
+                Some(channel_waiters.remove(0))
+            };
+            if channel_waiters.is_empty() {
+                waiters.remove(&channel_id);
+            }
+            task
+        };
+
+        if let Some(task_id) = waiter {
+            crate::task::scheduler::unblock_task(task_id);
+        }
     }
 }
 
@@ -125,6 +158,10 @@ pub fn peek(channel_id: ChannelId) -> bool {
 }
 
 pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: usize) -> Result<(), &'static str> {
+    if !crate::caps::Capability::IpcManage.check_current() {
+        return Err("Permission denied: No IpcManage capability");
+    }
+
     if message_len > MAX_MESSAGE_SIZE {
         return Err("Message too large");
     }
@@ -133,13 +170,20 @@ pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: 
     if let Some(channel) = mailbox.get_channel(channel_id) {
         let mut message = vec![0u8; message_len];
         copy_from_user(&mut message, message_ptr)?;
-        channel.send(0, &message)
+        let sender = crate::task::scheduler::get_current_task_id() as u32;
+        channel.send(sender, &message)?;
+        mailbox.wake_one_waiter(channel_id);
+        Ok(())
     } else {
         Err("Channel not found")
     }
 }
 
 pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usize, blocking: bool) -> Result<usize, &'static str> {
+    if !crate::caps::Capability::IpcManage.check_current() {
+        return Err("Permission denied: No IpcManage capability");
+    }
+
     let mailbox = MAILBOX.get().expect("Mailbox not initialized");
     if let Some(channel) = mailbox.get_channel(channel_id) {
         loop {
@@ -152,8 +196,10 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
             } else if !blocking {
                 return Ok(0); // No message, non-blocking
             }
-            // If blocking and no message, yield CPU (actual kernel would involve sleeping task)
-            let _ = aetheros_common::syscall::syscall3(aetheros_common::syscall::SYS_TIME, 0, 0, 0);
+
+            let current_id = crate::task::scheduler::get_current_task_id();
+            mailbox.register_waiter(channel_id, current_id);
+            crate::task::scheduler::block_current_task();
         }
     } else {
         Err("Channel not found")
