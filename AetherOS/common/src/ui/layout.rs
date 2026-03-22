@@ -7,18 +7,13 @@ use alloc::collections::BTreeMap;
 use alloc::string::String;
 use core::cmp::{max, min};
 
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS};
+use crate::syscall::syscall_log;
 use crate::ui::html_parser::DomNode;
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
-    let res = syscall3(
-        SYS_LOG,
-        msg.as_ptr() as u64,
-        msg.len() as u64,
-        0 // arg3 is unused for SYS_LOG
-    );
-    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
+    // Keep logging best-effort: layout must never fail hard because of diagnostics.
+    let _ = syscall_log(msg);
 }
 
 /// Represents the computed layout for a DOM node.
