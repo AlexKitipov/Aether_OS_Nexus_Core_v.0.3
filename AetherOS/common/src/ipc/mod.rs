@@ -22,3 +22,5 @@ pub trait IpcSend {
 pub trait IpcRecv {
     fn recv<T: serde::de::DeserializeOwned>(&mut self) -> Option<T>;
 }
+pub mod model_runtime_ipc;
+pub mod mail_ipc;
