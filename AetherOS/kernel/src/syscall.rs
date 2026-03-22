@@ -3,8 +3,6 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 extern crate alloc;
-use core::str;
-use alloc::vec;
 use aetheros_common::syscall::{
     E_ACC_DENIED,
     E_ERROR,
@@ -29,7 +27,7 @@ use aetheros_common::syscall::{
 
 use crate::{kprintln, task, ipc, caps, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
-use crate::usercopy::copy_from_user;
+use crate::usercopy::{copy_from_user, copy_utf8_from_user};
 const SYS_LOG_MAX_LEN: usize = 1024;
 const SYS_IPC_MAX_LEN: usize = 4096;
 
@@ -68,10 +66,7 @@ fn read_user_utf8(
     len: usize,
     max_len: usize,
 ) -> Result<alloc::string::String, &'static str> {
-    let bytes = read_user_bytes(ptr, len, max_len)?;
-    str::from_utf8(&bytes)
-        .map(|value| alloc::string::String::from(value))
-        .map_err(|_| "Invalid UTF-8")
+    copy_utf8_from_user(ptr, len, max_len)
 }
 
 fn decode_capability(kind: u64, arg: u64) -> Option<caps::Capability> {

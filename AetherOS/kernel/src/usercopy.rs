@@ -1,5 +1,7 @@
 
 use crate::config::{USER_SPACE_END_EXCLUSIVE, USER_SPACE_START};
+use alloc::string::String;
+use alloc::vec;
 
 /// Validates that `[ptr, ptr + len)` is a canonical lower-half userspace range.
 pub fn validate_user_range(ptr: *const u8, len: usize) -> Result<(), &'static str> {
@@ -59,4 +61,20 @@ pub fn copy_to_user(dst_user: *mut u8, src: &[u8]) -> Result<(), &'static str> {
     }
 
     Ok(())
+}
+
+/// Copies UTF-8 text from userspace into a kernel `String`.
+///
+/// `requested_len` is clamped to `max_len` to keep copy sizes bounded.
+pub fn copy_utf8_from_user(
+    src_user: *const u8,
+    requested_len: usize,
+    max_len: usize,
+) -> Result<String, &'static str> {
+    let len = requested_len.min(max_len);
+    let mut buf = vec![0u8; len];
+    copy_from_user(&mut buf, src_user)?;
+    core::str::from_utf8(&buf)
+        .map(String::from)
+        .map_err(|_| "Invalid UTF-8")
 }
