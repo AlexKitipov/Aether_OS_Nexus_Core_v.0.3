@@ -15,12 +15,16 @@ pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
 pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
 pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
 pub const SYS_CAP_GRANT: u64 = 14;
+pub const SYS_UI_CALL: u64 = 15;
+pub const SYS_SWARM_CALL: u64 = 16;
+pub const SYS_AI_CALL: u64 = 17;
+pub const SYS_VFS_CALL: u64 = 18;
 
 
 /// Syscall ABI version used by user-space V-Nodes and the kernel dispatcher.
 ///
 /// Bump this constant whenever syscall numbers or argument contracts change.
-pub const SYSCALL_ABI_VERSION: u64 = 1;
+pub const SYSCALL_ABI_VERSION: u64 = 2;
 
 /// System call return codes.
 pub const SUCCESS: u64 = 0;
@@ -37,6 +41,10 @@ const _: () = {
     assert!(SYS_IRQ_ACK == 10);
     assert!(SYS_IPC_RECV_NONBLOCKING == 13);
     assert!(SYS_CAP_GRANT == 14);
+    assert!(SYS_UI_CALL == 15);
+    assert!(SYS_SWARM_CALL == 16);
+    assert!(SYS_AI_CALL == 17);
+    assert!(SYS_VFS_CALL == 18);
 };
 
 /// ABI-safe user buffer descriptor passed over the syscall boundary.
@@ -199,4 +207,55 @@ pub fn syscall6(
 #[inline(always)]
 pub fn syscall_log(message: &str) -> u64 {
     syscall3(SYS_LOG, message.as_ptr() as u64, message.len() as u64, 0)
+}
+
+/// Sends an opaque request payload to a UI service endpoint over the syscall ABI.
+///
+/// This is an ABI-level alias for channel-based IPC send and is intended to make
+/// domain intent explicit in user-mode call sites.
+#[must_use]
+#[inline(always)]
+pub fn syscall_ui_call(service_channel: u64, payload: &[u8]) -> u64 {
+    syscall3(
+        SYS_UI_CALL,
+        service_channel,
+        payload.as_ptr() as u64,
+        payload.len() as u64,
+    )
+}
+
+/// Sends an opaque request payload to a Swarm service endpoint over the syscall ABI.
+#[must_use]
+#[inline(always)]
+pub fn syscall_swarm_call(service_channel: u64, payload: &[u8]) -> u64 {
+    syscall3(
+        SYS_SWARM_CALL,
+        service_channel,
+        payload.as_ptr() as u64,
+        payload.len() as u64,
+    )
+}
+
+/// Sends an opaque request payload to an AI runtime endpoint over the syscall ABI.
+#[must_use]
+#[inline(always)]
+pub fn syscall_ai_call(service_channel: u64, payload: &[u8]) -> u64 {
+    syscall3(
+        SYS_AI_CALL,
+        service_channel,
+        payload.as_ptr() as u64,
+        payload.len() as u64,
+    )
+}
+
+/// Sends an opaque request payload to a VFS endpoint over the syscall ABI.
+#[must_use]
+#[inline(always)]
+pub fn syscall_vfs_call(service_channel: u64, payload: &[u8]) -> u64 {
+    syscall3(
+        SYS_VFS_CALL,
+        service_channel,
+        payload.as_ptr() as u64,
+        payload.len() as u64,
+    )
 }
