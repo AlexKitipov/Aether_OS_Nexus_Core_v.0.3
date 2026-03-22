@@ -22,6 +22,28 @@ pub const E_ERROR: u64 = 1;
 pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
 
+
+/// Performs a system call with no arguments.
+#[must_use]
+#[inline(always)]
+pub fn syscall0(syscall_num: u64) -> u64 {
+    syscall3(syscall_num, 0, 0, 0)
+}
+
+/// Performs a system call with one argument.
+#[must_use]
+#[inline(always)]
+pub fn syscall1(syscall_num: u64, arg1: u64) -> u64 {
+    syscall3(syscall_num, arg1, 0, 0)
+}
+
+/// Performs a system call with two arguments.
+#[must_use]
+#[inline(always)]
+pub fn syscall2(syscall_num: u64, arg1: u64, arg2: u64) -> u64 {
+    syscall3(syscall_num, arg1, arg2, 0)
+}
+
 /// Performs a system call with three arguments.
 ///
 /// x86_64 ABI used by the kernel entry glue:
