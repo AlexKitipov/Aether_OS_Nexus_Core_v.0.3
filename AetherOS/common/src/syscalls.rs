@@ -28,9 +28,12 @@ pub use crate::syscall::{
     SYS_NET_TX,
     SYS_SET_DMA_BUF_LEN,
     SYS_TIME,
+    UserBuf,
     syscall0,
     syscall1,
     syscall2,
     syscall3,
     syscall4,
+    syscall5,
+    syscall6,
 };
