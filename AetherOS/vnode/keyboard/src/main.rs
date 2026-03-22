@@ -9,13 +9,14 @@ use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 use common::ipc::init_ipc::InitRequest;
+use common::ipc::keyboard_ipc::KeyEvent;
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest};
 use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
 use common::ipc::shell_ipc::ShellRequest;
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
 use common::syscall::{
-    syscall3, E_ERROR, SUCCESS, SYS_IPC_SEND, SYS_IPC_RECV, SYS_IRQ_ACK, SYS_IRQ_REGISTER, SYS_LOG,
+    syscall3, E_ERROR, SUCCESS, SYS_IPC_RECV, SYS_IRQ_ACK, SYS_IRQ_REGISTER, SYS_LOG,
 };
 
 const VNODE_HEAP_SIZE: usize = 64 * 1024;
@@ -178,6 +179,7 @@ fn poll_autocomplete_response(model_chan: &mut VNodeChannel) {
 pub extern "C" fn _start() -> ! {
     init_allocator();
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
+    let mut input_chan = VNodeChannel::new(SYSTEM_INPUT_CHANNEL_ID);
     let mut shell_command_chan = VNodeChannel::new(SHELL_COMMAND_CHANNEL_ID);
     let mut model_runtime_chan = VNodeChannel::new(MODEL_RUNTIME_CHANNEL_ID);
 
@@ -217,20 +219,12 @@ pub extern "C" fn _start() -> ! {
         let ascii = translate_scancode(scancode);
 
         if let Some(ch) = ascii {
-            let payload = [scancode, ch];
-            unsafe {
-                let send_res = syscall3(
-                    SYS_IPC_SEND,
-                    SYSTEM_INPUT_CHANNEL_ID as u64,
-                    payload.as_ptr() as u64,
-                    payload.len() as u64,
-                );
-                if send_res != SUCCESS {
-                    log(&format!(
-                        "keyboard: failed to forward key event to input channel {} (code {}).",
-                        SYSTEM_INPUT_CHANNEL_ID, send_res
-                    ));
-                }
+            let key_event = KeyEvent::new(scancode, Some(ch));
+            if input_chan.send(&key_event).is_err() {
+                log(&format!(
+                    "keyboard: failed to forward key event to input channel {}.",
+                    SYSTEM_INPUT_CHANNEL_ID
+                ));
             }
             let command_to_dispatch = if ch == b'\n' {
                 let completed = prompt.trim().to_string();
@@ -253,6 +247,13 @@ pub extern "C" fn _start() -> ! {
             }
             log(&format!("keyboard: scancode=0x{:02x} ascii='{}'", scancode, ch as char));
         } else {
+            let key_event = KeyEvent::new(scancode, None);
+            if input_chan.send(&key_event).is_err() {
+                log(&format!(
+                    "keyboard: failed to forward non-printable key event to channel {}.",
+                    SYSTEM_INPUT_CHANNEL_ID
+                ));
+            }
             log(&format!("keyboard: scancode=0x{:02x}", scancode));
         }
 

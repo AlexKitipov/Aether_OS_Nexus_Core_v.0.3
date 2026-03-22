@@ -23,6 +23,25 @@ pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
 
 
+/// ABI-safe user buffer descriptor passed over the syscall boundary.
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct UserBuf {
+    pub ptr: u64,
+    pub len: u64,
+}
+
+impl UserBuf {
+    #[must_use]
+    pub fn from_slice(slice: &[u8]) -> Self {
+        Self {
+            ptr: slice.as_ptr() as u64,
+            len: slice.len() as u64,
+        }
+    }
+}
+
+
 /// Performs a system call with no arguments.
 #[must_use]
 #[inline(always)]
@@ -85,6 +104,66 @@ pub fn syscall4(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) ->
             in("rsi") arg2,
             in("rdx") arg3,
             in("r10") arg4,
+            lateout("rax") ret,
+            lateout("rcx") _,
+            lateout("r11") _,
+            options(nostack)
+        );
+    }
+    ret
+}
+
+
+/// Performs a system call with five arguments.
+///
+/// x86_64 syscall ABI places args 4 and 5 in r10 and r8.
+#[must_use]
+#[inline(always)]
+pub fn syscall5(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64, arg5: u64) -> u64 {
+    let ret: u64;
+    unsafe {
+        core::arch::asm!(
+            "syscall",
+            in("rax") syscall_num,
+            in("rdi") arg1,
+            in("rsi") arg2,
+            in("rdx") arg3,
+            in("r10") arg4,
+            in("r8") arg5,
+            lateout("rax") ret,
+            lateout("rcx") _,
+            lateout("r11") _,
+            options(nostack)
+        );
+    }
+    ret
+}
+
+/// Performs a system call with six arguments.
+///
+/// x86_64 syscall ABI places args 4, 5, 6 in r10, r8, r9.
+#[must_use]
+#[inline(always)]
+pub fn syscall6(
+    syscall_num: u64,
+    arg1: u64,
+    arg2: u64,
+    arg3: u64,
+    arg4: u64,
+    arg5: u64,
+    arg6: u64,
+) -> u64 {
+    let ret: u64;
+    unsafe {
+        core::arch::asm!(
+            "syscall",
+            in("rax") syscall_num,
+            in("rdi") arg1,
+            in("rsi") arg2,
+            in("rdx") arg3,
+            in("r10") arg4,
+            in("r8") arg5,
+            in("r9") arg6,
             lateout("rax") ret,
             lateout("rcx") _,
             lateout("r11") _,
