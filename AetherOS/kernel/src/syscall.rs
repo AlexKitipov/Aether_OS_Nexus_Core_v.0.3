@@ -84,8 +84,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
             let channel_id = a1 as ipc::ChannelId;
-            let buf = unsafe { core::slice::from_raw_parts(a2 as *const u8, a3 as usize) };
-            if ipc::kernel_send(channel_id, current_task.id as u32, buf).is_ok() {
+            if ipc::mailbox::send_message(channel_id, a2 as *const u8, a3 as usize).is_ok() {
                 SUCCESS
             }
             else {
@@ -99,33 +98,11 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             let channel_id = a1 as ipc::ChannelId;
             let out_ptr = a2 as *mut u8;
             let out_cap = a3 as usize;
+            let blocking = n == SYS_IPC_RECV;
 
-            let message = if n == SYS_IPC_RECV {
-                // For blocking receive, if no message, block the task
-                if !ipc::kernel_peek(channel_id) {
-                    task::block_current_on_channel(channel_id);
-                    // Scheduler will pick another task. When unblocked, this syscall will be re-entered.
-                    return SUCCESS; // Indicate that task is blocked, no data returned yet
-                }
-                ipc::kernel_recv(channel_id)
-            } else { // Non-blocking
-                ipc::kernel_recv(channel_id)
-            };
-
-            if let Some(data) = message {
-                if data.data.len() <= out_cap {
-                    // SAFETY: `out_ptr` points to writable buffer of at least `out_cap` from V-Node.
-                    // Kernel must ensure this is safe (e.g., page table checks).
-                    unsafe {
-                        core::ptr::copy_nonoverlapping(data.data.as_ptr(), out_ptr, data.data.len());
-                    }
-                    data.data.len() as u64
-                } else {
-                    kprintln!("[kernel] SYS_IPC_RECV: Message too large for V-Node's buffer (task {}).", current_task.id);
-                    E_ERROR // Message too large for provided buffer
-                }
-            } else {
-                SUCCESS // No message available or channel empty
+            match ipc::mailbox::recv_message(channel_id, out_ptr, out_cap, blocking) {
+                Ok(len) => len as u64,
+                Err(_err) => E_ERROR,
             }
         }
         SYS_BLOCK_ON_CHAN => {
