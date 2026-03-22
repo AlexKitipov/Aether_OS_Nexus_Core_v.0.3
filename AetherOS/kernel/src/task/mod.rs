@@ -25,6 +25,18 @@ pub fn create_task(id: u64, name: &str, capabilities: Vec<Capability>) {
     scheduler::add_task(tcb);
 }
 
+/// Creates a new task inheriting all capabilities from an existing task.
+pub fn create_task_inheriting(parent_task_id: u64, id: u64, name: &str) -> bool {
+    let parent = match scheduler::get_task(parent_task_id) {
+        Some(task) => task,
+        None => return false,
+    };
+
+    let tcb = TaskControlBlock::new(id, String::from(name), parent.capabilities);
+    scheduler::add_task(tcb);
+    true
+}
+
 /// Creates a user task with first-run context initialized for entry and stack.
 pub fn create_user_task(
     id: u64,
