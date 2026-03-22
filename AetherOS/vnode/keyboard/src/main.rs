@@ -7,7 +7,10 @@ use alloc::format;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
+use common::ipc::init_ipc::InitRequest;
+use common::ipc::logger_ipc::{LogLevel, LoggerRequest};
 use common::ipc::vnode::VNodeChannel;
+use common::ipc::IpcSend;
 use common::syscall::{
     syscall3, E_ERROR, SUCCESS, SYS_IPC_SEND, SYS_IPC_RECV, SYS_IRQ_ACK, SYS_IRQ_REGISTER, SYS_LOG,
 };
@@ -18,6 +21,8 @@ static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
 const KEYBOARD_IRQ: u64 = 1;
 const KEYBOARD_IRQ_CHANNEL_ID: u32 = 4;
 const SYSTEM_INPUT_CHANNEL_ID: u32 = 5;
+const LOGGER_CHANNEL_ID: u32 = 2;
+const INIT_SERVICE_CHANNEL_ID: u32 = 1;
 
 #[global_allocator]
 static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -31,6 +36,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
+    let mut logger_chan = VNodeChannel::new(LOGGER_CHANNEL_ID);
+    let _ = logger_chan.send(&LoggerRequest::Log {
+        message: format!("[keyboard] {}", msg),
+        level: LogLevel::Info,
+    });
+
+    // Best-effort fallback to kernel SYS_LOG for early bring-up scenarios.
     unsafe {
         let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
     }
@@ -84,6 +96,11 @@ fn translate_scancode(scancode: u8) -> Option<u8> {
 pub extern "C" fn _start() -> ! {
     init_allocator();
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
+
+    let mut init_chan = VNodeChannel::new(INIT_SERVICE_CHANNEL_ID);
+    let _ = init_chan.send(&InitRequest::ServiceStatus {
+        service_name: format!("vnode.keyboard"),
+    });
 
     unsafe {
         let res = syscall3(

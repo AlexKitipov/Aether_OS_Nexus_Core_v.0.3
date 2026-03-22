@@ -31,6 +31,7 @@ use crate::{kprintln, task, ipc, caps, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
 use crate::usercopy::copy_from_user;
 const SYS_LOG_MAX_LEN: usize = 1024;
+const SYS_IPC_MAX_LEN: usize = 4096;
 
 const CAP_LOG_WRITE: u64 = 0;
 const CAP_TIME_READ: u64 = 1;
@@ -99,7 +100,22 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
             let channel_id = a1 as ipc::ChannelId;
-            if ipc::mailbox::send_message(channel_id, a2 as *const u8, a3 as usize).is_ok() {
+            let msg_len = a3 as usize;
+            if msg_len > SYS_IPC_MAX_LEN {
+                return E_ERROR;
+            }
+
+            let mut msg = vec![0u8; msg_len];
+            if let Err(err) = copy_from_user(&mut msg, a2 as *const u8) {
+                kprintln!(
+                    "[kernel] SYS_IPC_SEND: rejected user buffer from task {}: {}.",
+                    current_task.id,
+                    err
+                );
+                return E_ACC_DENIED;
+            }
+
+            if ipc::mailbox::send(channel_id, current_task.id as u32, &msg).is_ok() {
                 SUCCESS
             }
             else {
