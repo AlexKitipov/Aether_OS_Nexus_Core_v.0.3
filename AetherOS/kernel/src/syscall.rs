@@ -32,7 +32,7 @@ pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
 pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
 pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
 pub const SYS_CAP_GRANT: u64 = 14;
-const SYS_LOG_MAX_LEN: usize = 4096;
+const SYS_LOG_MAX_LEN: usize = 1024;
 
 const CAP_LOG_WRITE: u64 = 0;
 const CAP_TIME_READ: u64 = 1;
@@ -86,7 +86,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                     current_task.id,
                     err
                 );
-                return E_ERROR;
+                return E_ACC_DENIED;
             }
             if let Ok(s) = str::from_utf8(&msg) {
                 kprintln!("[V-Node Log {}] {}", current_task.id, s);

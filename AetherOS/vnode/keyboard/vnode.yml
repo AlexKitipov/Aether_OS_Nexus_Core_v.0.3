@@ -1,0 +1,30 @@
+vnode:
+  name: "keyboard"
+  id: "vnode.keyboard"
+  version: "0.1.0"
+  description: "Keyboard IRQ consumer V-Node"
+
+runtime:
+  entrypoint: "keyboard.ax"
+  exec_type: "elf64"
+  memory:
+    heap: 256K
+    stack: 128K
+    shared: 64K
+
+capabilities:
+  - irq.register.1
+  - irq.ack.1
+  - ipc.manage
+  - log.write
+
+ipc:
+  inbox: "keyboard.irq"
+  channels:
+    - "kernel.irq1"
+
+security:
+  sandbox: true
+
+logging:
+  level: "info"

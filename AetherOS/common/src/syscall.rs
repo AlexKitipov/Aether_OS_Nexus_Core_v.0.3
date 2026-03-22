@@ -23,39 +23,50 @@ pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
 
 /// Performs a system call with three arguments.
+///
+/// x86_64 ABI used by the kernel entry glue:
+/// - rax: syscall number
+/// - rdi, rsi, rdx: args 1..=3
+/// - return value in rax
 #[must_use]
 #[inline(always)]
 pub fn syscall3(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64) -> u64 {
     let ret: u64;
     unsafe {
         core::arch::asm!(
-            "int $0x80",
+            "syscall",
             in("rax") syscall_num,
             in("rdi") arg1,
             in("rsi") arg2,
             in("rdx") arg3,
             lateout("rax") ret,
-            options(nostack, preserves_flags)
+            lateout("rcx") _,
+            lateout("r11") _,
+            options(nostack)
         );
     }
     ret
 }
 
 /// Performs a system call with four arguments.
+///
+/// x86_64 syscall ABI places the 4th argument in r10.
 #[must_use]
 #[inline(always)]
 pub fn syscall4(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) -> u64 {
     let ret: u64;
     unsafe {
         core::arch::asm!(
-            "int $0x80",
+            "syscall",
             in("rax") syscall_num,
             in("rdi") arg1,
             in("rsi") arg2,
             in("rdx") arg3,
-            in("r8") arg4,
+            in("r10") arg4,
             lateout("rax") ret,
-            options(nostack, preserves_flags)
+            lateout("rcx") _,
+            lateout("r11") _,
+            options(nostack)
         );
     }
     ret

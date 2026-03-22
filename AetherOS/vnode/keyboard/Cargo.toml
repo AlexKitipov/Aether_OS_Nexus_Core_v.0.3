@@ -1,0 +1,15 @@
+[package]
+name = "keyboard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+linked_list_allocator = "0.10"
+common = { path = "../../common" }
+
+[lib]
+crate-type = ["cdylib"]
+
+[[bin]]
+name = "keyboard"
+path = "src/main.rs"
