@@ -52,6 +52,28 @@ pub fn init() {
     kprintln!("[kernel] syscall: dispatcher initialized.");
 }
 
+fn read_user_bytes(
+    ptr: *const u8,
+    len: usize,
+    max_len: usize,
+) -> Result<alloc::vec::Vec<u8>, &'static str> {
+    let len = len.min(max_len);
+    let mut buf = vec![0u8; len];
+    copy_from_user(&mut buf, ptr)?;
+    Ok(buf)
+}
+
+fn read_user_utf8(
+    ptr: *const u8,
+    len: usize,
+    max_len: usize,
+) -> Result<alloc::string::String, &'static str> {
+    let bytes = read_user_bytes(ptr, len, max_len)?;
+    str::from_utf8(&bytes)
+        .map(|value| alloc::string::String::from(value))
+        .map_err(|_| "Invalid UTF-8")
+}
+
 fn decode_capability(kind: u64, arg: u64) -> Option<caps::Capability> {
     match kind {
         CAP_LOG_WRITE => Some(caps::Capability::LogWrite),
@@ -77,23 +99,20 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
             let ptr = a1 as *const u8;
-            let len = (a2 as usize).min(SYS_LOG_MAX_LEN);
-            let mut msg = vec![0u8; len];
-            if let Err(err) = copy_from_user(&mut msg, ptr) {
-                kprintln!(
-                    "[kernel] SYS_LOG: rejected user buffer from task {}: {}.",
-                    current_task.id,
-                    err
-                );
-                return E_ACC_DENIED;
-            }
-            if let Ok(s) = str::from_utf8(&msg) {
-                kprintln!("[V-Node Log {}] {}", current_task.id, s);
-                SUCCESS
-            } else {
-                kprintln!("[kernel] SYS_LOG: Invalid UTF-8 sequence from task {}.", current_task.id);
-                E_ERROR
-            }
+            let len = a2 as usize;
+            let msg = match read_user_utf8(ptr, len, SYS_LOG_MAX_LEN) {
+                Ok(msg) => msg,
+                Err(err) => {
+                    kprintln!(
+                        "[kernel] SYS_LOG: rejected user buffer from task {}: {}.",
+                        current_task.id,
+                        err
+                    );
+                    return E_ACC_DENIED;
+                }
+            };
+            kprintln!("[V-Node Log {}] {}", current_task.id, msg);
+            SUCCESS
         }
         SYS_IPC_SEND => {
             if !caps::Capability::IpcManage.check(current_task.id) {
@@ -101,24 +120,21 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
             let channel_id = a1 as ipc::ChannelId;
             let msg_len = a3 as usize;
-            if msg_len > SYS_IPC_MAX_LEN {
-                return E_ERROR;
-            }
-
-            let mut msg = vec![0u8; msg_len];
-            if let Err(err) = copy_from_user(&mut msg, a2 as *const u8) {
+            let msg = match read_user_bytes(a2 as *const u8, msg_len, SYS_IPC_MAX_LEN) {
+                Ok(msg) => msg,
+                Err(err) => {
                 kprintln!(
                     "[kernel] SYS_IPC_SEND: rejected user buffer from task {}: {}.",
                     current_task.id,
                     err
                 );
                 return E_ACC_DENIED;
-            }
+                }
+            };
 
             if ipc::mailbox::send(channel_id, current_task.id as u32, &msg).is_ok() {
                 SUCCESS
-            }
-            else {
+            } else {
                 E_ERROR
             }
         }
