@@ -13,14 +13,9 @@ use libnexus_net::{NetClient, NetError};
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
-    unsafe {
-        let res = crate::syscall::syscall3(
-            crate::syscall::SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != crate::syscall::SUCCESS { /* Handle log error, maybe panic or fall back */ }
+    let res = crate::syscall::syscall_log(msg);
+    if res != crate::syscall::SUCCESS {
+        // best-effort logging path; intentionally ignore errors here
     }
 }
 

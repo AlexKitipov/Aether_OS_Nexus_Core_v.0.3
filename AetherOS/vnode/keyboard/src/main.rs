@@ -16,7 +16,7 @@ use common::ipc::shell_ipc::ShellRequest;
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
 use common::syscall::{
-    syscall3, E_ERROR, SUCCESS, SYS_IPC_RECV, SYS_IRQ_ACK, SYS_IRQ_REGISTER, SYS_LOG,
+    syscall3, syscall_log, E_ERROR, SUCCESS, SYS_IPC_RECV, SYS_IRQ_ACK, SYS_IRQ_REGISTER,
 };
 
 const VNODE_HEAP_SIZE: usize = 64 * 1024;
@@ -52,9 +52,7 @@ fn log(msg: &str) {
     });
 
     // Best-effort fallback to kernel SYS_LOG for early bring-up scenarios.
-    unsafe {
-        let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
-    }
+    let _ = syscall_log(msg);
 }
 
 fn translate_scancode(scancode: u8) -> Option<u8> {

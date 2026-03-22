@@ -172,3 +172,15 @@ pub fn syscall6(
     }
     ret
 }
+
+/// Writes a UTF-8 log message through the kernel log syscall.
+///
+/// This helper centralizes the ABI contract for `SYS_LOG`:
+/// - `arg1`: user pointer to message bytes
+/// - `arg2`: message length
+/// - `arg3`: reserved (must be zero for now)
+#[must_use]
+#[inline(always)]
+pub fn syscall_log(message: &str) -> u64 {
+    syscall3(SYS_LOG, message.as_ptr() as u64, message.len() as u64, 0)
+}
