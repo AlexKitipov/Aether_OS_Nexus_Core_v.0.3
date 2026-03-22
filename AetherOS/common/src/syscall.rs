@@ -16,12 +16,28 @@ pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
 pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
 pub const SYS_CAP_GRANT: u64 = 14;
 
+
+/// Syscall ABI version used by user-space V-Nodes and the kernel dispatcher.
+///
+/// Bump this constant whenever syscall numbers or argument contracts change.
+pub const SYSCALL_ABI_VERSION: u64 = 1;
+
 /// System call return codes.
 pub const SUCCESS: u64 = 0;
 pub const E_ERROR: u64 = 1;
 pub const E_UNKNOWN_SYSCALL: u64 = 0xFFFFFFFFFFFFFFFF;
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
 
+const _: () = {
+    assert!(SYS_LOG == 0);
+    assert!(SYS_IPC_SEND == 1);
+    assert!(SYS_IPC_RECV == 2);
+    assert!(SYS_TIME == 4);
+    assert!(SYS_IRQ_REGISTER == 5);
+    assert!(SYS_IRQ_ACK == 10);
+    assert!(SYS_IPC_RECV_NONBLOCKING == 13);
+    assert!(SYS_CAP_GRANT == 14);
+};
 
 /// ABI-safe user buffer descriptor passed over the syscall boundary.
 #[repr(C)]
