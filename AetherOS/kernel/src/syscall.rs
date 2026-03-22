@@ -29,6 +29,32 @@ pub const SYS_IRQ_ACK: u64 = 10;
 pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
 pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
 pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
+pub const SYS_CAP_GRANT: u64 = 14;
+
+const CAP_LOG_WRITE: u64 = 0;
+const CAP_TIME_READ: u64 = 1;
+const CAP_NETWORK_ACCESS: u64 = 2;
+const CAP_STORAGE_ACCESS: u64 = 3;
+const CAP_IRQ_REGISTER: u64 = 4;
+const CAP_DMA_ALLOC: u64 = 5;
+const CAP_DMA_ACCESS: u64 = 6;
+const CAP_IRQ_ACK: u64 = 7;
+const CAP_IPC_MANAGE: u64 = 8;
+
+fn decode_capability(kind: u64, arg: u64) -> Option<caps::Capability> {
+    match kind {
+        CAP_LOG_WRITE => Some(caps::Capability::LogWrite),
+        CAP_TIME_READ => Some(caps::Capability::TimeRead),
+        CAP_NETWORK_ACCESS => Some(caps::Capability::NetworkAccess),
+        CAP_STORAGE_ACCESS => Some(caps::Capability::StorageAccess),
+        CAP_IRQ_REGISTER => Some(caps::Capability::IrqRegister(arg as u8)),
+        CAP_DMA_ALLOC => Some(caps::Capability::DmaAlloc),
+        CAP_DMA_ACCESS => Some(caps::Capability::DmaAccess),
+        CAP_IRQ_ACK => Some(caps::Capability::IrqAck(arg as u8)),
+        CAP_IPC_MANAGE => Some(caps::Capability::IpcManage),
+        _ => None,
+    }
+}
 
 #[no_mangle]
 pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
@@ -240,6 +266,36 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             }
             else {
                 E_ERROR
+            }
+        }
+        SYS_CAP_GRANT => {
+            // Delegation is a privileged operation: the caller must be able to manage IPC/cap routing.
+            if !caps::Capability::IpcManage.check(current_task.id) {
+                return E_ACC_DENIED;
+            }
+
+            let target_task_id = a1;
+            let cap_kind = a2;
+            let cap_arg = a3;
+            let Some(cap) = decode_capability(cap_kind, cap_arg) else {
+                kprintln!(
+                    "[kernel] SYS_CAP_GRANT: Invalid capability kind {} from task {}.",
+                    cap_kind,
+                    current_task.id
+                );
+                return E_ERROR;
+            };
+
+            if caps::transfer_capability(current_task.id, target_task_id, cap) {
+                SUCCESS
+            } else {
+                kprintln!(
+                    "[kernel] SYS_CAP_GRANT: Delegation of {:?} from task {} to task {} denied.",
+                    cap,
+                    current_task.id,
+                    target_task_id
+                );
+                E_ACC_DENIED
             }
         }
         _ => {

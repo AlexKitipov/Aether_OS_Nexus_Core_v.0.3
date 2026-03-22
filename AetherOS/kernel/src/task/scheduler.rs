@@ -274,6 +274,30 @@ pub fn grant_capability(task_id: u64, cap: Capability) -> bool {
     false
 }
 
+/// Copies all capabilities from `from_task_id` into `to_task_id`.
+/// Existing capabilities in destination are preserved and duplicates are avoided.
+pub fn inherit_capabilities(from_task_id: u64, to_task_id: u64) -> bool {
+    let source_caps = {
+        let tasks = TASKS.lock();
+        let Some(source) = tasks.get(&from_task_id) else {
+            return false;
+        };
+        source.capabilities.clone()
+    };
+
+    let mut tasks = TASKS.lock();
+    if let Some(target) = tasks.get_mut(&to_task_id) {
+        for cap in source_caps {
+            if !target.capabilities.iter().any(|c| *c == cap) {
+                target.capabilities.push(cap);
+            }
+        }
+        return true;
+    }
+
+    false
+}
+
 fn restore_task_context(context: Context, address_space_root: u64) {
     // CR3 reload / low-level register restore lives in architecture assembly glue.
     // For now we expose deterministic observability for scheduler decisions.
