@@ -6,16 +6,11 @@ use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
 
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS};
+use crate::syscall::{syscall_log, SUCCESS};
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
-    let res = syscall3(
-        SYS_LOG,
-        msg.as_ptr() as u64,
-        msg.len() as u64,
-        0 // arg3 is unused for SYS_LOG
-    );
+    let res = syscall_log(msg);
     if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
@@ -33,7 +28,7 @@ impl HtmlParser {
 
     // Very basic conceptual parsing
     pub fn parse_html(&self, html: &str) -> DomNode {
-        log(&alloc::format!("HtmlParser: Parsing HTML: {}", html));
+        log("HtmlParser: parsing input HTML.");
 
         let body_text = extract_body_text(html)
             .or_else(|| extract_text_content(html))
