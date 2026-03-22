@@ -80,6 +80,23 @@ impl InitService {
                     pid,
                 }
             }
+            InitRequest::ServiceReady { service_name, pid } => {
+                let assigned_pid = pid.unwrap_or_else(|| {
+                    let pid = self.next_pid;
+                    self.next_pid += 1;
+                    pid
+                });
+                self.running_vnodes
+                    .entry(service_name.clone())
+                    .and_modify(|v| v.pid = assigned_pid)
+                    .or_insert(RunningVNode {
+                        pid: assigned_pid,
+                        capabilities: Vec::new(),
+                    });
+                InitResponse::Success(format!(
+                    "Service '{service_name}' marked ready with PID {assigned_pid}."
+                ))
+            }
             InitRequest::ServiceRestart { service_name } => {
                 self.running_vnodes.remove(&service_name);
                 self.handle_request(InitRequest::ServiceStart { service_name })

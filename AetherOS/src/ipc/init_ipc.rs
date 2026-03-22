@@ -15,6 +15,8 @@ pub enum InitRequest {
     ServiceStart { service_name: String },
     /// Get the status of a V-Node.
     ServiceStatus { service_name: String },
+    /// Notify init-service that a V-Node has completed startup and is ready.
+    ServiceReady { service_name: String, pid: Option<u64> },
     /// Restart a V-Node.
     ServiceRestart { service_name: String },
     /// Stop a V-Node.

@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub enum InitRequest {
     ServiceStart { service_name: String },
     ServiceStatus { service_name: String },
+    ServiceReady { service_name: String, pid: Option<u64> },
     ServiceRestart { service_name: String },
     ServiceStop { service_name: String },
 }
