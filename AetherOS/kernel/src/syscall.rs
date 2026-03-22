@@ -8,6 +8,7 @@ use aetheros_common::syscall::{
     E_ERROR,
     E_UNKNOWN_SYSCALL,
     SUCCESS,
+    SYSCALL_ABI_VERSION,
     SYS_BLOCK_ON_CHAN,
     SYS_CAP_GRANT,
     SYS_GET_DMA_BUF_PTR,
@@ -47,7 +48,10 @@ const CAP_IPC_MANAGE: u64 = 8;
 /// The architecture-specific `SYSCALL/SYSRET` entry trampoline can be wired
 /// in a later phase under `arch/x86_64`.
 pub fn init() {
-    kprintln!("[kernel] syscall: dispatcher initialized.");
+    kprintln!(
+        "[kernel] syscall: dispatcher initialized (ABI v{}).",
+        SYSCALL_ABI_VERSION
+    );
 }
 
 fn read_user_bytes(
