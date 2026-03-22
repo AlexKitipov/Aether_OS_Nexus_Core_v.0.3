@@ -6,7 +6,7 @@ extern crate alloc;
 use core::str;
 
 use crate::{kprintln, task, ipc, caps, timer};
-use crate::arch::x86_64::{irq, dma}; // Use refactored arch modules
+use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
 
 // Error codes
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
@@ -40,6 +40,15 @@ const CAP_DMA_ALLOC: u64 = 5;
 const CAP_DMA_ACCESS: u64 = 6;
 const CAP_IRQ_ACK: u64 = 7;
 const CAP_IPC_MANAGE: u64 = 8;
+
+/// Initialize the syscall subsystem.
+///
+/// At the moment this enables only the high-level dispatcher surface.
+/// The architecture-specific `SYSCALL/SYSRET` entry trampoline can be wired
+/// in a later phase under `arch/x86_64`.
+pub fn init() {
+    kprintln!("[kernel] syscall: dispatcher initialized.");
+}
 
 fn decode_capability(kind: u64, arg: u64) -> Option<caps::Capability> {
     match kind {
