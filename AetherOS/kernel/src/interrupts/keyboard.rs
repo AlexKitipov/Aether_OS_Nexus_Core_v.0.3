@@ -8,6 +8,7 @@ use x86_64::structures::idt::InterruptStackFrame;
 use crate::{
     ipc,
     kprintln,
+    interrupts::{pic, IRQ_KEYBOARD},
 };
 
 const KEYBOARD_DATA_PORT: u16 = 0x60;
@@ -36,6 +37,10 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
             "[kernel] keyboard: dropped scancode 0x{:02x}; no registered keyboard V-Node.",
             scancode
         );
+        unsafe {
+            // SAFETY: We are in IRQ1 context and no userspace ACK will follow.
+            pic::end_of_interrupt(IRQ_KEYBOARD);
+        }
         return;
     }
 
@@ -47,6 +52,10 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
             channel_id,
             err
         );
+        unsafe {
+            // SAFETY: Delivery failed, so defer no further and ACK in-kernel.
+            pic::end_of_interrupt(IRQ_KEYBOARD);
+        }
     }
 
     // NOTE: Hardware EOI for IRQ1 is delegated to the keyboard V-Node via SYS_IRQ_ACK.
