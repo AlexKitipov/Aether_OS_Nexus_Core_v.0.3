@@ -109,6 +109,30 @@ pub fn unblock_task_on_channel(task_id: u64) {
     scheduler::unblock_task(task_id);
 }
 
+/// Bootstraps the first dynamic userspace-like task after heap initialization.
+///
+/// This task is intentionally minimal and exists to validate that heap-backed
+/// structures (`String`, `Vec`) and scheduler registration are functional.
+pub fn bootstrap_first_dynamic_task() -> bool {
+    let task_id = 1;
+    if scheduler::get_task(task_id).is_some() {
+        return false;
+    }
+
+    let capabilities = alloc::vec![
+        Capability::LogWrite,
+        Capability::TimeRead,
+    ];
+
+    create_task(task_id, "init.dynamic", capabilities);
+    crate::kprintln!(
+        "[kernel] task: Bootstrapped first dynamic task '{}' (ID: {}).",
+        "init.dynamic",
+        task_id
+    );
+    true
+}
+
 /// Explicitly yields CPU to another task.
 pub fn schedule() {
     scheduler::schedule();
