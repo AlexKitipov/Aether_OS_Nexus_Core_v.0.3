@@ -60,46 +60,52 @@ pub fn init() {
 
 /// Adds a new task to the scheduler's management.
 pub fn add_task(task: TaskControlBlock) {
-    let task_id = task.id;
-    kprintln!(
-        "[kernel] scheduler: Adding task '{}' (ID: {}).",
-        task.name,
-        task_id
-    );
-    TASKS.lock().insert(task_id, task);
-    RUN_QUEUE.lock().push_back(task_id);
+    interrupts::without_interrupts(|| {
+        let task_id = task.id;
+        kprintln!(
+            "[kernel] scheduler: Adding task '{}' (ID: {}).",
+            task.name,
+            task_id
+        );
+        TASKS.lock().insert(task_id, task);
+        RUN_QUEUE.lock().push_back(task_id);
+    });
 }
 
 /// Removes a task from the scheduler's management.
 pub fn remove_task(task_id: u64) {
-    kprintln!("[kernel] scheduler: Removing task ID {}.", task_id);
-    if let Some(task) = TASKS.lock().remove(&task_id) {
-        release_task_resources(&task);
-    }
-    // Also remove from run queue if it's there (optional for simple stub)
-    RUN_QUEUE.lock().retain(|&id| id != task_id);
+    interrupts::without_interrupts(|| {
+        kprintln!("[kernel] scheduler: Removing task ID {}.", task_id);
+        if let Some(task) = TASKS.lock().remove(&task_id) {
+            release_task_resources(&task);
+        }
+        // Also remove from run queue if it's there (optional for simple stub)
+        RUN_QUEUE.lock().retain(|&id| id != task_id);
+    });
 }
 
 /// Terminates a task and cleans up scheduler state and memory resources.
 pub fn terminate_task(task_id: u64) {
-    let task_to_release = {
-        let mut tasks = TASKS.lock();
-        if let Some(task) = tasks.get_mut(&task_id) {
-            task.state = TaskState::Exited;
+    interrupts::without_interrupts(|| {
+        let task_to_release = {
+            let mut tasks = TASKS.lock();
+            if let Some(task) = tasks.get_mut(&task_id) {
+                task.state = TaskState::Exited;
+            }
+            tasks.remove(&task_id)
+        };
+
+        RUN_QUEUE.lock().retain(|&id| id != task_id);
+
+        if let Some(task) = task_to_release {
+            kprintln!(
+                "[kernel] scheduler: Task '{}' (ID: {}) exited.",
+                task.name,
+                task.id
+            );
+            release_task_resources(&task);
         }
-        tasks.remove(&task_id)
-    };
-
-    RUN_QUEUE.lock().retain(|&id| id != task_id);
-
-    if let Some(task) = task_to_release {
-        kprintln!(
-            "[kernel] scheduler: Task '{}' (ID: {}) exited.",
-            task.name,
-            task.id
-        );
-        release_task_resources(&task);
-    }
+    });
 }
 
 /// Terminates the currently running task and dispatches the next runnable one.
@@ -115,6 +121,12 @@ pub fn terminate_current_task() {
 /// where taking scheduler locks directly can deadlock.
 #[inline]
 pub fn request_reschedule_from_irq() {
+    RESCHEDULE_REQUESTED.store(true, Ordering::Release);
+}
+
+/// Marks that the scheduler should run on the next safe boundary.
+#[inline]
+pub fn request_reschedule() {
     RESCHEDULE_REQUESTED.store(true, Ordering::Release);
 }
 
@@ -141,9 +153,9 @@ fn release_task_resources(task: &TaskControlBlock) {
 /// Blocks the current task and adds it back to the queue as 'Blocked'.
 /// In a real system, this would involve saving context and performing a context switch.
 pub fn block_current_task() {
-    let current_id = *CURRENT_TASK_ID.lock();
+    interrupts::without_interrupts(|| {
+        let current_id = *CURRENT_TASK_ID.lock();
 
-    {
         let mut tasks = TASKS.lock();
         if let Some(task) = tasks.get_mut(&current_id) {
             task.state = TaskState::Blocked;
@@ -153,7 +165,7 @@ pub fn block_current_task() {
                 current_id
             );
         }
-    }
+    });
 
     // Trigger a schedule immediately if blocking.
     schedule();
@@ -161,18 +173,20 @@ pub fn block_current_task() {
 
 /// Marks a blocked task as ready and adds it to the run queue.
 pub fn unblock_task(task_id: u64) {
-    let mut tasks = TASKS.lock();
-    if let Some(task) = tasks.get_mut(&task_id) {
-        if task.state == TaskState::Blocked {
-            task.state = TaskState::Ready;
-            RUN_QUEUE.lock().push_back(task_id);
-            kprintln!(
-                "[kernel] scheduler: Task '{}' (ID: {}) unblocked.",
-                task.name,
-                task_id
-            );
+    interrupts::without_interrupts(|| {
+        let mut tasks = TASKS.lock();
+        if let Some(task) = tasks.get_mut(&task_id) {
+            if task.state == TaskState::Blocked {
+                task.state = TaskState::Ready;
+                RUN_QUEUE.lock().push_back(task_id);
+                kprintln!(
+                    "[kernel] scheduler: Task '{}' (ID: {}) unblocked.",
+                    task.name,
+                    task_id
+                );
+            }
         }
-    }
+    });
 }
 
 /// Simulates a context switch to the next ready task (round-robin).
