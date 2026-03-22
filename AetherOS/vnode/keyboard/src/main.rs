@@ -4,11 +4,13 @@
 extern crate alloc;
 
 use alloc::format;
+use alloc::string::String;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 use common::ipc::init_ipc::InitRequest;
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest};
+use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
 use common::syscall::{
@@ -23,6 +25,10 @@ const KEYBOARD_IRQ_CHANNEL_ID: u32 = 4;
 const SYSTEM_INPUT_CHANNEL_ID: u32 = 5;
 const LOGGER_CHANNEL_ID: u32 = 2;
 const INIT_SERVICE_CHANNEL_ID: u32 = 1;
+const MODEL_RUNTIME_CHANNEL_ID: u32 = 11;
+
+const AUTOCOMPLETE_MIN_PROMPT_LEN: usize = 4;
+const AUTOCOMPLETE_MAX_PROMPT_LEN: usize = 64;
 
 #[global_allocator]
 static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -87,8 +93,64 @@ fn translate_scancode(scancode: u8) -> Option<u8> {
         0x31 => Some(b'n'),
         0x32 => Some(b'm'),
         0x39 => Some(b' '),
+        0x0E => Some(8), // backspace
         0x1C => Some(b'\n'),
         _ => None,
+    }
+}
+
+fn update_prompt(prompt: &mut String, ch: u8) {
+    if ch == 8 {
+        let _ = prompt.pop();
+        return;
+    }
+
+    if ch == b'\n' {
+        prompt.clear();
+        return;
+    }
+
+    if prompt.len() >= AUTOCOMPLETE_MAX_PROMPT_LEN {
+        prompt.remove(0);
+    }
+
+    prompt.push(ch as char);
+}
+
+fn maybe_request_autocomplete(model_chan: &mut VNodeChannel, prompt: &str) {
+    if prompt.len() < AUTOCOMPLETE_MIN_PROMPT_LEN || prompt.ends_with(' ') {
+        return;
+    }
+
+    let request = InferRequest::TextGeneration {
+        model_id: String::from("tiny-autocomplete"),
+        prompt: String::from(prompt),
+        max_tokens: 12,
+    };
+
+    if model_chan.send(&request).is_err() {
+        log("keyboard: failed to send autocomplete request to model-runtime.");
+        return;
+    }
+
+}
+
+fn poll_autocomplete_response(model_chan: &mut VNodeChannel) {
+    if let Ok(Some(response_bytes)) = model_chan.recv_non_blocking() {
+        match postcard::from_bytes::<InferResponse>(&response_bytes) {
+            Ok(InferResponse::TextGenerationResult { generated_text }) => {
+                log(&format!("autocomplete suggestion='{}'", generated_text));
+            }
+            Ok(InferResponse::Error { message }) => {
+                log(&format!("autocomplete runtime error: {}", message));
+            }
+            Ok(_) => {
+                log("keyboard: unexpected model-runtime response variant.");
+            }
+            Err(_) => {
+                log("keyboard: failed to decode model-runtime response.");
+            }
+        }
     }
 }
 
@@ -96,6 +158,7 @@ fn translate_scancode(scancode: u8) -> Option<u8> {
 pub extern "C" fn _start() -> ! {
     init_allocator();
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
+    let mut model_runtime_chan = VNodeChannel::new(MODEL_RUNTIME_CHANNEL_ID);
 
     let mut init_chan = VNodeChannel::new(INIT_SERVICE_CHANNEL_ID);
     let _ = init_chan.send(&InitRequest::ServiceStatus {
@@ -103,12 +166,7 @@ pub extern "C" fn _start() -> ! {
     });
 
     unsafe {
-        let res = syscall3(
-            SYS_IRQ_REGISTER,
-            KEYBOARD_IRQ,
-            irq_chan.id as u64,
-            0,
-        );
+        let res = syscall3(SYS_IRQ_REGISTER, KEYBOARD_IRQ, irq_chan.id as u64, 0);
         if res != SUCCESS {
             log(&format!("Keyboard V-Node failed to register IRQ1: {}", res));
             panic!("IRQ1 registration failed");
@@ -118,6 +176,7 @@ pub extern "C" fn _start() -> ! {
     log("Keyboard V-Node started and IRQ1 registered.");
 
     let mut raw = [0u8; 8];
+    let mut prompt = String::new();
     loop {
         let recv_len = unsafe {
             syscall3(
@@ -151,6 +210,9 @@ pub extern "C" fn _start() -> ! {
                     ));
                 }
             }
+            update_prompt(&mut prompt, ch);
+            maybe_request_autocomplete(&mut model_runtime_chan, &prompt);
+            poll_autocomplete_response(&mut model_runtime_chan);
             log(&format!("keyboard: scancode=0x{:02x} ascii='{}'", scancode, ch as char));
         } else {
             log(&format!("keyboard: scancode=0x{:02x}", scancode));
