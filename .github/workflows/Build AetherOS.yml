@@ -1,0 +1,34 @@
+name: Build AetherOS
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential qemu-system-x86
+
+    - name: Build kernel
+      working-directory: ./AetherOS
+      run: |
+        make kernel
+
+    - name: Build initrd
+      working-directory: ./AetherOS
+      run: |
+        make initrd
+
+    - name: Run smoke test
+      working-directory: ./AetherOS
+      run: |
+        make test
