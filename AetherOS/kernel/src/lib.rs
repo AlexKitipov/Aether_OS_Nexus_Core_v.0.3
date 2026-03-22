@@ -102,6 +102,10 @@ fn init_runtime_subsystems() {
     task::init();
     kprintln!("[kernel] Task scheduler initialized.");
 
+    if task::bootstrap_first_dynamic_task() {
+        kprintln!("[kernel] Task subsystem: first dynamic task registered.");
+    }
+
     ipc::init();
     kprintln!("[kernel] IPC system initialized.");
 
