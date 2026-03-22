@@ -23,7 +23,11 @@ use aetheros_common::syscall::{
     SYS_NET_RX_POLL,
     SYS_NET_TX,
     SYS_SET_DMA_BUF_LEN,
+    SYS_SWARM_CALL,
     SYS_TIME,
+    SYS_UI_CALL,
+    SYS_VFS_CALL,
+    SYS_AI_CALL,
 };
 
 use crate::{kprintln, task, ipc, caps, timer};
@@ -88,6 +92,26 @@ fn decode_capability(kind: u64, arg: u64) -> Option<caps::Capability> {
     }
 }
 
+fn syscall_ipc_send(current_task_id: u64, channel_id: ipc::ChannelId, ptr: *const u8, msg_len: usize) -> u64 {
+    let msg = match read_user_bytes(ptr, msg_len, SYS_IPC_MAX_LEN) {
+        Ok(msg) => msg,
+        Err(err) => {
+            kprintln!(
+                "[kernel] SYS_IPC_SEND: rejected user buffer from task {}: {}.",
+                current_task_id,
+                err
+            );
+            return E_ACC_DENIED;
+        }
+    };
+
+    if ipc::mailbox::send(channel_id, current_task_id as u32, &msg).is_ok() {
+        SUCCESS
+    } else {
+        E_ERROR
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
     let current_task = task::get_current_task();
@@ -117,25 +141,16 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !caps::Capability::IpcManage.check(current_task.id) {
                 return E_ACC_DENIED;
             }
-            let channel_id = a1 as ipc::ChannelId;
-            let msg_len = a3 as usize;
-            let msg = match read_user_bytes(a2 as *const u8, msg_len, SYS_IPC_MAX_LEN) {
-                Ok(msg) => msg,
-                Err(err) => {
-                kprintln!(
-                    "[kernel] SYS_IPC_SEND: rejected user buffer from task {}: {}.",
-                    current_task.id,
-                    err
-                );
+            syscall_ipc_send(current_task.id, a1 as ipc::ChannelId, a2 as *const u8, a3 as usize)
+        }
+        SYS_UI_CALL | SYS_SWARM_CALL | SYS_AI_CALL | SYS_VFS_CALL => {
+            if !caps::Capability::IpcManage.check(current_task.id) {
                 return E_ACC_DENIED;
-                }
-            };
-
-            if ipc::mailbox::send(channel_id, current_task.id as u32, &msg).is_ok() {
-                SUCCESS
-            } else {
-                E_ERROR
             }
+
+            // ABI v2 domain-specific calls are routed through the same secure mailbox path
+            // as SYS_IPC_SEND and differentiated by service channels in userspace.
+            syscall_ipc_send(current_task.id, a1 as ipc::ChannelId, a2 as *const u8, a3 as usize)
         }
         SYS_IPC_RECV | SYS_IPC_RECV_NONBLOCKING => {
             if !caps::Capability::IpcManage.check(current_task.id) {
