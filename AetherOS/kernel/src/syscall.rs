@@ -141,7 +141,14 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 // NetworkAccess is a broad capability that implies IRQ registration for network devices.
                 return E_ACC_DENIED;
             }
-            irq::register_irq_handler(irq_num, channel_id);
+
+            if irq_num == 1 {
+                // IRQ1 is routed through the dedicated PS/2 keyboard handler,
+                // which reads port 0x60 and IPC-forwards scancodes.
+                crate::interrupts::keyboard::register_channel(channel_id);
+            } else {
+                irq::register_irq_handler(irq_num, channel_id);
+            }
             SUCCESS
         }
         SYS_NET_RX_POLL => {
