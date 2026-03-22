@@ -100,6 +100,46 @@ fn translate_scancode(scancode: u8) -> Option<u8> {
     }
 }
 
+fn translate_scancode_with_modifiers(
+    scancode: u8,
+    shift_active: bool,
+    caps_lock_active: bool,
+) -> Option<u8> {
+    let base = translate_scancode(scancode)?;
+
+    if base == b' ' || base == b'\n' || base == 8 {
+        return Some(base);
+    }
+
+    if base.is_ascii_alphabetic() {
+        let uppercase = shift_active ^ caps_lock_active;
+        return Some(if uppercase {
+            base.to_ascii_uppercase()
+        } else {
+            base
+        });
+    }
+
+    if !shift_active {
+        return Some(base);
+    }
+
+    let shifted = match base {
+        b'1' => b'!',
+        b'2' => b'@',
+        b'3' => b'#',
+        b'4' => b'$',
+        b'5' => b'%',
+        b'6' => b'^',
+        b'7' => b'&',
+        b'8' => b'*',
+        b'9' => b'(',
+        b'0' => b')',
+        _ => base,
+    };
+    Some(shifted)
+}
+
 fn update_prompt(prompt: &mut String, ch: u8) {
     if ch == 8 {
         let _ = prompt.pop();
@@ -199,6 +239,8 @@ pub extern "C" fn _start() -> ! {
 
     let mut raw = [0u8; 8];
     let mut prompt = String::new();
+    let mut shift_active = false;
+    let mut caps_lock_active = false;
     loop {
         let recv_len = unsafe {
             syscall3(
@@ -214,7 +256,36 @@ pub extern "C" fn _start() -> ! {
         }
 
         let scancode = raw[0];
-        let ascii = translate_scancode(scancode);
+
+        match scancode {
+            // Left Shift / Right Shift pressed.
+            0x2A | 0x36 => {
+                shift_active = true;
+                continue;
+            }
+            // Left Shift / Right Shift released.
+            0xAA | 0xB6 => {
+                shift_active = false;
+                continue;
+            }
+            // Caps Lock toggled on key press.
+            0x3A => {
+                caps_lock_active = !caps_lock_active;
+                log(&format!(
+                    "keyboard: caps_lock_active={}",
+                    caps_lock_active
+                ));
+                continue;
+            }
+            _ => {}
+        }
+
+        // Ignore key-release events for non-modifier keys.
+        if (scancode & 0x80) != 0 {
+            continue;
+        }
+
+        let ascii = translate_scancode_with_modifiers(scancode, shift_active, caps_lock_active);
 
         if let Some(ch) = ascii {
             let key_event = KeyEvent::new(scancode, Some(ch));
