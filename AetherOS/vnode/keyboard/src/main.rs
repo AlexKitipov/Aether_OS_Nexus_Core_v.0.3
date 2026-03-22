@@ -161,8 +161,9 @@ pub extern "C" fn _start() -> ! {
     let mut model_runtime_chan = VNodeChannel::new(MODEL_RUNTIME_CHANNEL_ID);
 
     let mut init_chan = VNodeChannel::new(INIT_SERVICE_CHANNEL_ID);
-    let _ = init_chan.send(&InitRequest::ServiceStatus {
+    let _ = init_chan.send(&InitRequest::ServiceReady {
         service_name: format!("vnode.keyboard"),
+        pid: None,
     });
 
     unsafe {
