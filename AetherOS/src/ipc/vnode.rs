@@ -3,8 +3,10 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use crate::ipc::{IpcSend, IpcRecv};
-use crate::syscall::{syscall2, syscall3, SYS_IPC_SEND, SYS_IPC_RECV, SYS_BLOCK_ON_CHAN, SYS_IPC_RECV_NONBLOCKING};
+use crate::ipc::{IpcRecv, IpcSend};
+use crate::syscall::{
+    syscall3, E_ACC_DENIED, E_ERROR, SUCCESS, SYS_IPC_RECV, SYS_IPC_RECV_NONBLOCKING, SYS_IPC_SEND,
+};
 
 pub struct VNodeChannel {
     pub id: u32,
@@ -18,61 +20,61 @@ impl VNodeChannel {
 
     pub fn recv_blocking(&mut self) -> Result<Vec<u8>, ()> {
         loop {
-            let len = unsafe {
-                syscall3(
-                    SYS_IPC_RECV,
-                    self.id as u64,
-                    self.buffer.as_mut_ptr() as u64,
-                    self.buffer.len() as u64 // Pass max capacity
-                )
-            };
-            if len > 0 { // Message received
-                return Ok(self.buffer[..len as usize].to_vec());
-            } else if len == 0 { // No message, block
-                unsafe {
-                    syscall2(
-                        SYS_BLOCK_ON_CHAN,
-                        self.id as u64,
-                        0,
-                    );
+            let len = syscall3(
+                SYS_IPC_RECV,
+                self.id as u64,
+                self.buffer.as_mut_ptr() as u64,
+                self.buffer.len() as u64,
+            );
+            match len {
+                SUCCESS => {
+                    // Blocking receive may transiently return 0 around reschedule boundaries; retry.
                 }
-                // Scheduler will run other tasks, then eventually this task will resume.
-                // It will re-enter the loop to try receiving again.
-            } else { // Error from syscall
-                return Err(());
+                E_ERROR | E_ACC_DENIED => return Err(()),
+                l => {
+                    let msg_len = l as usize;
+                    if msg_len > self.buffer.len() {
+                        return Err(());
+                    }
+                    return Ok(self.buffer[..msg_len].to_vec());
+                }
             }
         }
     }
 
     pub fn recv_non_blocking(&mut self) -> Result<Option<Vec<u8>>, ()> {
-        let len = unsafe {
-            syscall3(
-                SYS_IPC_RECV_NONBLOCKING,
-                self.id as u64,
-                self.buffer.as_mut_ptr() as u64,
-                self.buffer.len() as u64 // Pass max capacity
-            )
-        };
-        if len > 0 { // Message received
-            Ok(Some(self.buffer[..len as usize].to_vec()))
-        } else if len == 0 { // No message
-            Ok(None)
-        } else { // Error from syscall
-            Err(())
+        let len = syscall3(
+            SYS_IPC_RECV_NONBLOCKING,
+            self.id as u64,
+            self.buffer.as_mut_ptr() as u64,
+            self.buffer.len() as u64,
+        );
+        match len {
+            SUCCESS => Ok(None),
+            E_ERROR | E_ACC_DENIED => Err(()),
+            l => {
+                let msg_len = l as usize;
+                if msg_len > self.buffer.len() {
+                    return Err(());
+                }
+                Ok(Some(self.buffer[..msg_len].to_vec()))
+            }
         }
     }
 }
 
 impl IpcSend for VNodeChannel {
     fn send_raw(&mut self, bytes: &[u8]) -> Result<(), ()> {
-        unsafe {
-            let res = syscall3(
-                SYS_IPC_SEND,
-                self.id as u64,
-                bytes.as_ptr() as u64,
-                bytes.len() as u64,
-            );
-            if res == crate::syscall::SUCCESS { Ok(()) } else { Err(()) }
+        let res = syscall3(
+            SYS_IPC_SEND,
+            self.id as u64,
+            bytes.as_ptr() as u64,
+            bytes.len() as u64,
+        );
+        if res == SUCCESS {
+            Ok(())
+        } else {
+            Err(())
         }
     }
 }

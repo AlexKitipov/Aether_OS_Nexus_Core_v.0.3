@@ -5,7 +5,9 @@ extern crate alloc;
 
 use alloc::vec::Vec;
 use crate::ipc::{IpcSend, IpcRecv};
-use crate::syscall::{syscall3, SYS_IPC_SEND, SYS_IPC_RECV, SYS_IPC_RECV_NONBLOCKING, SUCCESS, E_ERROR};
+use crate::syscall::{
+    syscall3, E_ACC_DENIED, E_ERROR, SUCCESS, SYS_IPC_RECV, SYS_IPC_RECV_NONBLOCKING, SYS_IPC_SEND,
+};
 
 pub struct VNodeChannel {
     pub id: u32,
@@ -26,19 +28,16 @@ impl VNodeChannel {
                 self.buffer.len() as u64 // Pass max capacity
             );
             match len {
-                l if l > SUCCESS => { // Message received, 'l' is the length
-                    return Ok(self.buffer[..l as usize].to_vec());
-                },
-                SUCCESS => { // SUCCESS (0) means kernel blocked us or no message yet if non-blocking
-                    // In the blocking syscall, if 0 is returned, it means the kernel
-                    // successfully blocked the task and will re-schedule it later.
-                    // So we just continue the loop when re-scheduled to try receiving again.
-                },
-                E_ERROR => { // Error from syscall
-                    return Err(());
-                },
-                _ => { // Other error codes or unexpected values
-                    return Err(());
+                SUCCESS => {
+                    // Blocking receive may transiently return 0 around reschedule boundaries; retry.
+                }
+                E_ERROR | E_ACC_DENIED => return Err(()),
+                l => {
+                    let msg_len = l as usize;
+                    if msg_len > self.buffer.len() {
+                        return Err(());
+                    }
+                    return Ok(self.buffer[..msg_len].to_vec());
                 }
             }
         }
@@ -52,16 +51,15 @@ impl VNodeChannel {
             self.buffer.len() as u64 // Pass max capacity
         );
         match len {
-            l if l > SUCCESS => { // Message received
-                Ok(Some(self.buffer[..l as usize].to_vec()))
-            },
-            SUCCESS => { // No message available, but no error
-                Ok(None)
-            },
-            E_ERROR => { // Error from syscall
-                Err(())
-            },
-            _ => Err(())
+            SUCCESS => Ok(None),
+            E_ERROR | E_ACC_DENIED => Err(()),
+            l => {
+                let msg_len = l as usize;
+                if msg_len > self.buffer.len() {
+                    return Err(());
+                }
+                Ok(Some(self.buffer[..msg_len].to_vec()))
+            }
         }
     }
 
