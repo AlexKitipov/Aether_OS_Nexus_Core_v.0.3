@@ -40,7 +40,7 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
     }
 
     let payload = [scancode];
-    if let Err(err) = ipc::mailbox::send(channel_id, 0, &payload) {
+    if let Err(err) = ipc::mailbox::inject_hardware_event(channel_id, 1, &payload) {
         kprintln!(
             "[kernel] keyboard: failed to route scancode 0x{:02x} to channel {}: {}",
             scancode,
