@@ -52,9 +52,6 @@ pub fn init(
     interrupts::init();
     kprintln!("[kernel] Interrupts initialized.");
 
-    x86_64::instructions::interrupts::enable();
-    kprintln!("[kernel] Interrupts enabled.");
-
     memory::init(memory_regions);
     kprintln!("[kernel] Memory manager initialized.");
 
@@ -96,6 +93,12 @@ pub fn init(
 
     caps::init();
     kprintln!("[kernel] Capability system initialized.");
+
+    syscall::init();
+    kprintln!("[kernel] Syscall interface initialized.");
+
+    x86_64::instructions::interrupts::enable();
+    kprintln!("[kernel] Interrupts enabled.");
 
     kprintln!("[kernel] AetherOS kernel initialized successfully.");
 }
