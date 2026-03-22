@@ -11,6 +11,7 @@ use linked_list_allocator::LockedHeap;
 use common::ipc::init_ipc::InitRequest;
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest};
 use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
+use common::ipc::shell_ipc::ShellRequest;
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
 use common::syscall::{
@@ -23,6 +24,7 @@ static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
 const KEYBOARD_IRQ: u64 = 1;
 const KEYBOARD_IRQ_CHANNEL_ID: u32 = 4;
 const SYSTEM_INPUT_CHANNEL_ID: u32 = 5;
+const SHELL_COMMAND_CHANNEL_ID: u32 = 8;
 const LOGGER_CHANNEL_ID: u32 = 2;
 const INIT_SERVICE_CHANNEL_ID: u32 = 1;
 const MODEL_RUNTIME_CHANNEL_ID: u32 = 11;
@@ -117,6 +119,24 @@ fn update_prompt(prompt: &mut String, ch: u8) {
     prompt.push(ch as char);
 }
 
+fn parse_command_line(line: &str) -> Option<(String, alloc::vec::Vec<String>)> {
+    let mut parts = line.split_whitespace();
+    let command = parts.next()?;
+    let args = parts.map(String::from).collect();
+    Some((String::from(command), args))
+}
+
+fn dispatch_shell_command(command_chan: &mut VNodeChannel, line: &str) {
+    if let Some((command, args)) = parse_command_line(line) {
+        let request = ShellRequest::ExecuteCommand { command, args };
+        if command_chan.send(&request).is_err() {
+            log("keyboard: failed to dispatch ShellRequest::ExecuteCommand.");
+        } else {
+            log(&format!("keyboard: dispatched shell command='{}'", line));
+        }
+    }
+}
+
 fn maybe_request_autocomplete(model_chan: &mut VNodeChannel, prompt: &str) {
     if prompt.len() < AUTOCOMPLETE_MIN_PROMPT_LEN || prompt.ends_with(' ') {
         return;
@@ -158,6 +178,7 @@ fn poll_autocomplete_response(model_chan: &mut VNodeChannel) {
 pub extern "C" fn _start() -> ! {
     init_allocator();
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
+    let mut shell_command_chan = VNodeChannel::new(SHELL_COMMAND_CHANNEL_ID);
     let mut model_runtime_chan = VNodeChannel::new(MODEL_RUNTIME_CHANNEL_ID);
 
     let mut init_chan = VNodeChannel::new(INIT_SERVICE_CHANNEL_ID);
@@ -211,9 +232,25 @@ pub extern "C" fn _start() -> ! {
                     ));
                 }
             }
-            update_prompt(&mut prompt, ch);
-            maybe_request_autocomplete(&mut model_runtime_chan, &prompt);
-            poll_autocomplete_response(&mut model_runtime_chan);
+            let command_to_dispatch = if ch == b'\n' {
+                let completed = prompt.trim().to_string();
+                update_prompt(&mut prompt, ch);
+                if completed.is_empty() {
+                    None
+                } else {
+                    Some(completed)
+                }
+            } else {
+                update_prompt(&mut prompt, ch);
+                None
+            };
+
+            if let Some(command_line) = command_to_dispatch {
+                dispatch_shell_command(&mut shell_command_chan, &command_line);
+            } else {
+                maybe_request_autocomplete(&mut model_runtime_chan, &prompt);
+                poll_autocomplete_response(&mut model_runtime_chan);
+            }
             log(&format!("keyboard: scancode=0x{:02x} ascii='{}'", scancode, ch as char));
         } else {
             log(&format!("keyboard: scancode=0x{:02x}", scancode));
