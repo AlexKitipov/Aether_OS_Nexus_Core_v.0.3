@@ -118,6 +118,19 @@ qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel
 ./scripts/run_qemu.sh
 ```
 
+### Makefile shortcuts
+
+From `AetherOS/`:
+
+```bash
+make kernel   # build kernel
+make all      # build kernel + selected V-Nodes
+make initrd   # build initrd image
+make run      # run in QEMU
+make test     # non-interactive QEMU smoke test
+```
+
+
 ## 🔧 Troubleshooting workspace build errors
 
 If you are validating user-space V-Node services (such as `registry` and `init-service`), build those packages directly from the workspace root:
