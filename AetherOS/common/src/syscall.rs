@@ -1,12 +1,20 @@
 
 /// System call numbers.
-pub const SYS_LOG: u64 = 1;
-pub const SYS_EXIT: u64 = 2;
-pub const SYS_TIME: u64 = 3;
-pub const SYS_IPC_SEND: u64 = 4;
-pub const SYS_IPC_RECV: u64 = 5;
-pub const SYS_IPC_RECV_NONBLOCKING: u64 = 6;
-pub const SYS_CREATE_CHANNEL: u64 = 7;
+pub const SYS_LOG: u64 = 0;
+pub const SYS_IPC_SEND: u64 = 1;
+pub const SYS_IPC_RECV: u64 = 2;
+pub const SYS_BLOCK_ON_CHAN: u64 = 3;
+pub const SYS_TIME: u64 = 4;
+pub const SYS_IRQ_REGISTER: u64 = 5;
+pub const SYS_NET_RX_POLL: u64 = 6;
+pub const SYS_NET_ALLOC_BUF: u64 = 7;
+pub const SYS_NET_FREE_BUF: u64 = 8;
+pub const SYS_NET_TX: u64 = 9;
+pub const SYS_IRQ_ACK: u64 = 10;
+pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
+pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
+pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
+pub const SYS_CAP_GRANT: u64 = 14;
 
 /// System call return codes.
 pub const SUCCESS: u64 = 0;

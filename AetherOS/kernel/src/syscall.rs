@@ -4,9 +4,11 @@
 
 extern crate alloc;
 use core::str;
+use alloc::vec;
 
 use crate::{kprintln, task, ipc, caps, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
+use crate::usercopy::copy_from_user;
 
 // Error codes
 pub const E_ACC_DENIED: u64 = 0xFFFFFFFFFFFFFFFE;
@@ -30,6 +32,7 @@ pub const SYS_GET_DMA_BUF_PTR: u64 = 11;
 pub const SYS_SET_DMA_BUF_LEN: u64 = 12;
 pub const SYS_IPC_RECV_NONBLOCKING: u64 = 13;
 pub const SYS_CAP_GRANT: u64 = 14;
+const SYS_LOG_MAX_LEN: usize = 4096;
 
 const CAP_LOG_WRITE: u64 = 0;
 const CAP_TIME_READ: u64 = 1;
@@ -75,12 +78,17 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
             let ptr = a1 as *const u8;
-            let len = a2 as usize;
-            // SAFETY: Caller provides pointer/len pair from V-Node's memory space.
-            // The kernel must ensure this is a valid and safe access.
-            // For now, we trust the V-Node to provide valid memory.
-            let msg = unsafe { core::slice::from_raw_parts(ptr, len) };
-            if let Ok(s) = str::from_utf8(msg) {
+            let len = (a2 as usize).min(SYS_LOG_MAX_LEN);
+            let mut msg = vec![0u8; len];
+            if let Err(err) = copy_from_user(&mut msg, ptr) {
+                kprintln!(
+                    "[kernel] SYS_LOG: rejected user buffer from task {}: {}.",
+                    current_task.id,
+                    err
+                );
+                return E_ERROR;
+            }
+            if let Ok(s) = str::from_utf8(&msg) {
                 kprintln!("[V-Node Log {}] {}", current_task.id, s);
                 SUCCESS
             } else {
