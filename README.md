@@ -209,3 +209,17 @@ Without automated checks, every code change carries regression risk and makes ex
 - Introduce strict code standards (fmt, clippy)
 - Add SECURITY.md and CONTRIBUTING.md
 - Establish a GitHub Project roadmap
+
+## 🎯 v0.4 Integration Priority (First PR)
+
+For the first implementation PR in **v0.4**, prioritize **ABI Synchronization** in the kernel syscall layer.
+
+Why this should come first:
+- `VNodeChannel` IPC transport depends on a stable 64-bit `syscall3` ABI contract.
+- `ui_protocol`, `keyboard_ipc`, `socket_ipc`, and `model_runtime_ipc` all rely on reliable message passing, so ABI compatibility is a blocker for most service integration.
+- Shipping ABI sync first reduces cascading breakage and gives all V-Node services a single validated syscall baseline.
+
+Suggested first PR scope:
+1. Add/verify 64-bit `syscall3` handling in kernel syscall dispatcher.
+2. Validate user/kernel pointer-width and argument marshalling rules.
+3. Add a minimal IPC roundtrip smoke test between two V-Node endpoints using `postcard` payloads.
