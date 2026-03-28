@@ -60,7 +60,26 @@ impl InitService {
 
     fn handle_request(&mut self, request: InitRequest) -> InitResponse {
         match request {
+            InitRequest::BootstrapCoreServices => {
+                let mut started_services = Vec::new();
+                for service_name in ["echo"] {
+                    let response = self.handle_request(InitRequest::ServiceStart {
+                        service_name: service_name.to_string(),
+                    });
+
+                    if matches!(response, InitResponse::Success(_)) {
+                        started_services.push(service_name.to_string());
+                    }
+                }
+
+                InitResponse::BootstrapReport { started_services }
+            }
             InitRequest::ServiceStart { service_name } => {
+                if self.running_vnodes.contains_key(&service_name) {
+                    return InitResponse::Success(format!(
+                        "Service '{service_name}' is already running."
+                    ));
+                }
                 let pid = self.next_pid;
                 self.next_pid += 1;
                 self.running_vnodes.insert(
@@ -136,6 +155,7 @@ impl InitService {
 pub extern "C" fn _start() -> ! {
     init_allocator();
     let mut init_service = InitService::new(6);
+    let _ = init_service.handle_request(InitRequest::BootstrapCoreServices);
     init_service.run_loop();
 }
 
