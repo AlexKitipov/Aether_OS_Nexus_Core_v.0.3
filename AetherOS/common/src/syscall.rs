@@ -25,6 +25,12 @@ pub const SYS_VFS_CALL: u64 = 18;
 ///
 /// Bump this constant whenever syscall numbers or argument contracts change.
 pub const SYSCALL_ABI_VERSION: u64 = 2;
+/// Maximum number of syscall arguments supported by ABI v2.
+///
+/// x86_64 register mapping for `syscall`:
+/// - `rax`: syscall number
+/// - `rdi`, `rsi`, `rdx`, `r10`, `r8`, `r9`: args 1..=6
+pub const SYSCALL_ABI_MAX_ARGS: u64 = 6;
 
 /// System call return codes.
 pub const SUCCESS: u64 = 0;
