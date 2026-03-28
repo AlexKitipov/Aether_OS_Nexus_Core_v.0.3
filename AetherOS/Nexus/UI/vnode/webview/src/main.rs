@@ -4,6 +4,7 @@
 
 extern crate alloc;
 
+use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec;
@@ -13,10 +14,12 @@ use linked_list_allocator::LockedHeap;
 
 use aetheros_common::ipc::keyboard_ipc::KeyEvent;
 use aetheros_common::ipc::vnode::VNodeChannel;
-use aetheros_common::ipc::webview::WebViewCommand;
+use aetheros_common::ipc::webview::{WebViewCommand, WebViewResponse};
 use aetheros_common::swarm_engine::{SwarmEngine, SwarmTransport};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS};
 use aetheros_common::trust::{Aid, TrustStore};
+use aetheros_common::ui::css_engine::CssEngine;
+use aetheros_common::ui::html_parser::{DomNode, HtmlParser};
 
 const VNODE_HEAP_SIZE: usize = 64 * 1024;
 static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
@@ -55,6 +58,46 @@ fn update_input_buffer(buffer: &mut String, event: KeyEvent) {
     }
 }
 
+fn extract_text(node: &DomNode) -> String {
+    match node {
+        DomNode::Text(text) => text.clone(),
+        DomNode::Element { children, .. } => {
+            let mut collected = String::new();
+            for child in children {
+                let piece = extract_text(child);
+                if piece.is_empty() {
+                    continue;
+                }
+                if !collected.is_empty() {
+                    collected.push('\n');
+                }
+                collected.push_str(&piece);
+            }
+            collected
+        }
+    }
+}
+
+fn render_mail_preview(message_id: u32, html_body: String, css: Option<String>) -> WebViewResponse {
+    let parser = HtmlParser::new();
+    let css_engine = CssEngine::new();
+
+    let dom = parser.parse_html(&html_body);
+    let css_rules = css
+        .as_deref()
+        .map(|stylesheet| css_engine.parse_css(stylesheet))
+        .unwrap_or_default();
+
+    let applied_styles: BTreeMap<String, String> = css_engine.apply_styles(&dom, &css_rules);
+    let extracted_text = extract_text(&dom);
+
+    WebViewResponse::RenderedMail {
+        message_id,
+        extracted_text,
+        applied_styles,
+    }
+}
+
 fn main() -> ! {
     let mut channel = VNodeChannel::new(12);
     let _trust_store = TrustStore::new();
@@ -76,12 +119,25 @@ fn main() -> ! {
                         "webview: key scancode=0x{:02x} ascii={:?} input='{}'",
                         event.scancode, event.ascii, input_buffer
                     ));
+                    let _ = channel.send(&WebViewResponse::Ack);
                 }
                 Ok(WebViewCommand::Navigate { url }) => {
                     log(&format!("webview: navigate request '{}'", url));
+                    let _ = channel.send(&WebViewResponse::Ack);
+                }
+                Ok(WebViewCommand::RenderMailMessage {
+                    message_id,
+                    html_body,
+                    css,
+                }) => {
+                    let response = render_mail_preview(message_id, html_body, css);
+                    let _ = channel.send(&response);
                 }
                 Err(_) => {
                     log("webview: failed to decode command payload.");
+                    let _ = channel.send(&WebViewResponse::Error {
+                        message: String::from("failed to decode command payload"),
+                    });
                 }
             }
         }
