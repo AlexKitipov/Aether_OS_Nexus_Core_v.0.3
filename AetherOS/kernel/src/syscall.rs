@@ -30,9 +30,10 @@ use aetheros_common::syscall::{
     SYS_AI_CALL,
 };
 
-use crate::{kprintln, task, ipc, caps, timer};
+use crate::{caps, ipc, kprintln, task, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
 use crate::usercopy::{copy_from_user, copy_utf8_from_user};
+use aetheros_common::channel::well_known;
 const SYS_LOG_MAX_LEN: usize = 1024;
 const SYS_IPC_MAX_LEN: usize = 4096;
 
@@ -162,11 +163,30 @@ fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
                 return E_ACC_DENIED;
             }
 
-            // ABI v2 domain-specific calls are routed through the same secure mailbox path
-            // as SYS_IPC_SEND and differentiated by service channels in userspace.
+            let service_channel = args.a1 as ipc::ChannelId;
+            let route_allowed = match n {
+                SYS_UI_CALL => well_known::is_ui(service_channel),
+                SYS_SWARM_CALL => well_known::is_swarm(service_channel),
+                SYS_AI_CALL => well_known::is_ai(service_channel),
+                SYS_VFS_CALL => well_known::is_vfs(service_channel),
+                _ => false,
+            };
+
+            if !route_allowed {
+                kprintln!(
+                    "[kernel] domain syscall {} denied for task {} on unknown channel {}.",
+                    n,
+                    current_task.id,
+                    service_channel
+                );
+                return E_ERROR;
+            }
+
+            // ABI v2 domain-specific calls are routed through the same secure mailbox path,
+            // but must target a known service endpoint for their declared domain.
             syscall_ipc_send(
                 current_task.id,
-                args.a1 as ipc::ChannelId,
+                service_channel,
                 args.a2 as *const u8,
                 args.a3 as usize,
             )
