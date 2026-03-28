@@ -219,6 +219,22 @@ Why this should come first:
 - `ui_protocol`, `keyboard_ipc`, `socket_ipc`, and `model_runtime_ipc` all rely on reliable message passing, so ABI compatibility is a blocker for most service integration.
 - Shipping ABI sync first reduces cascading breakage and gives all V-Node services a single validated syscall baseline.
 
+## 🧭 Finalization Plan After v0.3 (Recommended Order)
+
+With the system skeleton now defined end-to-end, the recommended execution sequence is:
+
+1. **API Documentation Freeze (first):**
+   - Generate canonical docs for syscall ABI, IPC message schemas, and V-Node service contracts.
+   - Mark protocol/version boundaries explicitly to avoid integration drift during v0.4 performance work.
+2. **Live ISO Bring-up (second):**
+   - Build a minimal bootable image that includes kernel + init-service + net-bridge + socket-api + dns-resolver.
+   - Validate end-to-end network path in QEMU before adding performance optimizations.
+3. **Performance Iteration (third):**
+   - Introduce DMA ring buffers and protocol dispatch filtering in net-bridge.
+   - Benchmark latency/throughput before and after each optimization step.
+
+This order reduces rework: documentation first stabilizes contracts, while a thin Live ISO then validates real boot/runtime behavior on a fixed interface baseline.
+
 Suggested first PR scope:
 1. Add/verify 64-bit `syscall3` handling in kernel syscall dispatcher.
 2. Validate user/kernel pointer-width and argument marshalling rules.
