@@ -2,6 +2,7 @@
 
 use core::sync::atomic::{AtomicU32, Ordering};
 
+use aetheros_common::ipc::keyboard_ipc::KeyEvent;
 use x86_64::instructions::port::Port;
 use x86_64::structures::idt::InterruptStackFrame;
 
@@ -44,7 +45,22 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
         return;
     }
 
-    let payload = [scancode];
+    let key_event = KeyEvent::new(scancode, None);
+    let payload = match postcard::to_allocvec(&key_event) {
+        Ok(payload) => payload,
+        Err(err) => {
+            kprintln!(
+                "[kernel] keyboard: failed to serialize KeyEvent for scancode 0x{:02x}: {:?}",
+                scancode,
+                err
+            );
+            unsafe {
+                // SAFETY: Event encoding failed, so no userspace ACK will follow.
+                pic::end_of_interrupt(IRQ_KEYBOARD);
+            }
+            return;
+        }
+    };
     if let Err(err) = ipc::mailbox::inject_hardware_event(channel_id, 1, &payload) {
         kprintln!(
             "[kernel] keyboard: failed to route scancode 0x{:02x} to channel {}: {}",
