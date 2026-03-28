@@ -228,6 +228,15 @@ fn decode_scancode(raw: &[u8], recv_len: u64) -> Option<u8> {
     Some(raw[0])
 }
 
+fn ack_keyboard_irq() {
+    unsafe {
+        let ack_res = syscall3(SYS_IRQ_ACK, KEYBOARD_IRQ, 0, 0);
+        if ack_res != SUCCESS {
+            log(&format!("Keyboard V-Node failed to ACK IRQ1: {}", ack_res));
+        }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -272,6 +281,7 @@ pub extern "C" fn _start() -> ! {
         }
 
         let Some(scancode) = decode_scancode(&raw, recv_len) else {
+            ack_keyboard_irq();
             continue;
         };
 
@@ -279,11 +289,13 @@ pub extern "C" fn _start() -> ! {
             // Left Shift / Right Shift pressed.
             0x2A | 0x36 => {
                 shift_active = true;
+                ack_keyboard_irq();
                 continue;
             }
             // Left Shift / Right Shift released.
             0xAA | 0xB6 => {
                 shift_active = false;
+                ack_keyboard_irq();
                 continue;
             }
             // Caps Lock toggled on key press.
@@ -293,6 +305,7 @@ pub extern "C" fn _start() -> ! {
                     "keyboard: caps_lock_active={}",
                     caps_lock_active
                 ));
+                ack_keyboard_irq();
                 continue;
             }
             _ => {}
@@ -300,6 +313,7 @@ pub extern "C" fn _start() -> ! {
 
         // Ignore key-release events for non-modifier keys.
         if (scancode & 0x80) != 0 {
+            ack_keyboard_irq();
             continue;
         }
 
@@ -356,12 +370,7 @@ pub extern "C" fn _start() -> ! {
             log(&format!("keyboard: scancode=0x{:02x}", scancode));
         }
 
-        unsafe {
-            let ack_res = syscall3(SYS_IRQ_ACK, KEYBOARD_IRQ, 0, 0);
-            if ack_res != SUCCESS {
-                log(&format!("Keyboard V-Node failed to ACK IRQ1: {}", ack_res));
-            }
-        }
+        ack_keyboard_irq();
     }
 }
 
