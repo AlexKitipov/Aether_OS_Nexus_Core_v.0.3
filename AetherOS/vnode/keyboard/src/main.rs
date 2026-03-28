@@ -13,6 +13,7 @@ use common::ipc::keyboard_ipc::KeyEvent;
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest};
 use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
 use common::ipc::shell_ipc::ShellRequest;
+use common::ipc::webview::WebViewCommand;
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
 use common::syscall::{
@@ -26,6 +27,7 @@ const KEYBOARD_IRQ: u64 = 1;
 const KEYBOARD_IRQ_CHANNEL_ID: u32 = 4;
 const SYSTEM_INPUT_CHANNEL_ID: u32 = 5;
 const SHELL_COMMAND_CHANNEL_ID: u32 = 8;
+const WEBVIEW_CHANNEL_ID: u32 = 12;
 const LOGGER_CHANNEL_ID: u32 = 2;
 const INIT_SERVICE_CHANNEL_ID: u32 = 1;
 const MODEL_RUNTIME_CHANNEL_ID: u32 = 11;
@@ -219,6 +221,7 @@ pub extern "C" fn _start() -> ! {
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
     let mut input_chan = VNodeChannel::new(SYSTEM_INPUT_CHANNEL_ID);
     let mut shell_command_chan = VNodeChannel::new(SHELL_COMMAND_CHANNEL_ID);
+    let mut webview_chan = VNodeChannel::new(WEBVIEW_CHANNEL_ID);
     let mut model_runtime_chan = VNodeChannel::new(MODEL_RUNTIME_CHANNEL_ID);
 
     let mut init_chan = VNodeChannel::new(INIT_SERVICE_CHANNEL_ID);
@@ -295,6 +298,12 @@ pub extern "C" fn _start() -> ! {
                     SYSTEM_INPUT_CHANNEL_ID
                 ));
             }
+            if webview_chan
+                .send(&WebViewCommand::InjectKeyEvent { event: key_event })
+                .is_err()
+            {
+                log("keyboard: failed to forward key event to webview.");
+            }
             let command_to_dispatch = if ch == b'\n' {
                 let completed = prompt.trim().to_string();
                 update_prompt(&mut prompt, ch);
@@ -322,6 +331,12 @@ pub extern "C" fn _start() -> ! {
                     "keyboard: failed to forward non-printable key event to channel {}.",
                     SYSTEM_INPUT_CHANNEL_ID
                 ));
+            }
+            if webview_chan
+                .send(&WebViewCommand::InjectKeyEvent { event: key_event })
+                .is_err()
+            {
+                log("keyboard: failed to forward non-printable key event to webview.");
             }
             log(&format!("keyboard: scancode=0x{:02x}", scancode));
         }

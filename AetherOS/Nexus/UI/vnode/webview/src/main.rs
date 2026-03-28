@@ -11,7 +11,9 @@ use alloc::vec::Vec;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
+use aetheros_common::ipc::keyboard_ipc::KeyEvent;
 use aetheros_common::ipc::vnode::VNodeChannel;
+use aetheros_common::ipc::webview::WebViewCommand;
 use aetheros_common::swarm_engine::{SwarmEngine, SwarmTransport};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS};
 use aetheros_common::trust::{Aid, TrustStore};
@@ -37,8 +39,24 @@ fn log(msg: &str) {
     let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
 }
 
+fn update_input_buffer(buffer: &mut String, event: KeyEvent) {
+    if event.ascii == Some(8) {
+        let _ = buffer.pop();
+        return;
+    }
+
+    if event.ascii == Some(b'\n') {
+        buffer.clear();
+        return;
+    }
+
+    if let Some(ch) = event.ascii {
+        buffer.push(ch as char);
+    }
+}
+
 fn main() -> ! {
-    let _channel = VNodeChannel::new(12);
+    let mut channel = VNodeChannel::new(12);
     let _trust_store = TrustStore::new();
     let _aid = Aid([1; 32]);
     let _swarm_engine = SwarmEngine;
@@ -48,7 +66,26 @@ fn main() -> ! {
     let status: String = format!("webview placeholder started (SUCCESS={})", SUCCESS);
     log(&status);
 
-    loop {}
+    let mut input_buffer = String::new();
+    loop {
+        if let Ok(Some(message)) = channel.recv_non_blocking() {
+            match postcard::from_bytes::<WebViewCommand>(&message) {
+                Ok(WebViewCommand::InjectKeyEvent { event }) => {
+                    update_input_buffer(&mut input_buffer, event);
+                    log(&format!(
+                        "webview: key scancode=0x{:02x} ascii={:?} input='{}'",
+                        event.scancode, event.ascii, input_buffer
+                    ));
+                }
+                Ok(WebViewCommand::Navigate { url }) => {
+                    log(&format!("webview: navigate request '{}'", url));
+                }
+                Err(_) => {
+                    log("webview: failed to decode command payload.");
+                }
+            }
+        }
+    }
 }
 
 #[no_mangle]
