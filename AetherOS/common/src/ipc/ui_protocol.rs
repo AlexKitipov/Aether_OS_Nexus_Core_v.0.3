@@ -71,6 +71,10 @@ pub enum UiResponse {
     Error {
         message: String,
     },
+    /// System-level informational notification (e.g. deferred AI task).
+    SystemNotification {
+        message: String,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]

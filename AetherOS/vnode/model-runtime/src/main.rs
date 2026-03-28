@@ -15,7 +15,10 @@ use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
+use common::ipc::IpcSend;
 use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
+use common::ipc::ai_governor_ipc::{AiGovernorRequest, AiGovernorResponse, AiPriority};
+use common::ipc::ui_protocol::UiResponse;
 use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata}; // For loading models
 
 // Temporary log function for V-Nodes
@@ -54,22 +57,68 @@ struct LoadedModel {
 struct ModelRuntimeService {
     client_chan: VNodeChannel, // Channel for client V-Nodes sending inference requests
     vfs_chan: VNodeChannel,    // Channel to svc://vfs for loading models
+    ai_governor_chan: VNodeChannel, // Channel to svc://ai-governor
+    ui_chan: VNodeChannel, // Channel to UI protocol endpoint for system notices
 
     loaded_models: BTreeMap<String, LoadedModel>, // model_id -> LoadedModel
 }
 
 impl ModelRuntimeService {
-    fn new(client_chan_id: u32, vfs_chan_id: u32) -> Self {
+    fn new(client_chan_id: u32, vfs_chan_id: u32, ai_governor_chan_id: u32, ui_chan_id: u32) -> Self {
         let client_chan = VNodeChannel::new(client_chan_id);
         let vfs_chan = VNodeChannel::new(vfs_chan_id);
+        let ai_governor_chan = VNodeChannel::new(ai_governor_chan_id);
+        let ui_chan = VNodeChannel::new(ui_chan_id);
 
         log("Model Runtime Service: Initializing...");
 
         Self {
             client_chan,
             vfs_chan,
+            ai_governor_chan,
+            ui_chan,
             loaded_models: BTreeMap::new(),
         }
+    }
+
+    fn reserve_cpu_budget(
+        &mut self,
+        requester: &str,
+        priority: AiPriority,
+        millicores: u32,
+    ) -> Result<u32, String> {
+        let reserve_req = AiGovernorRequest::ReserveCpu {
+            requester: requester.to_string(),
+            priority,
+            millicores,
+        };
+
+        match self
+            .ai_governor_chan
+            .send_and_recv::<AiGovernorRequest, AiGovernorResponse>(&reserve_req)
+        {
+            Ok(AiGovernorResponse::Granted { granted_millicores, .. }) => Ok(granted_millicores),
+            Ok(AiGovernorResponse::Denied { reason, .. }) => Err(reason),
+            Ok(AiGovernorResponse::Error { message }) => Err(message),
+            Ok(_) => Err(String::from("Unexpected AI governor response during reservation.")),
+            Err(_) => Err(String::from("AI governor IPC communication failed.")),
+        }
+    }
+
+    fn release_cpu_budget(&mut self, requester: &str) {
+        let release_req = AiGovernorRequest::ReleaseCpu {
+            requester: requester.to_string(),
+        };
+        let _ = self
+            .ai_governor_chan
+            .send_and_recv::<AiGovernorRequest, AiGovernorResponse>(&release_req);
+    }
+
+    fn notify_ui_system_overload(&mut self) {
+        let notification = UiResponse::SystemNotification {
+            message: String::from("Системата е претоварена, AI задачата е отложена"),
+        };
+        let _ = self.ui_chan.send(&notification);
     }
 
     // Conceptual: Load a model from VFS
@@ -116,7 +165,42 @@ impl ModelRuntimeService {
     }
 
     fn handle_request(&mut self, request: InferRequest) -> InferResponse {
-        match request {
+        let (requester, priority, requested_millicores) = match &request {
+            InferRequest::TextGeneration { model_id, max_tokens, .. } => (
+                alloc::format!("model-runtime:text:{}", model_id),
+                AiPriority::Interactive,
+                core::cmp::max(500, max_tokens.saturating_mul(10)),
+            ),
+            InferRequest::ImageClassification { model_id, image_data } => (
+                alloc::format!("model-runtime:image:{}", model_id),
+                AiPriority::Background,
+                core::cmp::max(300, (image_data.len() as u32 / 4).saturating_add(200)),
+            ),
+        };
+
+        match self.reserve_cpu_budget(&requester, priority, requested_millicores) {
+            Ok(granted) => {
+                log(&format!(
+                    "Model Runtime: CPU budget granted ({} millicores) for requester '{}'.",
+                    granted, requester
+                ));
+            }
+            Err(reason) => {
+                log(&format!(
+                    "Model Runtime: AI governor denied request for '{}': {}.",
+                    requester, reason
+                ));
+                self.notify_ui_system_overload();
+                return InferResponse::Error {
+                    message: alloc::format!(
+                        "AI Governor denied execution: {}. Системата е претоварена, AI задачата е отложена",
+                        reason
+                    ),
+                };
+            }
+        }
+
+        let response = match request {
             InferRequest::ImageClassification { model_id, image_data } => {
                 log(&alloc::format!("Model Runtime: Image classification request for model '{}'.", model_id));
                 
@@ -146,7 +230,10 @@ impl ModelRuntimeService {
                 log(&alloc::format!("Model Runtime: Generating {} tokens for prompt: '{}' using model '{}'.", max_tokens, prompt, model.model_id));
                 InferResponse::TextGenerationResult { generated_text: alloc::format!("This is a generated text based on the prompt: '{}'. It is generated by model {}.", prompt, model.model_id) }
             },
-        }
+        };
+
+        self.release_cpu_budget(&requester);
+        response
     }
 
     fn run_loop(&mut self) -> ! {
@@ -175,7 +262,9 @@ pub extern "C" fn _start() -> ! {
     // Assuming channel IDs:
     // 11 for Model Runtime Service client requests
     // 7 for VFS Service
-    let mut model_runtime_service = ModelRuntimeService::new(11, 7);
+    // 12 for AI Governor service
+    // 3 for UI service endpoint
+    let mut model_runtime_service = ModelRuntimeService::new(11, 7, 12, 3);
     model_runtime_service.run_loop();
 }
 
