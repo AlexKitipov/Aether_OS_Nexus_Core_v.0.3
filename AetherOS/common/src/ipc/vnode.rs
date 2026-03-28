@@ -96,9 +96,9 @@ impl IpcSend for VNodeChannel {
 }
 
 impl IpcRecv for VNodeChannel {
-    fn recv<T: serde::de::DeserializeOwned>(&mut self) -> Option<T> {
+    fn recv_raw(&mut self) -> Option<Vec<u8>> {
         match self.recv_non_blocking() {
-            Ok(Some(data)) => postcard::from_bytes(&data).ok(),
+            Ok(Some(data)) => Some(data),
             _ => None,
         }
     }
