@@ -27,3 +27,4 @@ pub trait IpcRecv {
 }
 pub mod model_runtime_ipc;
 pub mod mail_ipc;
+pub mod ai_governor_ipc;
