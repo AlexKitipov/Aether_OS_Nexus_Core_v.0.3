@@ -11,6 +11,8 @@ use crate::memory::page_allocator::PageAllocator;
 use crate::task::tcb::{Context, TaskControlBlock, TaskState};
 use crate::caps::Capability;
 
+const MILLICORES_PER_CORE: u32 = 1000;
+
 /// The run queue holds task IDs of tasks that are ready to be scheduled.
 /// This uses a simple `VecDeque` for a round-robin like behavior.
 static RUN_QUEUE: Mutex<VecDeque<u64>> = Mutex::new(VecDeque::new());
@@ -255,6 +257,28 @@ pub fn get_task_context(task_id: u64) -> Option<Context> {
 /// Returns the ID of the currently executing task.
 pub fn get_current_task_id() -> u64 {
     *CURRENT_TASK_ID.lock()
+}
+
+/// Returns the detected number of logical CPU cores.
+///
+/// The value is clamped to at least 1 to provide a safe fallback on platforms
+/// where CPUID cannot be queried.
+pub fn available_cpu_cores() -> u32 {
+    #[cfg(target_arch = "x86_64")]
+    {
+        let logical_cores = unsafe { core::arch::x86_64::__cpuid(1) }.ebx >> 16 & 0xff;
+        if logical_cores == 0 { 1 } else { logical_cores }
+    }
+
+    #[cfg(not(target_arch = "x86_64"))]
+    {
+        1
+    }
+}
+
+/// Returns the global AI budget expressed in millicores.
+pub fn ai_cpu_budget_millicores() -> u32 {
+    available_cpu_cores().saturating_mul(MILLICORES_PER_CORE)
 }
 
 /// Returns a cloned task by id if it exists.
