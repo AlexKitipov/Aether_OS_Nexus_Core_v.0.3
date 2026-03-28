@@ -23,7 +23,12 @@ pub trait IpcSend {
 }
 
 pub trait IpcRecv {
-    fn recv<T: serde::de::DeserializeOwned>(&mut self) -> Option<T>;
+    fn recv_raw(&mut self) -> Option<alloc::vec::Vec<u8>>;
+
+    fn recv<T: serde::de::DeserializeOwned>(&mut self) -> Option<T> {
+        self.recv_raw()
+            .and_then(|data| postcard::from_bytes(&data).ok())
+    }
 }
 pub mod model_runtime_ipc;
 pub mod mail_ipc;
