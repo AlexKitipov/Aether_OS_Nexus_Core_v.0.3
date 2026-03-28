@@ -112,8 +112,17 @@ fn syscall_ipc_send(current_task_id: u64, channel_id: ipc::ChannelId, ptr: *cons
     }
 }
 
-#[no_mangle]
-pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
+#[derive(Clone, Copy)]
+struct SyscallArgs {
+    a1: u64,
+    a2: u64,
+    a3: u64,
+    _a4: u64,
+    _a5: u64,
+    _a6: u64,
+}
+
+fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
     let current_task = task::get_current_task();
 
     match n {
@@ -121,8 +130,8 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !caps::Capability::LogWrite.check(current_task.id) {
                 return E_ACC_DENIED;
             }
-            let ptr = a1 as *const u8;
-            let len = a2 as usize;
+            let ptr = args.a1 as *const u8;
+            let len = args.a2 as usize;
             let msg = match read_user_utf8(ptr, len, SYS_LOG_MAX_LEN) {
                 Ok(msg) => msg,
                 Err(err) => {
@@ -141,7 +150,12 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !caps::Capability::IpcManage.check(current_task.id) {
                 return E_ACC_DENIED;
             }
-            syscall_ipc_send(current_task.id, a1 as ipc::ChannelId, a2 as *const u8, a3 as usize)
+            syscall_ipc_send(
+                current_task.id,
+                args.a1 as ipc::ChannelId,
+                args.a2 as *const u8,
+                args.a3 as usize,
+            )
         }
         SYS_UI_CALL | SYS_SWARM_CALL | SYS_AI_CALL | SYS_VFS_CALL => {
             if !caps::Capability::IpcManage.check(current_task.id) {
@@ -150,15 +164,20 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
 
             // ABI v2 domain-specific calls are routed through the same secure mailbox path
             // as SYS_IPC_SEND and differentiated by service channels in userspace.
-            syscall_ipc_send(current_task.id, a1 as ipc::ChannelId, a2 as *const u8, a3 as usize)
+            syscall_ipc_send(
+                current_task.id,
+                args.a1 as ipc::ChannelId,
+                args.a2 as *const u8,
+                args.a3 as usize,
+            )
         }
         SYS_IPC_RECV | SYS_IPC_RECV_NONBLOCKING => {
             if !caps::Capability::IpcManage.check(current_task.id) {
                 return E_ACC_DENIED;
             }
-            let channel_id = a1 as ipc::ChannelId;
-            let out_ptr = a2 as *mut u8;
-            let out_cap = a3 as usize;
+            let channel_id = args.a1 as ipc::ChannelId;
+            let out_ptr = args.a2 as *mut u8;
+            let out_cap = args.a3 as usize;
             let blocking = n == SYS_IPC_RECV;
 
             match ipc::mailbox::recv_message(channel_id, out_ptr, out_cap, blocking) {
@@ -169,7 +188,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
         SYS_BLOCK_ON_CHAN => {
             // This syscall is now mostly internal to SYS_IPC_RECV for blocking.
             // If explicitly called, it blocks the current task on a given channel ID.
-            task::block_current_on_channel(a1 as u32);
+            task::block_current_on_channel(args.a1 as u32);
             SUCCESS
         }
         SYS_TIME => {
@@ -179,8 +198,8 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             timer::get_current_ticks()
         }
         SYS_IRQ_REGISTER => {
-            let irq_num = a1 as u8;
-            let channel_id = a2 as u32;
+            let irq_num = args.a1 as u8;
+            let channel_id = args.a2 as u32;
             if !(caps::Capability::IrqRegister(irq_num).check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                 // NetworkAccess is a broad capability that implies IRQ registration for network devices.
                 return E_ACC_DENIED;
@@ -232,9 +251,9 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             ];
             let packet_len = simulated_packet.len();
 
-            let _iface_id = a1; // Not used in current simulation
-            let dma_handle = a2;
-            let out_cap = a3 as usize;
+            let _iface_id = args.a1; // Not used in current simulation
+            let dma_handle = args.a2;
+            let out_cap = args.a3 as usize;
 
             if packet_len <= out_cap {
                 if let Some(buf_ptr) = dma::get_dma_buffer_ptr(dma_handle) {
@@ -260,7 +279,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !(caps::Capability::DmaAlloc.check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                 return E_ACC_DENIED;
             }
-            let size = a1 as usize;
+            let size = args.a1 as usize;
             if let Some(handle) = dma::alloc_dma_buffer(size) {
                 handle
             }
@@ -272,7 +291,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !(caps::Capability::DmaAlloc.check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                 return E_ACC_DENIED;
             }
-            dma::free_dma_buffer(a1);
+            dma::free_dma_buffer(args.a1);
             SUCCESS
         }
         SYS_NET_TX => {
@@ -280,11 +299,11 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
             // In a real system, this would queue the DMA buffer for transmission by the NIC driver.
-            kprintln!("[kernel] SYS_NET_TX: Queuing packet for TX, handle: {}, len: {}. (Task {})", a2, a3, current_task.id);
+            kprintln!("[kernel] SYS_NET_TX: Queuing packet for TX, handle: {}, len: {}. (Task {})", args.a2, args.a3, current_task.id);
             SUCCESS
         }
         SYS_IRQ_ACK => {
-            let irq_num = a1 as u8;
+            let irq_num = args.a1 as u8;
             if !(caps::Capability::IrqAck(irq_num).check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                 return E_ACC_DENIED;
             }
@@ -295,7 +314,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !(caps::Capability::DmaAccess.check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                  return E_ACC_DENIED;
             }
-            if let Some(ptr) = dma::get_dma_buffer_ptr(a1) {
+            if let Some(ptr) = dma::get_dma_buffer_ptr(args.a1) {
                 ptr as u64
             }
             else {
@@ -306,7 +325,7 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             if !(caps::Capability::DmaAccess.check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
                  return E_ACC_DENIED;
             }
-            if dma::set_dma_buffer_len(a1, a2 as usize).is_ok() {
+            if dma::set_dma_buffer_len(args.a1, args.a2 as usize).is_ok() {
                 SUCCESS
             }
             else {
@@ -319,9 +338,9 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
                 return E_ACC_DENIED;
             }
 
-            let target_task_id = a1;
-            let cap_kind = a2;
-            let cap_arg = a3;
+            let target_task_id = args.a1;
+            let cap_kind = args.a2;
+            let cap_arg = args.a3;
             let Some(cap) = decode_capability(cap_kind, cap_arg) else {
                 kprintln!(
                     "[kernel] SYS_CAP_GRANT: Invalid capability kind {} from task {}.",
@@ -348,4 +367,44 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             E_UNKNOWN_SYSCALL
         }
     }
+}
+
+/// Compatibility dispatcher used by older entry glue that forwards only 3 args.
+#[no_mangle]
+pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
+    syscall_dispatch_inner(
+        n,
+        SyscallArgs {
+            a1,
+            a2,
+            a3,
+            _a4: 0,
+            _a5: 0,
+            _a6: 0,
+        },
+    )
+}
+
+/// Primary ABI v2 syscall dispatcher with the full six x86_64 syscall arguments.
+#[no_mangle]
+pub extern "C" fn syscall_dispatch6(
+    n: u64,
+    a1: u64,
+    a2: u64,
+    a3: u64,
+    a4: u64,
+    a5: u64,
+    a6: u64,
+) -> u64 {
+    syscall_dispatch_inner(
+        n,
+        SyscallArgs {
+            a1,
+            a2,
+            a3,
+            _a4: a4,
+            _a5: a5,
+            _a6: a6,
+        },
+    )
 }
