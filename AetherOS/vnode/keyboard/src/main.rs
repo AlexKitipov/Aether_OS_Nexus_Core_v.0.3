@@ -215,6 +215,19 @@ fn poll_autocomplete_response(model_chan: &mut VNodeChannel) {
     }
 }
 
+fn decode_scancode(raw: &[u8], recv_len: u64) -> Option<u8> {
+    let recv_len = recv_len as usize;
+    if recv_len == 0 || recv_len > raw.len() {
+        return None;
+    }
+
+    if let Ok(event) = postcard::from_bytes::<KeyEvent>(&raw[..recv_len]) {
+        return Some(event.scancode);
+    }
+
+    Some(raw[0])
+}
+
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -258,7 +271,9 @@ pub extern "C" fn _start() -> ! {
             continue;
         }
 
-        let scancode = raw[0];
+        let Some(scancode) = decode_scancode(&raw, recv_len) else {
+            continue;
+        };
 
         match scancode {
             // Left Shift / Right Shift pressed.
