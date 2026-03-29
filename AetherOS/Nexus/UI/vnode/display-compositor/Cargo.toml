@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 aetheros_common = { path = "../../../../common" }
-serde = { version = "1.0.198", default-features = false, features = ["derive"] }
+serde = { version = "=1.0.227", default-features = false, features = ["derive"] }
 postcard = { version = "1.0.8", features = ["alloc"] }
 linked_list_allocator = "0.10.5"
 
