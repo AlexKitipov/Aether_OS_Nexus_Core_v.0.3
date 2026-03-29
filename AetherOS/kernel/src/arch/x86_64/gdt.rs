@@ -42,7 +42,7 @@ fn ensure_gdt() {
 
         let mut gdt = GlobalDescriptorTable::new();
         let code_selector = gdt.add_entry(Descriptor::kernel_code_segment());
-        let data_selector = gdt.add_entry(Descriptor::user_data_segment());
+        let data_selector = gdt.add_entry(Descriptor::kernel_data_segment());
         let user_data_selector = gdt.add_entry(Descriptor::user_data_segment());
         let user_code_selector = gdt.add_entry(Descriptor::user_code_segment());
         let tss_selector =
