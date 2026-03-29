@@ -5,3 +5,5 @@ pub mod framebuffer;
 pub mod timer;
 
 pub mod vga_text;
+
+pub mod net;

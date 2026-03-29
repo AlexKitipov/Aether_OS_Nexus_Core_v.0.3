@@ -27,13 +27,16 @@ use aetheros_common::syscall::{
     SYS_TIME,
     SYS_UI_CALL,
     SYS_VFS_CALL,
+    SYS_UDP_SEND,
+    SYS_UDP_RECV,
     SYS_AI_CALL,
 };
 
 use crate::{caps, ipc, kprintln, task, timer};
 use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
-use crate::usercopy::{copy_from_user, copy_utf8_from_user};
+use crate::usercopy::{copy_from_user, copy_to_user, copy_utf8_from_user};
 use aetheros_common::channel::well_known;
+use core::cmp::min;
 const SYS_LOG_MAX_LEN: usize = 1024;
 const SYS_IPC_MAX_LEN: usize = 4096;
 
@@ -174,9 +177,9 @@ struct SyscallArgs {
     a1: u64,
     a2: u64,
     a3: u64,
-    _a4: u64,
-    _a5: u64,
-    _a6: u64,
+    a4: u64,
+    a5: u64,
+    a6: u64,
 }
 
 fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
@@ -378,6 +381,53 @@ fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
             kprintln!("[kernel] SYS_NET_TX: Queuing packet for TX, handle: {}, len: {}. (Task {})", args.a2, args.a3, current_task.id);
             SUCCESS
         }
+
+        SYS_UDP_SEND => {
+            if !caps::Capability::NetworkAccess.check(current_task.id) {
+                return E_ACC_DENIED;
+            }
+
+            let local_port = args.a1 as u16;
+            let ip = (args.a2 as u32).to_be_bytes();
+            let remote_ip = core::net::Ipv4Addr::new(ip[0], ip[1], ip[2], ip[3]);
+            let remote_port = args.a3 as u16;
+
+            let payload = match read_user_bytes(args.a4 as *const u8, args.a5 as usize, SYS_IPC_MAX_LEN) {
+                Ok(data) => data,
+                Err(_) => return E_ACC_DENIED,
+            };
+
+            match crate::network::with_stack(|stack| {
+                stack.udp_send(current_task.id, local_port, remote_ip, remote_port, &payload)
+            }) {
+                Some(Ok(sent)) => sent as u64,
+                _ => E_ERROR,
+            }
+        }
+        SYS_UDP_RECV => {
+            if !caps::Capability::NetworkAccess.check(current_task.id) {
+                return E_ACC_DENIED;
+            }
+
+            let local_port = args.a1 as u16;
+            let out_ptr = args.a2 as *mut u8;
+            let out_cap = min(args.a3 as usize, SYS_IPC_MAX_LEN);
+            let mut buffer = alloc::vec![0u8; out_cap];
+
+            let recv_len = match crate::network::with_stack(|stack| {
+                stack.udp_recv(current_task.id, local_port, &mut buffer)
+            }) {
+                Some(Ok(n)) => n,
+                _ => return E_ERROR,
+            };
+
+            // SAFETY: user pointer validity is checked via copy helper semantics.
+            if copy_to_user(out_ptr, &buffer[..recv_len]).is_err() {
+                return E_ACC_DENIED;
+            }
+            recv_len as u64
+        }
+
         SYS_IRQ_ACK => {
             let irq_num = args.a1 as u8;
             if !(caps::Capability::IrqAck(irq_num).check(current_task.id) || caps::Capability::NetworkAccess.check(current_task.id)) {
@@ -454,9 +504,9 @@ pub extern "C" fn syscall_dispatch(n: u64, a1: u64, a2: u64, a3: u64) -> u64 {
             a1,
             a2,
             a3,
-            _a4: 0,
-            _a5: 0,
-            _a6: 0,
+            a4: 0,
+            a5: 0,
+            a6: 0,
         },
     )
 }
@@ -478,9 +528,9 @@ pub extern "C" fn syscall_dispatch6(
             a1,
             a2,
             a3,
-            _a4: a4,
-            _a5: a5,
-            _a6: a6,
+            a4: a4,
+            a5: a5,
+            a6: a6,
         },
     )
 }
