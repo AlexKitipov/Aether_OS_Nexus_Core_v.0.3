@@ -2,5 +2,6 @@
 target = ".cargo/aetheros-x86_64.json"
 
 [unstable]
+json-target-spec = true
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
