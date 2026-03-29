@@ -19,7 +19,7 @@ impl VNodeChannel {
         Self { id, buffer: [0; 4096] }
     }
 
-    pub fn recv_blocking(&mut self) -> Result<Vec<u8>, ()> {
+    pub fn recv_blocking(&mut self) -> core::result::Result<Vec<u8>, ()> {
         loop {
             let len = syscall3(
                 SYS_IPC_RECV,
@@ -43,7 +43,7 @@ impl VNodeChannel {
         }
     }
 
-    pub fn recv_non_blocking(&mut self) -> Result<Option<Vec<u8>>, ()> {
+    pub fn recv_non_blocking(&mut self) -> core::result::Result<Option<Vec<u8>>, ()> {
         let len = syscall3(
             SYS_IPC_RECV_NONBLOCKING,
             self.id as u64,
@@ -65,7 +65,7 @@ impl VNodeChannel {
 
     pub fn send_and_recv<Req: serde::Serialize, Resp: serde::de::DeserializeOwned>(
         &mut self, request: &Req
-    ) -> Result<Resp, ()> {
+    ) -> core::result::Result<Resp, ()> {
         let serialized_request = postcard::to_allocvec(request).map_err(|_| ())?;
         self.send_raw(&serialized_request)?;
         
@@ -79,7 +79,7 @@ impl VNodeChannel {
 }
 
 impl IpcSend for VNodeChannel {
-    fn send_raw(&mut self, bytes: &[u8]) -> Result<(), ()> {
+    fn send_raw(&mut self, bytes: &[u8]) -> core::result::Result<(), ()> {
         let res = syscall3(
             SYS_IPC_SEND,
             self.id as u64,
@@ -89,7 +89,7 @@ impl IpcSend for VNodeChannel {
         if res == SUCCESS { Ok(()) } else { Err(()) }
     }
 
-    fn send<T: serde::Serialize>(&mut self, msg: &T) -> Result<(), ()> {
+    fn send<T: serde::Serialize>(&mut self, msg: &T) -> core::result::Result<(), ()> {
         let serialized = postcard::to_allocvec(msg).map_err(|_| ())?;
         self.send_raw(&serialized)
     }
