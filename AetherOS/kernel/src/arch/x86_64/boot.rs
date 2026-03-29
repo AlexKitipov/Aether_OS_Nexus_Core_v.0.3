@@ -4,12 +4,17 @@
 
 use core::arch::asm;
 use core::arch::x86_64::__cpuid;
+#[cfg(target_arch = "x86_64")]
+use core::arch::global_asm;
 
 use bootloader_api::BootInfo;
 
 use super::{gdt, idt, paging};
 use crate::{heap, interrupts, memory};
 use crate::kprintln;
+
+#[cfg(target_arch = "x86_64")]
+global_asm!(include_str!("boot/long_mode.s"));
 
 /// IA32_EFER MSR index.
 pub const IA32_EFER: u32 = 0xC000_0080;

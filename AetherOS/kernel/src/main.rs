@@ -6,8 +6,34 @@
 #[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 #[cfg(target_os = "none")]
+use core::arch::global_asm;
+#[cfg(target_os = "none")]
 use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
 use aetheros_kernel::{init, task};
+
+#[cfg(target_os = "none")]
+global_asm!(
+    r#"
+    .section .text._start, "ax"
+    .global _start
+_start:
+    lea STACK + 16384(%rip), %rsp
+    andq $-16, %rsp
+    call kernel_entry
+1:
+    hlt
+    jmp 1b
+"#
+);
+
+#[cfg(target_os = "none")]
+#[repr(align(16))]
+struct KernelStack([u8; 4096 * 4]);
+
+#[cfg(target_os = "none")]
+#[no_mangle]
+#[link_section = ".bss.stack"]
+static mut STACK: KernelStack = KernelStack([0; 4096 * 4]);
 
 /// Kernel entry point in `no_std`/`no_main` mode.
 ///
@@ -15,7 +41,7 @@ use aetheros_kernel::{init, task};
 /// and the bootloader/CPU can jump to it directly.
 #[no_mangle] // Don't mangle the name of this function, so the bootloader can find it
 #[cfg(target_os = "none")]
-pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
+pub extern "C" fn kernel_entry(boot_info: &'static mut BootInfo) -> ! {
     // Kernel early initialization starts here.
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
