@@ -1,0 +1,12 @@
+name: aether-recoverd
+version: 0.1.0
+immutable: true
+runtime_service: true
+capabilities:
+  - RestartVNode
+  - SyncSnapshots
+recovery:
+  - restart_driver
+  - restart_vnode
+  - rollback_snapshot
+  - migrate_vnode

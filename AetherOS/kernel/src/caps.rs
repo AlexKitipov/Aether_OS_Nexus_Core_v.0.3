@@ -27,6 +27,16 @@ pub enum Capability {
     IrqAck(u8),
     /// Allows a V-Node to create and manage IPC channels.
     IpcManage,
+    /// Allows reading global runtime metrics.
+    ReadMetrics,
+    /// Allows writing to centralized runtime logs.
+    WriteLogs,
+    /// Allows requesting runtime restart/recovery actions for V-Nodes.
+    RestartVNode,
+    /// Allows participating in snapshot synchronization flows.
+    SyncSnapshots,
+    /// Allows reading only the calling V-Node metrics.
+    ReadOwnMetrics,
     // Add more capabilities as the system grows
 }
 

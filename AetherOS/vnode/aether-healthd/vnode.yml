@@ -1,0 +1,12 @@
+name: aether-healthd
+version: 0.1.0
+immutable: true
+runtime_service: true
+capabilities:
+  - ReadMetrics
+  - RestartVNode
+health_checks:
+  - scheduler_responsiveness
+  - allocator_sanity
+  - irq_liveliness
+  - vnode_hang_detection

@@ -1,0 +1,12 @@
+name: aether-metricsd
+version: 0.1.0
+immutable: true
+runtime_service: true
+capabilities:
+  - ReadMetrics
+  - ReadOwnMetrics
+metrics:
+  - cpu_usage
+  - mem_used
+  - mem_free
+  - scheduler_latency_us

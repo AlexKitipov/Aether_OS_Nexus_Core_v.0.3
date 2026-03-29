@@ -1,0 +1,9 @@
+name: aether-telemetryd
+version: 0.1.0
+immutable: true
+runtime_service: true
+capabilities:
+  - ReadMetrics
+  - SyncSnapshots
+swarm:
+  sync: ["telemetry", "health", "snapshot_versions", "load"]
