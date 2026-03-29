@@ -13,6 +13,35 @@ use crate::caps::Capability;
 
 const MILLICORES_PER_CORE: u32 = 1000;
 
+/// Minimal round-robin scheduler state model used by runtime bring-up docs/tests.
+#[derive(Debug, Default)]
+pub struct Scheduler {
+    pub tasks: VecDeque<u64>,
+    pub current: usize,
+}
+
+impl Scheduler {
+    pub fn add_task(&mut self, task_id: u64) {
+        self.tasks.push_back(task_id);
+    }
+
+    pub fn next_task(&mut self) -> Option<u64> {
+        if self.tasks.is_empty() {
+            return None;
+        }
+        self.current = (self.current + 1) % self.tasks.len();
+        self.tasks.get(self.current).copied()
+    }
+
+    pub fn current_task(&self) -> Option<u64> {
+        if self.tasks.is_empty() {
+            None
+        } else {
+            self.tasks.get(self.current).copied()
+        }
+    }
+}
+
 /// The run queue holds task IDs of tasks that are ready to be scheduled.
 /// This uses a simple `VecDeque` for a round-robin like behavior.
 static RUN_QUEUE: Mutex<VecDeque<u64>> = Mutex::new(VecDeque::new());

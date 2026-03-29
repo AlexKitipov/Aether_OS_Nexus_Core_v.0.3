@@ -6,35 +6,104 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
-use crate::kprintln;
-use crate::elf;
-use crate::task;
+
 use crate::caps::Capability;
+use crate::elf;
+use crate::kprintln;
 use crate::memory::page_allocator::PageAllocator;
-use crate::arch::x86_64::paging;
+use crate::task;
+
+/// Stable identifier for immutable V-Node descriptors.
+pub type VNodeId = u64;
+
+/// High-level permission envelope attached to a V-Node image.
+#[derive(Debug, Clone)]
+pub struct Permissions {
+    pub can_syscall: bool,
+    pub can_ipc: bool,
+    pub can_io: bool,
+}
+
+impl Default for Permissions {
+    fn default() -> Self {
+        Self {
+            can_syscall: true,
+            can_ipc: true,
+            can_io: false,
+        }
+    }
+}
+
+/// Immutable executable node descriptor.
+#[derive(Debug, Clone)]
+pub struct VNode {
+    pub id: VNodeId,
+    pub name: String,
+    pub code: &'static [u8],
+    pub entry: u64,
+    pub permissions: Permissions,
+}
 
 /// Initializes the V-Node loader.
 pub fn init() {
     kprintln!("[kernel] vnode_loader: Initializing V-Node loader (conceptual)...");
-    // Any setup required for V-Node loading infrastructure.
     kprintln!("[kernel] vnode_loader: V-Node loader initialized.");
 }
 
+/// Builds an immutable V-Node descriptor from an ELF image and static code bytes.
+pub fn build_vnode_descriptor(
+    id: VNodeId,
+    name: &str,
+    code: &'static [u8],
+    entry: u64,
+    permissions: Permissions,
+) -> VNode {
+    VNode {
+        id,
+        name: name.into(),
+        code,
+        entry,
+        permissions,
+    }
+}
+
+/// Creates a schedulable task out of an immutable V-Node descriptor.
+pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<(), String> {
+    let stack_base = PageAllocator::allocate_page()
+        .ok_or_else(|| format!("Failed to allocate user stack for V-Node '{}'.", vnode.name))?;
+    let stack_top = stack_base + 4096u64;
+    let address_space_root = crate::arch::x86_64::paging::get_kernel_pml4();
+
+    // Immutable code bytes are represented in `VNode::code`; actual user mapping is
+    // tracked separately and remains a TODO while pager integration lands.
+    let _code_len = vnode.code.len();
+
+    task::create_user_task(
+        vnode.id,
+        &vnode.name,
+        capabilities,
+        x86_64::VirtAddr::new(vnode.entry),
+        stack_top,
+        address_space_root,
+    );
+
+    kprintln!(
+        "[kernel] vnode_loader: spawned V-Node '{}' as task {} (entry={:#x}).",
+        vnode.name,
+        vnode.id,
+        vnode.entry
+    );
+
+    Ok(())
+}
+
 /// Conceptually loads a V-Node binary, parses its ELF, and creates a task for it.
-/// 
-/// In a real system, this would involve:
-/// - Allocating memory for the V-Node's address space.
-/// - Copying ELF segments into the V-Node's memory.
-/// - Setting up V-Node specific capabilities based on its manifest.
-/// - Creating a new CPU context (task) for the V-Node.
 pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(), String> {
     kprintln!("[kernel] vnode_loader: Loading V-Node: {}...", vnode_name);
 
-    // 1. Construct path for the V-Node's binary.
     let vnode_path = format!("/initrd/{}.bin", vnode_name);
     kprintln!("[kernel] vnode_loader: Attempting to load from path: {}.", vnode_path);
 
-    // 2. Use ElfLoader to simulate loading the binary.
     let elf_header = match elf::ElfLoader::load_elf(&vnode_path) {
         Ok(header) => header,
         Err(e) => {
@@ -42,28 +111,22 @@ pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(),
             return Err(format!("Failed to load V-Node ELF: {}.", e));
         }
     };
-    kprintln!("[kernel] vnode_loader: ELF loaded for {}. Entry point: {:#x}.", vnode_name, elf_header.entry_point);
-
-    // 3. Allocate a dedicated user stack and create a user task for the loaded ELF.
-    // Assign a dummy task ID for now. In a real system, task IDs would be managed centrally.
-    let dummy_task_id = 1000 + vnode_name.as_bytes()[0] as u64; // Simple dummy ID
-    let stack_base = PageAllocator::allocate_page()
-        .ok_or_else(|| format!("Failed to allocate user stack for V-Node '{}'.", vnode_name))?;
-    let stack_top = stack_base + 4096u64;
-    let address_space_root = paging::get_kernel_pml4();
-
-    task::create_user_task(
-        dummy_task_id,
+    kprintln!(
+        "[kernel] vnode_loader: ELF loaded for {}. Entry point: {:#x}.",
         vnode_name,
-        capabilities,
-        x86_64::VirtAddr::new(elf_header.entry_point),
-        stack_top,
-        address_space_root,
+        elf_header.entry_point
     );
-    kprintln!("[kernel] vnode_loader: Task created for V-Node {} (ID: {}).", vnode_name, dummy_task_id);
 
-    // TODO: In a real system, the V-Node's entry point would be set up as the task's starting point.
-    // For this conceptual stub, we just simulate the loading process.
+    // In this minimal runtime step we keep code bytes immutable and mapped as static metadata.
+    let vnode = build_vnode_descriptor(
+        1000 + vnode_name.as_bytes()[0] as u64,
+        vnode_name,
+        &[],
+        elf_header.entry_point,
+        Permissions::default(),
+    );
+
+    spawn_vnode_task(&vnode, capabilities)?;
 
     kprintln!("[kernel] vnode_loader: V-Node {} loaded successfully.", vnode_name);
     Ok(())

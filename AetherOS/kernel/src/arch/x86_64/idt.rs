@@ -3,6 +3,7 @@
 #![allow(dead_code)]
 
 use x86_64::registers::control::Cr2;
+use x86_64::PrivilegeLevel;
 use x86_64::structures::idt::{
     InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode,
 };
@@ -24,6 +25,9 @@ pub fn init() {
         IDT.double_fault
             .set_handler_fn(double_fault_handler)
             .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
+        IDT[0x80]
+            .set_handler_fn(syscall_interrupt_handler)
+            .set_privilege_level(PrivilegeLevel::Ring3);
         IDT.load();
         kprintln!("[kernel] idt: IDT loaded.");
     }
@@ -102,4 +106,8 @@ extern "x86-interrupt" fn double_fault_handler(
     kprintln!("[kernel] Error Code: {}", error_code);
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
     hlt_loop();
+}
+
+extern "x86-interrupt" fn syscall_interrupt_handler(stack_frame: InterruptStackFrame) {
+    crate::kprintln!("[kernel] syscall: software interrupt entry (int 0x80) rip={:#x}.", stack_frame.instruction_pointer.as_u64());
 }

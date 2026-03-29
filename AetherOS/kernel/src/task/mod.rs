@@ -9,6 +9,7 @@ use x86_64::VirtAddr;
 use crate::caps::Capability;
 use crate::memory::page_allocator::PageAllocator;
 
+pub mod context_switch;
 pub mod scheduler;
 pub mod tcb;
 
