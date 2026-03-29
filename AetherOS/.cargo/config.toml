@@ -1,5 +1,5 @@
 [build]
-target = "x86_64-unknown-none"
+target = ".cargo/aetheros-x86_64.json"
 
 [env]
 # Prevent host shell/compiler wrapper flags from leaking into dependency builds.
@@ -10,4 +10,5 @@ CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
 
 [unstable]
 json-target-spec = true
-build-std = ["core", "alloc"]
+build-std = ["core", "alloc", "compiler_builtins"]
+build-std-features = ["compiler-builtins-mem"]
