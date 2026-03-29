@@ -29,6 +29,7 @@ AetherOS is founded on revolutionary principles that leverage modern systems pro
 9.  **Aether Driver Intelligence (ADI)**: AI-assisted system to translate existing drivers into safe, sandboxed V-Nodes.
 10. **Decentralized Trust Model**: Cryptographic trust with Merkle Trees and Content-Addressable Storage.
 11. **Resource Quotas & Admission Control**: Every V-Node declares its resource needs, enforced by the Nexus Core.
+12. **Aether Swarm Federation**: UDP-based ASP discovery, gossip anti-entropy snapshot sync, and capability-gated remote V-Node execution.
 
 ## 📁 Project Structure
 
