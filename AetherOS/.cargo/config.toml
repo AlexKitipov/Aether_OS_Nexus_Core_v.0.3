@@ -12,3 +12,6 @@ CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
 json-target-spec = true
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
+
+[target.'cfg(all())']
+rustflags = ["--cfg", "no_std"]

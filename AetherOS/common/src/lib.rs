@@ -1,6 +1,10 @@
 #![no_std]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
+
+#[cfg(feature = "serde")]
+extern crate serde;
 
 pub mod ipc;
 pub mod syscall;

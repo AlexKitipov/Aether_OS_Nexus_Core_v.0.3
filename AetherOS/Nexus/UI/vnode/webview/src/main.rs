@@ -2,7 +2,11 @@
 #![no_main]
 #![feature(alloc_error_handler)]
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
+
+#[cfg(feature = "serde")]
+extern crate serde;
 
 use alloc::collections::BTreeMap;
 use alloc::format;

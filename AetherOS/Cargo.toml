@@ -9,6 +9,16 @@ members = [
     "Nexus/UI/vnode/webview"
 ]
 
+[workspace.package]
+edition = "2021"
+
+[workspace.dependencies]
+serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
+
+[workspace.metadata]
+forbid-std = true
+feature-gates = { default = ["alloc"], alloc = [], serde = [] }
+
 [profile.dev]
 panic = "abort"
 
