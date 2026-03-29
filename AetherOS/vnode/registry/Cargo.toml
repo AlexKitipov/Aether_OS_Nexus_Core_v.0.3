@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 linked_list_allocator = "0.10"
 aetheros_common = { path = "../../common" }
-serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
+serde = { version = "=1.0.227", default-features = false, features = ["derive", "alloc"] }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 [[bin]]
 name = "registry"
