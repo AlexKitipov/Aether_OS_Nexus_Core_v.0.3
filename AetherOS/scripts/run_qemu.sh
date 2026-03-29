@@ -15,4 +15,8 @@ if [[ ! -f "${KERNEL}" ]]; then
   exit 1
 fi
 
-exec qemu-system-x86_64 -kernel "${KERNEL}"
+exec qemu-system-x86_64 \
+  -kernel "${KERNEL}" \
+  -serial stdio \
+  -no-reboot \
+  -d int

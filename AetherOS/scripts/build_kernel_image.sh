@@ -33,9 +33,42 @@ cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
   -Zjson-target-spec
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
+
+echo "[build_kernel_image] validating section memory map"
+if command -v llvm-objdump >/dev/null 2>&1; then
+  section_table="$(llvm-objdump -h "${KERNEL_PATH}")"
+  text_addr="$(awk '$2==".text"{print $4}' <<<"${section_table}" | head -n1)"
+  rodata_addr="$(awk '$2==".rodata"{print $4}' <<<"${section_table}" | head -n1)"
+  data_addr="$(awk '$2==".data"{print $4}' <<<"${section_table}" | head -n1)"
+  bss_addr="$(awk '$2==".bss"{print $4}' <<<"${section_table}" | head -n1)"
+
+  if [[ -z "${text_addr}" || -z "${rodata_addr}" || -z "${data_addr}" || -z "${bss_addr}" ]]; then
+    echo "[build_kernel_image] ERROR: missing one or more required sections (.text/.rodata/.data/.bss)" >&2
+    exit 1
+  fi
+
+  if [[ "${text_addr}" != "00100000" ]]; then
+    echo "[build_kernel_image] ERROR: .text starts at 0x${text_addr}, expected 0x00100000" >&2
+    exit 1
+  fi
+
+  if ! (( 16#${text_addr} < 16#${rodata_addr} && 16#${rodata_addr} < 16#${data_addr} && 16#${data_addr} <= 16#${bss_addr} )); then
+    echo "[build_kernel_image] ERROR: section order is invalid (.text -> .rodata -> .data -> .bss)" >&2
+    exit 1
+  fi
+
+  echo "[build_kernel_image] memory layout OK: .text=0x${text_addr}, .rodata=0x${rodata_addr}, .data=0x${data_addr}, .bss=0x${bss_addr}"
+else
+  echo "[build_kernel_image] WARNING: llvm-objdump not found, skipping memory map validation" >&2
+fi
+
 echo "Run with:"
-echo "qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel"
+echo "qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel -serial stdio -no-reboot -d int"
 
 if [[ "${RUN_QEMU}" == "1" ]]; then
-  qemu-system-x86_64 -kernel "${KERNEL_PATH}"
+  qemu-system-x86_64 \
+    -kernel "${KERNEL_PATH}" \
+    -serial stdio \
+    -no-reboot \
+    -d int
 fi
