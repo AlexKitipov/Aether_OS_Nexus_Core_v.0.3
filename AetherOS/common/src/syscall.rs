@@ -19,6 +19,8 @@ pub const SYS_UI_CALL: u64 = 15;
 pub const SYS_SWARM_CALL: u64 = 16;
 pub const SYS_AI_CALL: u64 = 17;
 pub const SYS_VFS_CALL: u64 = 18;
+pub const SYS_UDP_SEND: u64 = 19;
+pub const SYS_UDP_RECV: u64 = 20;
 
 
 /// Syscall ABI version used by user-space V-Nodes and the kernel dispatcher.
@@ -51,6 +53,8 @@ const _: () = {
     assert!(SYS_SWARM_CALL == 16);
     assert!(SYS_AI_CALL == 17);
     assert!(SYS_VFS_CALL == 18);
+    assert!(SYS_UDP_SEND == 19);
+    assert!(SYS_UDP_RECV == 20);
 };
 
 /// ABI-safe user buffer descriptor passed over the syscall boundary.
@@ -263,5 +267,32 @@ pub fn syscall_vfs_call(service_channel: u64, payload: &[u8]) -> u64 {
         service_channel,
         payload.as_ptr() as u64,
         payload.len() as u64,
+    )
+}
+
+
+#[must_use]
+#[inline(always)]
+pub fn syscall_udp_send(local_port: u16, remote_ip: [u8; 4], remote_port: u16, payload: &[u8]) -> u64 {
+    syscall6(
+        SYS_UDP_SEND,
+        local_port as u64,
+        u32::from_be_bytes(remote_ip) as u64,
+        remote_port as u64,
+        payload.as_ptr() as u64,
+        payload.len() as u64,
+        0,
+    )
+}
+
+#[must_use]
+#[inline(always)]
+pub fn syscall_udp_recv(local_port: u16, out: &mut [u8]) -> u64 {
+    syscall4(
+        SYS_UDP_RECV,
+        local_port as u64,
+        out.as_mut_ptr() as u64,
+        out.len() as u64,
+        0,
     )
 }

@@ -16,12 +16,14 @@ pub type IoResult<T> = core::result::Result<T, IoError>;
 pub const DEVICE_TIMER: DeviceId = 1;
 pub const DEVICE_SERIAL: DeviceId = 2;
 pub const DEVICE_FRAMEBUFFER: DeviceId = 3;
+pub const DEVICE_NET0: DeviceId = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DeviceKind {
     Timer,
     Serial,
     Framebuffer,
+    Network,
     Unknown,
 }
 
@@ -175,6 +177,14 @@ pub fn boot_discover_devices() {
         manager.register_irq(0, Arc::new(crate::drivers::timer::TimerDriver::new()));
         manager.register_io(Arc::new(crate::drivers::serial::SerialDevice::new()));
         manager.register_io(Arc::new(crate::drivers::framebuffer::FramebufferDevice::new()));
+        manager.register_io(Arc::new(crate::drivers::net::NetworkDeviceIo::new(
+            DEVICE_NET0,
+            &crate::drivers::net::VIRTIO_NET0,
+        )));
+
+        let _ = crate::network::with_stack(|stack| {
+            stack.bind_device(&crate::drivers::net::VIRTIO_NET0);
+        });
 
         let list = manager.discovered_devices();
         for id in list {
@@ -201,6 +211,10 @@ pub fn vnode_caps_from_task(task_id: u64) -> VNode {
             }
 
             if crate::caps::Capability::StorageAccess.check(task_id) && id == DEVICE_FRAMEBUFFER {
+                rights = rights.union(Rights::WRITE).union(Rights::READ);
+            }
+
+            if crate::caps::Capability::NetworkAccess.check(task_id) && id == DEVICE_NET0 {
                 rights = rights.union(Rights::WRITE).union(Rights::READ);
             }
 
