@@ -82,5 +82,11 @@ impl core::fmt::Display for KernelError {
     }
 }
 
-/// Specialized `Result` type for kernel operations.
-pub type Result<T> = core::result::Result<T, KernelError>;
+/// Explicit kernel result type for operations that return [`KernelError`].
+///
+/// Keeping a dedicated alias avoids accidental ambiguity with generic `Result`
+/// names that may be imported by external crates or local modules.
+pub type KernelResult<T> = core::result::Result<T, KernelError>;
+
+/// Backward-compatible alias retained for existing call sites.
+pub type Result<T> = KernelResult<T>;
