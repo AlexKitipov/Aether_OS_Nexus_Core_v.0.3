@@ -266,6 +266,7 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
     }
 
     memory::init(&boot_info.memory_regions);
+    memory::init_virtual_memory_bootstrap();
     kprintln!("[kernel] boot: Memory map wired into frame allocator.");
 
     let physical_memory_offset = boot_info

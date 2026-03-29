@@ -72,6 +72,7 @@ fn init_memory_and_heap(
     physical_memory_offset: Optional<u64>,
 ) {
     memory::init(memory_regions);
+    memory::init_virtual_memory_bootstrap();
     kprintln!("[kernel] Memory manager initialized.");
 
     if let Some(offset) = physical_memory_offset.into_option() {

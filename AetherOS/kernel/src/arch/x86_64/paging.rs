@@ -14,6 +14,8 @@ use x86_64::{PhysAddr, VirtAddr};
 
 const FRAME_SIZE: u64 = 4096;
 const DMA_PHYS_START: u64 = 0x0010_0000;
+pub const KERNEL_VIRT_OFFSET: u64 = 0xFFFF_8000_0000_0000;
+pub const EARLY_IDENTITY_LIMIT: u64 = 1024 * 1024 * 1024;
 
 /// Synthetic frame allocator state for early bootstrap components that need
 /// stable "physical" addresses before the full MMU path is implemented.
@@ -39,6 +41,39 @@ pub fn init() {
 
     kprintln!("[kernel] paging: Higher-half kernel setup simulated.");
     kprintln!("[kernel] paging: Paging initialized (bootstrap stage).");
+}
+
+/// Validates that a virtual address is canonical in x86_64 mode.
+pub fn validate_canonical_virt(addr: u64) {
+    assert!(VirtAddr::new(addr).is_canonical(), "non-canonical virtual address: {addr:#x}");
+}
+
+/// Returns the higher-half virtual address corresponding to a physical address.
+pub fn phys_to_higher_half(phys: u64) -> VirtAddr {
+    let virt = KERNEL_VIRT_OFFSET + phys;
+    validate_canonical_virt(virt);
+    VirtAddr::new(virt)
+}
+
+/// Converts a higher-half virtual address back to physical.
+pub fn higher_half_to_phys(virt: u64) -> Option<u64> {
+    if virt < KERNEL_VIRT_OFFSET {
+        return None;
+    }
+    Some(virt - KERNEL_VIRT_OFFSET)
+}
+
+/// Installs bootstrap software translations for identity + higher-half mapping.
+pub fn init_bootstrap_mappings(identity_limit: u64) {
+    let capped_limit = identity_limit.min(EARLY_IDENTITY_LIMIT);
+    register_virt_mapping(0, 0, capped_limit as usize);
+    register_virt_mapping(KERNEL_VIRT_OFFSET, 0, capped_limit as usize);
+    kprintln!(
+        "[kernel] paging: bootstrap mappings installed for identity [0..{:#x}) and higher-half [{:#x}..{:#x}).",
+        capped_limit,
+        KERNEL_VIRT_OFFSET,
+        KERNEL_VIRT_OFFSET + capped_limit
+    );
 }
 
 /// Returns the physical base address of the currently active kernel PML4 table.
@@ -80,6 +115,8 @@ pub fn map_heap_region(
     start_addr: VirtAddr,
     size: usize,
 ) -> Result<(), &'static str> {
+    validate_canonical_virt(start_addr.as_u64());
+
     let page_range = {
         let heap_start_page = Page::containing_address(start_addr);
         let heap_end = start_addr + (size as u64) - 1u64;
@@ -218,6 +255,8 @@ fn pt_index(virt: u64) -> u16 {
 /// paging levels and records virtual->physical translations in the bootstrap
 /// software map. It does not yet mutate hardware page tables directly.
 pub fn map_page_real(phys: u64, virt: u64, flags: u64) {
+    validate_canonical_virt(virt);
+
     let virt_page = virt & !(FRAME_SIZE - 1);
     let phys_page = phys & !(FRAME_SIZE - 1);
 
