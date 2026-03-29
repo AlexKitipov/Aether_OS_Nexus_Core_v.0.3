@@ -17,8 +17,9 @@ global_asm!(
     .section .text._start, "ax"
     .global _start
 _start:
-    lea STACK + 16384(%rip), %rsp
-    andq $-16, %rsp
+    mov %rdi, %rbx
+    call init_stack
+    mov %rbx, %rdi
     call kernel_entry
 1:
     hlt
@@ -34,6 +35,19 @@ struct KernelStack([u8; 4096 * 4]);
 #[no_mangle]
 #[link_section = ".bss.stack"]
 static mut STACK: KernelStack = KernelStack([0; 4096 * 4]);
+
+/// Initializes the bootstrap kernel stack and enforces SysV 16-byte alignment.
+#[cfg(target_os = "none")]
+#[no_mangle]
+pub unsafe extern "C" fn init_stack() {
+    core::arch::asm!(
+        "lea rsp, [{stack} + {size}]",
+        "and rsp, -16",
+        stack = sym STACK,
+        size = const 4096 * 4,
+        options(nostack, preserves_flags)
+    );
+}
 
 /// Kernel entry point in `no_std`/`no_main` mode.
 ///
