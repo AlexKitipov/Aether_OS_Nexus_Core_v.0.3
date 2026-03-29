@@ -2,11 +2,11 @@
 
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
+use crate::kprintln;
 use linked_list_allocator::LockedHeap;
 use x86_64::VirtAddr;
-use crate::kprintln;
 
-pub const HEAP_START: u64 = 0x4444_0000;
+pub const HEAP_START: u64 = crate::arch::x86_64::paging::KERNEL_VIRT_OFFSET + 0x0200_0000;
 pub const HEAP_SIZE: usize = 1024 * 1024;
 pub const HEAP_GUARD_PAGES: u64 = 1;
 pub const HEAP_PAGE_SIZE: u64 = 4096;

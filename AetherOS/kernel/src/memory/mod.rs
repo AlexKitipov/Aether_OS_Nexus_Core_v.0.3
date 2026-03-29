@@ -37,6 +37,17 @@ pub fn init(memory_regions: &'static MemoryRegions) {
     kprintln!("[kernel] memory: All memory modules initialized.");
 }
 
+/// Finalize virtual-memory bootstrap once bootloader handoff information
+/// (direct-map offset, current CR3 tables) is available.
+pub fn init_virtual_memory_bootstrap() {
+    crate::arch::x86_64::paging::init_bootstrap_mappings(
+        crate::arch::x86_64::paging::EARLY_IDENTITY_LIMIT,
+    );
+    kprintln!(
+        "[kernel] memory: Identity + higher-half bootstrap mappings synchronized."
+    );
+}
+
 /// Allocates one physical frame from the global bootstrap frame allocator.
 pub fn alloc_frame() -> Option<PhysFrame<Size4KiB>> {
     let mut slot = FRAME_ALLOCATOR.lock();
@@ -64,5 +75,5 @@ pub fn with_frame_allocator<R>(
 /// Once full page-table walking is available, this function should read the
 /// active page tables and return the mapped physical address.
 pub fn virt_to_phys(virtual_address: u64) -> u64 {
-    virtual_address
+    crate::arch::x86_64::paging::virt_to_phys(virtual_address)
 }
