@@ -2,7 +2,11 @@
 #![feature(abi_x86_interrupt)] // Required for x86_64 interrupt handling
 #![cfg_attr(target_os = "none", feature(alloc_error_handler))] // Only needed for bare-metal allocator error hooks
 
+#[cfg(feature = "alloc")]
 extern crate alloc;
+
+#[cfg(feature = "serde")]
+extern crate serde;
 
 use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
 
