@@ -6,6 +6,9 @@ use crate::interrupts::{pic, IRQ_TIMER};
 
 pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
     crate::timer::tick();
+    if let Some(Some(handler)) = crate::device::with_manager(|m| m.irq_handler(IRQ_TIMER)) {
+        handler.handle_irq();
+    }
     if crate::task::scheduler::take_reschedule_request() {
         crate::task::schedule();
     }

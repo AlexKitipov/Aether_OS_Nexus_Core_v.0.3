@@ -1,5 +1,10 @@
+extern crate alloc;
+
+use alloc::vec::Vec;
 use bootloader_api::info::{FrameBuffer, FrameBufferInfo, PixelFormat};
 use spin::Mutex;
+
+use crate::device::{Capability, CapabilitySet, Device, DeviceId, DeviceKind, IoDevice, IoResult, Rights, DEVICE_FRAMEBUFFER};
 
 const FONT_WIDTH: usize = 8;
 const FONT_HEIGHT: usize = 16;
@@ -125,5 +130,44 @@ pub fn write_str(s: &str) {
     let mut guard = FRAMEBUFFER_WRITER.lock();
     if let Some(writer) = guard.as_mut() {
         writer.write_str(s);
+    }
+}
+
+pub struct FramebufferDevice;
+
+impl FramebufferDevice {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl Device for FramebufferDevice {
+    fn id(&self) -> DeviceId {
+        DEVICE_FRAMEBUFFER
+    }
+
+    fn kind(&self) -> DeviceKind {
+        DeviceKind::Framebuffer
+    }
+
+    fn capabilities(&self) -> CapabilitySet {
+        Vec::from([Capability {
+            device: DEVICE_FRAMEBUFFER,
+            rights: Rights::READ.union(Rights::WRITE),
+        }])
+    }
+}
+
+impl IoDevice for FramebufferDevice {
+    fn read(&self, _buf: &mut [u8]) -> IoResult<usize> {
+        Ok(0)
+    }
+
+    fn write(&self, buf: &[u8]) -> IoResult<usize> {
+        if let Ok(text) = core::str::from_utf8(buf) {
+            write_str(text);
+            return Ok(buf.len());
+        }
+        Ok(0)
     }
 }

@@ -12,6 +12,7 @@ use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
 
 pub mod arch;
 pub mod drivers;
+pub mod device;
 pub mod memory;
 pub mod task;
 pub mod ipc;
@@ -119,6 +120,10 @@ fn init_runtime_subsystems() {
 
     caps::init();
     kprintln!("[kernel] Capability system initialized.");
+
+    device::init();
+    device::boot_discover_devices();
+    kprintln!("[kernel] Device manager initialized.");
 
     syscall::init();
     kprintln!("[kernel] Syscall interface initialized.");

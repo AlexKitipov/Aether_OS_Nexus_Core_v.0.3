@@ -113,6 +113,62 @@ fn syscall_ipc_send(current_task_id: u64, channel_id: ipc::ChannelId, ptr: *cons
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum VNodeIoSyscall {
+    Read(crate::device::DeviceId, usize),
+    Write(crate::device::DeviceId, usize),
+}
+
+fn execute_vnode_io(
+    vnode: &crate::device::VNode,
+    syscall: VNodeIoSyscall,
+    read_buf: Option<&mut [u8]>,
+    write_buf: Option<&[u8]>,
+) -> crate::device::IoResult<usize> {
+    match syscall {
+        VNodeIoSyscall::Read(dev, len) => {
+            if !vnode.has_cap(dev, crate::device::Right::Read) {
+                return Err(crate::device::IoError::PermissionDenied);
+            }
+            crate::device::with_manager(|manager| {
+                let io = manager
+                    .get_io(dev)
+                    .ok_or(crate::device::IoError::DeviceNotFound)?;
+                let buf = read_buf.ok_or(crate::device::IoError::Fault)?;
+                io.read(&mut buf[..core::cmp::min(len, buf.len())])
+            })
+            .ok_or(crate::device::IoError::DeviceNotFound)?
+        }
+        VNodeIoSyscall::Write(dev, len) => {
+            if !vnode.has_cap(dev, crate::device::Right::Write) {
+                return Err(crate::device::IoError::PermissionDenied);
+            }
+            crate::device::with_manager(|manager| {
+                let io = manager
+                    .get_io(dev)
+                    .ok_or(crate::device::IoError::DeviceNotFound)?;
+                let buf = write_buf.ok_or(crate::device::IoError::Fault)?;
+                io.write(&buf[..core::cmp::min(len, buf.len())])
+            })
+            .ok_or(crate::device::IoError::DeviceNotFound)?
+        }
+    }
+}
+
+/// Kernel-safe read API for V-Nodes.
+pub fn vnode_read(dev: crate::device::DeviceId, buf: &mut [u8]) -> crate::device::IoResult<usize> {
+    let task_id = task::scheduler::get_current_task_id();
+    let vnode = crate::device::vnode_caps_from_task(task_id);
+    execute_vnode_io(&vnode, VNodeIoSyscall::Read(dev, buf.len()), Some(buf), None)
+}
+
+/// Kernel-safe write API for V-Nodes.
+pub fn vnode_write(dev: crate::device::DeviceId, buf: &[u8]) -> crate::device::IoResult<usize> {
+    let task_id = task::scheduler::get_current_task_id();
+    let vnode = crate::device::vnode_caps_from_task(task_id);
+    execute_vnode_io(&vnode, VNodeIoSyscall::Write(dev, buf.len()), None, Some(buf))
+}
+
 #[derive(Clone, Copy)]
 struct SyscallArgs {
     a1: u64,

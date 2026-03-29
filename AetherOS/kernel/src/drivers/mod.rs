@@ -2,6 +2,6 @@
 
 pub mod serial;
 pub mod framebuffer;
-
+pub mod timer;
 
 pub mod vga_text;
