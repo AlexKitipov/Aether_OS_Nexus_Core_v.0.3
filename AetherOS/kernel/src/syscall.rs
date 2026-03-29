@@ -65,7 +65,7 @@ fn read_user_bytes(
     max_len: usize,
 ) -> Result<alloc::vec::Vec<u8>, &'static str> {
     let len = len.min(max_len);
-    let mut buf = vec![0u8; len];
+    let mut buf = alloc::vec![0u8; len];
     copy_from_user(&mut buf, ptr)?;
     Ok(buf)
 }

@@ -82,7 +82,7 @@ pub fn map_heap_region(
 ) -> Result<(), &'static str> {
     let page_range = {
         let heap_start_page = Page::containing_address(start_addr);
-        let heap_end = start_addr + (size as u64) - 1;
+        let heap_end = start_addr + (size as u64) - 1u64;
         let heap_end_page = Page::containing_address(heap_end);
         Page::range_inclusive(heap_start_page, heap_end_page)
     };

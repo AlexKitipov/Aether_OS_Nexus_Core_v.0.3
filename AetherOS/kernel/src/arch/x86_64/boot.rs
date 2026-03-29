@@ -3,6 +3,7 @@
 #![allow(dead_code)]
 
 use core::arch::asm;
+use core::arch::x86_64::__cpuid;
 
 use bootloader_api::BootInfo;
 
@@ -176,34 +177,13 @@ fn validate_pml4_addr(pml4_phys_addr: u64) -> Result<(), BootError> {
 
 /// Checks whether the CPU supports long mode via CPUID.
 pub fn check_long_mode_support() -> Result<(), BootError> {
-    let max_extended_leaf: u32;
-    unsafe {
-        asm!(
-            "cpuid",
-            inout("eax") CPUID_EXTENDED_MAX_LEAF => max_extended_leaf,
-            lateout("ebx") _,
-            lateout("ecx") _,
-            lateout("edx") _,
-            options(nomem, nostack)
-        );
-    }
+    let max_extended_leaf = unsafe { __cpuid(CPUID_EXTENDED_MAX_LEAF) }.eax;
 
     if max_extended_leaf < CPUID_EXTENDED_FUNCTION_INFO {
         return Err(BootError::CpuDoesNotSupportLongMode);
     }
 
-    let mut eax = CPUID_EXTENDED_FUNCTION_INFO;
-    let edx_features: u32;
-    unsafe {
-        asm!(
-            "cpuid",
-            inout("eax") eax,
-            lateout("ebx") _,
-            lateout("ecx") _,
-            lateout("edx") edx_features,
-            options(nomem, nostack)
-        );
-    }
+    let edx_features = unsafe { __cpuid(CPUID_EXTENDED_FUNCTION_INFO) }.edx;
 
     if (edx_features & CPUID_EDX_LONG_MODE) == 0 {
         return Err(BootError::CpuDoesNotSupportLongMode);
