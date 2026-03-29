@@ -7,6 +7,8 @@ use x86_64::VirtAddr;
 
 use crate::caps::Capability;
 
+pub type TaskId = u64;
+
 /// Represents the possible states of a task.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum TaskState {
@@ -16,25 +18,40 @@ pub enum TaskState {
     Exited,
 }
 
-/// A simplified Task Control Block (TCB) for a V-Node or kernel thread.
-/// In a real microkernel, this would hold much more state (registers, memory map, capabilities).
-/// For initial implementation, focus on `id`, `name`, `state`, and `capabilities` as placeholders.
+impl Default for TaskState {
+    fn default() -> Self {
+        Self::Ready
+    }
+}
+
+/// Minimal callee-saved register snapshot used for context switching.
 #[derive(Debug, Clone, Copy, Default)]
 #[repr(C)]
-pub struct Context {
-    pub r15: u64,
-    pub r14: u64,
-    pub r13: u64,
-    pub r12: u64,
-    pub rbp: u64,
+pub struct Registers {
     pub rbx: u64,
-    pub rsi: u64,
-    pub rdi: u64,
-    pub rip: u64,
+    pub rbp: u64,
+    pub r12: u64,
+    pub r13: u64,
+    pub r14: u64,
+    pub r15: u64,
     pub rsp: u64,
+    pub rip: u64,
     pub rflags: u64,
 }
 
+/// Backward-compatible name used across the existing scheduler code.
+pub type Context = Registers;
+
+/// Minimal scheduler-facing task snapshot.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Task {
+    pub id: TaskId,
+    pub stack_ptr: *mut u8,
+    pub registers: Registers,
+    pub state: TaskState,
+}
+
+/// A simplified Task Control Block (TCB) for a V-Node or kernel thread.
 #[derive(Debug, Clone)] // Derive Clone for easier passing around in mocks/stubs
 pub struct TaskControlBlock {
     pub id: u64,
