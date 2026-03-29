@@ -142,6 +142,18 @@ cargo build -p registry -p init-service
 
 This avoids mixing kernel/nightly-only targets with host-side service validation and provides faster feedback for IPC/API-level changes.
 
+
+If you see many errors from dependencies like `serde_core` such as:
+
+```text
+error[E0412]: cannot find type `Result` in this scope
+error[E0412]: cannot find type `Option` in this scope
+```
+
+check whether your shell exports custom `RUSTFLAGS` / `CARGO_ENCODED_RUSTFLAGS` (especially nightly-only flags like
+`-Z no-implicit-prelude`). Those flags can leak into dependency builds and break normal prelude imports.
+The provided build scripts now clear those variables before invoking Cargo.
+
 If you see:
 
 ```text

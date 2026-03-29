@@ -8,6 +8,12 @@ TOOLCHAIN="nightly-2026-03-13"
 
 cd "${ROOT_DIR}"
 
+# Avoid inheriting host-specific compiler flags that can break third-party crates
+# (for example `-Z no-implicit-prelude`, which triggers missing `Result`/`Option`
+# type errors inside dependencies like serde_core).
+unset RUSTFLAGS
+unset CARGO_ENCODED_RUSTFLAGS
+
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
 fi
