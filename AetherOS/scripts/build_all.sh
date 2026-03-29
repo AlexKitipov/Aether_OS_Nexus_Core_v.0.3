@@ -4,6 +4,12 @@ set -euo pipefail
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
+# Avoid inheriting host-specific compiler flags that can break third-party crates
+# (for example `-Z no-implicit-prelude`, which triggers missing `Result`/`Option`
+# type errors inside dependencies like serde_core).
+unset RUSTFLAGS
+unset CARGO_ENCODED_RUSTFLAGS
+
 TOOLCHAIN="nightly-2026-03-13"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
