@@ -13,6 +13,7 @@ cd "${ROOT_DIR}"
 # type errors inside dependencies like serde_core).
 unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
+unset CARGO_BUILD_RUSTFLAGS
 
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
