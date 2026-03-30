@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-alloc = { package = "alloc", version = "0.0.0", optional = true }
 linked_list_allocator = "0.10"
 aetheros_common = { path = "../../common" }
 serde = { workspace = true, optional = true }
