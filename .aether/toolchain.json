@@ -1,0 +1,15 @@
+{
+  "toolchain": "nightly-2024-12-01-x86_64-unknown-linux-gnu",
+  "rustc": "1.85.0-nightly (7442931d4 2024-11-30)",
+  "components": {
+    "cargo": "installed",
+    "clippy": "installed",
+    "rustc": "installed",
+    "rust-std": "installed",
+    "rust-docs": "installed",
+    "rust-src": "installed",
+    "llvm-tools": "installed",
+    "rustfmt": "installed"
+  },
+  "status": "synced"
+}

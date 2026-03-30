@@ -85,8 +85,8 @@ This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `
 - QEMU (`qemu-system-x86_64`)
 
 ```bash
-rustup toolchain install nightly-2026-03-13
-rustup override set nightly-2026-03-13
+rustup toolchain install nightly-2024-12-01
+rustup override set nightly-2024-12-01
 rustup component add rust-src
 rustup component add llvm-tools-preview
 ```
@@ -96,7 +96,7 @@ rustup component add llvm-tools-preview
 From `AetherOS/`:
 
 ```bash
-cargo +nightly-2026-03-13 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Or use the helper:
@@ -163,7 +163,7 @@ error: unknown unstable option: `json-target-spec`
 ```
 
 you are likely using `bootimage`/legacy metadata flow, an unpinned nightly, or a mixed toolchain invocation where `cargo`
-and `rustc` come from different nightlies. This repo uses `bootloader_api` and `cargo +nightly-2026-03-13 build` directly.
+and `rustc` come from different nightlies. This repo uses `bootloader_api` and `cargo +nightly-2024-12-01 build` directly.
 Run `./scripts/build_kernel_image.sh` (or the build command above) instead of `cargo bootimage`.
 
 **Join the Aether. Build the Nexus.**

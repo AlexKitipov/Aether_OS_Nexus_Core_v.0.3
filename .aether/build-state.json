@@ -1,0 +1,11 @@
+{
+  "toolchain": "nightly-2024-12-01-x86_64-unknown-linux-gnu",
+  "rustc": "1.85.0-nightly (7442931d4 2024-11-30)",
+  "validation": {
+    "source": "rustup",
+    "mode": "strict",
+    "last_sync": "2026-03-30",
+    "status": "synced"
+  },
+  "status": "synced"
+}
