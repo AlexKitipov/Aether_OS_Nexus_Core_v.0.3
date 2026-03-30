@@ -7,6 +7,7 @@ target = ".cargo/aetheros-x86_64.json"
 # `Result` errors in crates like serde_core.
 RUSTFLAGS = { value = "", force = true }
 CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
+RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 
 [unstable]
 json-target-spec = true
