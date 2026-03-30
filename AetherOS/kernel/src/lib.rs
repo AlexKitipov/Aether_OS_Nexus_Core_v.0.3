@@ -29,6 +29,7 @@ pub mod usercopy;
 pub mod config;
 pub mod network;
 pub mod runtime;
+pub mod snapshot_engine;
 
 /// Initialize all kernel subsystems in a deterministic startup order.
 pub fn init(
