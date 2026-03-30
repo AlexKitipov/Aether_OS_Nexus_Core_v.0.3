@@ -87,8 +87,8 @@ This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `
 - QEMU (`qemu-system-x86_64`)
 
 ```bash
-rustup toolchain install nightly-2026-03-13
-rustup override set nightly-2026-03-13
+rustup toolchain install nightly-2024-12-01
+rustup override set nightly-2024-12-01
 rustup component add rust-src
 rustup component add llvm-tools-preview
 ```
@@ -99,7 +99,7 @@ From repository root, run:
 
 ```bash
 cd AetherOS
-cargo +nightly-2026-03-13 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Or use the helper:
@@ -141,7 +141,7 @@ error: `.json` target specs require -Zjson-target-spec
 ```
 
 you are likely either outside `AetherOS/`, on an unpinned nightly, invoking Cargo without `-Zjson-target-spec`, or mixing
-toolchains so `cargo` and `rustc` resolve to different nightlies. This workspace currently pins `nightly-2026-03-13` because
+toolchains so `cargo` and `rustc` resolve to different nightlies. This workspace currently pins `nightly-2024-12-01` because
 newer nightly snapshots can fail during metadata discovery for JSON targets. Use `./scripts/build_kernel_image.sh` (from
 `AetherOS/`) or the full command above.
 
