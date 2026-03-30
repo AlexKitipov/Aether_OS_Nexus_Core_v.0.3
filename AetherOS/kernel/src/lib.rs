@@ -5,8 +5,6 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-#[cfg(feature = "serde")]
-extern crate serde;
 
 use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
 

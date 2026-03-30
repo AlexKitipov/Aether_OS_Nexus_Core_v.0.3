@@ -15,5 +15,10 @@
   "features": "+sse2",
   "stack-probes": {
     "kind": "none"
+  },
+  "pre-link-args": {
+    "ld.lld": [
+      "--gc-sections"
+    ]
   }
 }
