@@ -18,7 +18,7 @@ smoltcp = { version = "0.8", default-features = false, features = ["alloc"], opt
 examples = { path = "./examples", optional = true }
 
 [features]
-default = ["alloc"]
+default = ["alloc", "serde"]
 alloc = []
 serde = ["dep:serde"]
 # Feature to enable `smoltcp` related items if needed directly in common
