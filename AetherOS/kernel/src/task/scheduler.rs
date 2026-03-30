@@ -151,6 +151,30 @@ pub fn terminate_current_task() {
     schedule();
 }
 
+/// Removes all non-kernel tasks from the scheduler.
+pub fn kill_all() {
+    interrupts::without_interrupts(|| {
+        let current_id = *CURRENT_TASK_ID.lock();
+        let mut tasks = TASKS.lock();
+        let to_remove = tasks
+            .keys()
+            .copied()
+            .filter(|task_id| *task_id != 0)
+            .collect::<alloc::vec::Vec<_>>();
+
+        for task_id in &to_remove {
+            if let Some(task) = tasks.remove(task_id) {
+                release_task_resources(&task);
+            }
+        }
+
+        RUN_QUEUE.lock().retain(|task_id| *task_id == 0);
+        if current_id != 0 {
+            *CURRENT_TASK_ID.lock() = 0;
+        }
+    });
+}
+
 /// Marks that the current CPU should perform a scheduling decision soon.
 ///
 /// This is intended to be called from interrupt context (e.g. timer IRQ),

@@ -4,6 +4,7 @@ extern crate alloc;
 
 use alloc::collections::BTreeMap;
 use alloc::vec::Vec;
+use core::sync::atomic::{AtomicU64, Ordering};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -39,6 +40,7 @@ pub enum SnapshotError {
     VersionMismatch { expected: u32, got: u32 },
     InvalidHash,
     InvalidWireFormat,
+    RestoreFailure,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -78,6 +80,25 @@ impl SnapshotStorage for InMemorySnapshotStorage {
         self.inner.insert(id, data.to_vec());
         Ok(())
     }
+}
+
+static LAST_SNAPSHOT_ID: AtomicU64 = AtomicU64::new(0);
+
+fn next_snapshot_id() -> u64 {
+    LAST_SNAPSHOT_ID.fetch_add(1, Ordering::AcqRel) + 1
+}
+
+fn last_snapshot_id() -> Option<u64> {
+    let current = LAST_SNAPSHOT_ID.load(Ordering::Acquire);
+    if current == 0 {
+        None
+    } else {
+        Some(current)
+    }
+}
+
+fn current_unix_time() -> u64 {
+    LAST_SNAPSHOT_ID.load(Ordering::Acquire)
 }
 
 pub fn encode_snapshot(snap: &Snapshot) -> Result<Vec<u8>, SnapshotError> {
@@ -171,6 +192,49 @@ pub fn load_snapshot_by_id<S: SnapshotStorage>(storage: &S, id: u64) -> Result<O
 
     let wire = decode_wire(&bytes)?;
     verify_and_decode_wire(&wire).map(Some)
+}
+
+pub fn capture_system_state() -> Snapshot {
+    let prev_id = last_snapshot_id();
+    let header = SnapshotHeader {
+        version: SNAPSHOT_FORMAT_VERSION,
+        id: next_snapshot_id(),
+        created_at: current_unix_time(),
+        prev_id,
+    };
+
+    Snapshot {
+        header,
+        vnodes: crate::vnode_loader::snapshot_vnode_states(),
+        fs_root_hash: crate::aetherfs::current_root_hash(),
+    }
+}
+
+pub fn restore_system_state(snapshot: &Snapshot) -> Result<(), SnapshotError> {
+    crate::aetherfs::mount_root(snapshot.fs_root_hash);
+    crate::task::scheduler::kill_all();
+
+    for vnode in &snapshot.vnodes {
+        crate::vnode_loader::spawn_from_snapshot(vnode).map_err(|_| SnapshotError::RestoreFailure)?;
+    }
+
+    Ok(())
+}
+
+pub fn save_snapshot(storage: &mut dyn SnapshotStorage) -> Result<u64, SnapshotError> {
+    let snap = capture_system_state();
+    let bytes = encode_snapshot(&snap)?;
+    let wire = wrap_snapshot(&bytes);
+    let wire_bytes = encode_wire(&wire);
+    storage.store(snap.header.id, &wire_bytes)?;
+    Ok(snap.header.id)
+}
+
+pub fn load_snapshot(storage: &dyn SnapshotStorage, id: u64) -> Result<(), SnapshotError> {
+    let bytes = storage.load_by_id(id).ok_or(SnapshotError::InvalidWireFormat)?;
+    let wire = decode_wire(&bytes)?;
+    let snap = verify_and_decode_wire(&wire)?;
+    restore_system_state(&snap)
 }
 
 fn sha2_256(bytes: &[u8]) -> [u8; 32] {

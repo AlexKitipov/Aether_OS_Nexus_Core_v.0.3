@@ -137,6 +137,38 @@ pub fn current_snapshot() -> Option<Snapshot> {
     fs.head.and_then(|head| fs.snapshots.get(&head).copied())
 }
 
+pub fn current_root_hash() -> [u8; 32] {
+    let fs = FS.lock();
+    fs.head
+        .and_then(|head| fs.snapshots.get(&head).copied())
+        .map(|snapshot| snapshot.root.0)
+        .unwrap_or([0u8; 32])
+}
+
+pub fn mount_root(hash: [u8; 32]) {
+    let mut fs = FS.lock();
+    let desired_root = Hash(hash);
+
+    if let Some((snapshot_hash, _snapshot)) = fs
+        .snapshots
+        .iter()
+        .find(|(_, snapshot)| snapshot.root == desired_root)
+        .map(|(hash, snapshot)| (*hash, *snapshot))
+    {
+        fs.head = Some(snapshot_hash);
+        return;
+    }
+
+    let synthetic = Snapshot {
+        root: desired_root,
+        parent: fs.head,
+        timestamp: 0,
+    };
+    let synthetic_hash = hash_snapshot(&synthetic);
+    fs.snapshots.insert(synthetic_hash, synthetic);
+    fs.head = Some(synthetic_hash);
+}
+
 pub fn fs_read(hash: Hash) -> Option<Vec<u8>> {
     let fs = FS.lock();
     match fs.get_object(hash) {
