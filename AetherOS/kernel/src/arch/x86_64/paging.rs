@@ -45,7 +45,10 @@ pub fn init() {
 
 /// Validates that a virtual address is canonical in x86_64 mode.
 pub fn validate_canonical_virt(addr: u64) {
-    assert!(VirtAddr::new(addr).is_canonical(), "non-canonical virtual address: {addr:#x}");
+    let sign = (addr >> 47) & 0x1;
+    let high = addr >> 48;
+    let is_canonical = if sign == 0 { high == 0 } else { high == 0xFFFF };
+    assert!(is_canonical, "non-canonical virtual address: {addr:#x}");
 }
 
 /// Returns the higher-half virtual address corresponding to a physical address.

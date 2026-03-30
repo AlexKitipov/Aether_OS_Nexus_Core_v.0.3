@@ -103,7 +103,7 @@ pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(),
     kprintln!("[kernel] vnode_loader: Loading V-Node '{}'.", vnode_name);
 
     let boot_snapshot = aetherfs::load_snapshot(aetherfs::BOOT_SNAPSHOT_HASH)
-        .ok_or_else(|| "Boot snapshot not available".to_string())?;
+        .ok_or_else(|| String::from("Boot snapshot not available"))?;
 
     let vnode_path = format!("/initrd/{}.bin", vnode_name);
     let image_hash = aetherfs::fs_resolve_path(boot_snapshot.root, &vnode_path)

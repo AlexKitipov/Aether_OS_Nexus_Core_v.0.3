@@ -43,12 +43,23 @@ pub struct Registers {
 pub type Context = Registers;
 
 /// Minimal scheduler-facing task snapshot.
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 pub struct Task {
     pub id: TaskId,
     pub stack_ptr: *mut u8,
     pub registers: Registers,
     pub state: TaskState,
+}
+
+impl Default for Task {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            stack_ptr: core::ptr::null_mut(),
+            registers: Registers::default(),
+            state: TaskState::default(),
+        }
+    }
 }
 
 /// A simplified Task Control Block (TCB) for a V-Node or kernel thread.
