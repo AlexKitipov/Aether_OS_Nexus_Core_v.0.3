@@ -9,6 +9,7 @@ cd "${ROOT_DIR}"
 # type errors inside dependencies like serde_core).
 unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
+unset CARGO_BUILD_RUSTFLAGS
 
 TOOLCHAIN="nightly-2026-03-13"
 ROOTFS_DIR="rootfs"

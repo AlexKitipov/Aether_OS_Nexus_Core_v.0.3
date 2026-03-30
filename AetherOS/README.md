@@ -151,7 +151,7 @@ error[E0412]: cannot find type `Result` in this scope
 error[E0412]: cannot find type `Option` in this scope
 ```
 
-check whether your shell exports custom `RUSTFLAGS` / `CARGO_ENCODED_RUSTFLAGS` (especially nightly-only flags like
+check whether your shell exports custom `RUSTFLAGS` / `CARGO_ENCODED_RUSTFLAGS` / `CARGO_BUILD_RUSTFLAGS` (especially nightly-only flags like
 `-Z no-implicit-prelude`). Those flags can leak into dependency builds and break normal prelude imports.
 The provided build scripts now clear those variables before invoking Cargo.
 

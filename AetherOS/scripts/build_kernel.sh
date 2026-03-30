@@ -10,6 +10,7 @@ cd "${ROOT_DIR}"
 # type errors inside dependencies like serde_core).
 unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
+unset CARGO_BUILD_RUSTFLAGS
 
 cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
   -Zbuild-std=core,alloc,compiler_builtins \
