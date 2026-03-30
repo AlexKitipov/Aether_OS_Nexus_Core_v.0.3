@@ -1,0 +1,8 @@
+name: aether-logd
+version: 0.1.0
+immutable: true
+runtime_service: true
+capabilities:
+  - WriteLogs
+ipc:
+  channels: ["kernel.log", "vnode.log"]

@@ -3,11 +3,14 @@ pub mod page_allocator;
 
 use crate::kprintln;
 use bootloader_api::info::MemoryRegions;
+use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::Mutex;
 use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;
 
 static FRAME_ALLOCATOR: Mutex<Option<frame_allocator::BootInfoFrameAllocator>> = Mutex::new(None);
+static TOTAL_MEMORY_BYTES: AtomicUsize = AtomicUsize::new(0);
+static USED_MEMORY_ESTIMATE_BYTES: AtomicUsize = AtomicUsize::new(0);
 
 /// Initializes the memory management modules.
 /// This function is called early in the kernel's boot process.
@@ -17,6 +20,12 @@ static FRAME_ALLOCATOR: Mutex<Option<frame_allocator::BootInfoFrameAllocator>> =
 ///   the frame allocator.
 pub fn init(memory_regions: &'static MemoryRegions) {
     kprintln!("[kernel] memory: Initializing memory modules...");
+    let total = memory_regions
+        .iter()
+        .map(|region| (region.end.saturating_sub(region.start)) as usize)
+        .sum::<usize>();
+    TOTAL_MEMORY_BYTES.store(total, Ordering::Release);
+    USED_MEMORY_ESTIMATE_BYTES.store(0, Ordering::Release);
 
     {
         // Initialize the frame allocator with the bootloader's memory map.
@@ -56,7 +65,9 @@ pub fn alloc_frame() -> Option<PhysFrame<Size4KiB>> {
 
 /// Convenience helper that returns the physical address of an allocated frame.
 pub fn alloc_frame_addr() -> Option<PhysAddr> {
-    alloc_frame().map(|frame| frame.start_address())
+    let frame = alloc_frame()?;
+    USED_MEMORY_ESTIMATE_BYTES.fetch_add(4096, Ordering::AcqRel);
+    Some(frame.start_address())
 }
 
 /// Provides mutable access to the global frame allocator.
@@ -76,4 +87,14 @@ pub fn with_frame_allocator<R>(
 /// active page tables and return the mapped physical address.
 pub fn virt_to_phys(virtual_address: u64) -> u64 {
     crate::arch::x86_64::paging::virt_to_phys(virtual_address)
+}
+
+/// Returns total known physical memory size from the bootloader map.
+pub fn total_memory() -> usize {
+    TOTAL_MEMORY_BYTES.load(Ordering::Acquire)
+}
+
+/// Returns a conservative free-memory estimate for runtime metrics.
+pub fn free_memory() -> usize {
+    total_memory().saturating_sub(USED_MEMORY_ESTIMATE_BYTES.load(Ordering::Acquire))
 }

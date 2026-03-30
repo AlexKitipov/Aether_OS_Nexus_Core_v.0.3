@@ -74,6 +74,11 @@ pub fn init() {
             crate::caps::Capability::IrqAck(0),
             crate::caps::Capability::IpcManage,
             crate::caps::Capability::StorageAccess,
+            crate::caps::Capability::ReadMetrics,
+            crate::caps::Capability::WriteLogs,
+            crate::caps::Capability::RestartVNode,
+            crate::caps::Capability::SyncSnapshots,
+            crate::caps::Capability::ReadOwnMetrics,
         ],
     );
 

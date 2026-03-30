@@ -136,6 +136,27 @@ pub type NodeLoad = u16;
 /// Deterministic V-Node identifier.
 pub type VNodeId = u64;
 
+/// Cluster-level health state used for distributed runtime supervision.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum NodeHealth {
+    Healthy,
+    Degraded,
+    Unresponsive,
+}
+
+/// Runtime telemetry payload exchanged between swarm nodes.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct NodeTelemetry {
+    pub node_id: [u8; 32],
+    pub snapshot_hash: SnapshotHash,
+    pub health: NodeHealth,
+    pub cpu_usage: f32,
+    pub mem_used: u64,
+    pub mem_free: u64,
+    pub vnode_count: u32,
+    pub available_vnodes: Vec<VNodeId>,
+}
+
 /// Bootstrap + identity metadata broadcast during discovery.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NodeInfo {
@@ -157,6 +178,7 @@ pub struct VNodeImage {
 pub enum SwarmMessage {
     Hello(NodeInfo),
     Gossip { snapshot_hash: SnapshotHash, node_load: NodeLoad },
+    Telemetry(NodeTelemetry),
     RequestSnapshotObject(ObjectHash),
     SendSnapshotObject { hash: ObjectHash, blob: Vec<u8> },
     RequestVNode(VNodeId),
