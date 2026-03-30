@@ -17,9 +17,9 @@ global_asm!(
     .section .text._start, "ax"
     .global _start
 _start:
-    mov %rdi, %rbx
+    mov rbx, rdi
     call init_stack
-    mov %rbx, %rdi
+    mov rdi, rbx
     call kernel_entry
 1:
     hlt
