@@ -138,7 +138,8 @@ fn execute_vnode_io(
                     .get_io(dev)
                     .ok_or(crate::device::IoError::DeviceNotFound)?;
                 let buf = read_buf.ok_or(crate::device::IoError::Fault)?;
-                io.read(&mut buf[..core::cmp::min(len, buf.len())])
+                let read_len = core::cmp::min(len, buf.len());
+                io.read(&mut buf[..read_len])
             })
             .ok_or(crate::device::IoError::DeviceNotFound)?
         }

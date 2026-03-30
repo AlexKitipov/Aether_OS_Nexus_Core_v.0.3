@@ -131,7 +131,8 @@ impl DeviceManager {
     }
 
     pub fn register_io(&mut self, dev: Arc<dyn IoDevice>) {
-        self.devices.insert(dev.id(), dev.clone());
+        let metadata: Arc<dyn Device> = Arc::new(DeviceMetadata::from_io(&*dev));
+        self.devices.insert(metadata.id(), metadata);
         self.io_devices.insert(dev.id(), dev);
     }
 
@@ -153,6 +154,37 @@ impl DeviceManager {
 
     pub fn discovered_devices(&self) -> alloc::vec::Vec<DeviceId> {
         self.devices.keys().copied().collect()
+    }
+}
+
+#[derive(Debug, Clone)]
+struct DeviceMetadata {
+    id: DeviceId,
+    kind: DeviceKind,
+    caps: CapabilitySet,
+}
+
+impl DeviceMetadata {
+    fn from_io(dev: &dyn IoDevice) -> Self {
+        Self {
+            id: dev.id(),
+            kind: dev.kind(),
+            caps: dev.capabilities(),
+        }
+    }
+}
+
+impl Device for DeviceMetadata {
+    fn id(&self) -> DeviceId {
+        self.id
+    }
+
+    fn kind(&self) -> DeviceKind {
+        self.kind
+    }
+
+    fn capabilities(&self) -> CapabilitySet {
+        self.caps.clone()
     }
 }
 

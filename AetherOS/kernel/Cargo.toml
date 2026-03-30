@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-serde = { workspace = true, optional = true }
+serde = { workspace = true }
 aetheros_common = { path = "../common" }
 bootloader_api = { version = "0.11.15" }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
@@ -17,5 +17,4 @@ sha2 = { version = "0.10", default-features = false }
 [features]
 default = ["alloc"]
 alloc = []
-serde = ["dep:serde"]
 bare_metal = []
