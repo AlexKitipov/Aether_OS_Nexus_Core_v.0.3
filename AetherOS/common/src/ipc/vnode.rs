@@ -88,11 +88,6 @@ impl IpcSend for VNodeChannel {
         );
         if res == SUCCESS { Ok(()) } else { Err(()) }
     }
-
-    fn send<T: serde::Serialize>(&mut self, msg: &T) -> core::result::Result<(), ()> {
-        let serialized = postcard::to_allocvec(msg).map_err(|_| ())?;
-        self.send_raw(&serialized)
-    }
 }
 
 impl IpcRecv for VNodeChannel {

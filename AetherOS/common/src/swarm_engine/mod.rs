@@ -174,7 +174,7 @@ pub struct VNodeImage {
 }
 
 /// ASP (Aether Swarm Protocol) wire message set.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum SwarmMessage {
     Hello(NodeInfo),
     Gossip { snapshot_hash: SnapshotHash, node_load: NodeLoad },
