@@ -93,6 +93,7 @@ pub fn check_fs_cap(vnode: &VNode, path: &str, right: FsRights) -> bool {
 }
 
 pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<(), String> {
+    let managed_capabilities = capabilities.clone();
     let stack_base = PageAllocator::allocate_page()
         .ok_or_else(|| format!("Failed to allocate user stack for V-Node '{}'.", vnode.name))?;
     let stack_top = stack_base + 4096u64;
@@ -118,7 +119,7 @@ pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<
     VNODE_MANAGER.lock().push(ManagedVNode {
         id: vnode.id,
         image_hash: vnode.image_hash,
-        capabilities,
+        capabilities: managed_capabilities,
     });
 
     Ok(())
@@ -177,7 +178,7 @@ pub fn spawn_from_snapshot(vnode: &crate::snapshot_engine::VNodeState) -> Result
         .ok_or_else(|| format!("V-Node image hash {:02x?} is not readable", vnode.image_hash))?;
     let elf_header = elf::ElfLoader::parse_elf_bytes(&image)?;
 
-    let current = aetherfs::current_snapshot().ok_or_else(|| "AetherFS has no active snapshot".to_string())?;
+    let current = aetherfs::current_snapshot().ok_or_else(|| String::from("AetherFS has no active snapshot"))?;
     let descriptor = build_vnode_descriptor(
         vnode.vnode_id,
         "restored-vnode",
