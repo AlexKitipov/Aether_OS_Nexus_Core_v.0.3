@@ -3,10 +3,11 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
 use crate::kprintln;
+use serde::{Deserialize, Serialize};
 
 /// Represents a fine-grained capability that can be granted to a V-Node.
 /// Capabilities enforce the principle of least privilege.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Capability {
     /// Allows writing messages to the kernel log.
     LogWrite,

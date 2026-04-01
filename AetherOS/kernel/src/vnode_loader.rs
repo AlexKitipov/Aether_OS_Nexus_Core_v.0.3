@@ -5,6 +5,9 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use postcard::to_allocvec;
+use sha2::{Digest, Sha256};
+use spin::Mutex;
 
 use crate::aetherfs::{self, FsCapability, FsRights, Hash};
 use crate::caps::Capability;
@@ -41,6 +44,22 @@ pub struct VNode {
     pub permissions: Permissions,
     pub fs_capability: FsCapability,
 }
+
+#[derive(Debug, Clone)]
+struct ManagedVNode {
+    id: VNodeId,
+    image_hash: Hash,
+    capabilities: Vec<Capability>,
+}
+
+impl ManagedVNode {
+    fn capability_hash(&self) -> [u8; 32] {
+        let encoded = to_allocvec(&self.capabilities).unwrap_or_default();
+        sha2_256(&encoded)
+    }
+}
+
+static VNODE_MANAGER: Mutex<Vec<ManagedVNode>> = Mutex::new(Vec::new());
 
 pub fn init() {
     kprintln!("[kernel] vnode_loader: Initializing immutable V-Node loader...");
@@ -96,6 +115,12 @@ pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<
         vnode.image_hash.0
     );
 
+    VNODE_MANAGER.lock().push(ManagedVNode {
+        id: vnode.id,
+        image_hash: vnode.image_hash,
+        capabilities,
+    });
+
     Ok(())
 }
 
@@ -132,4 +157,47 @@ pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(),
 
     kprintln!("[kernel] vnode_loader: V-Node '{}' loaded from immutable storage.", vnode_name);
     Ok(())
+}
+
+pub fn snapshot_vnode_states() -> Vec<crate::snapshot_engine::VNodeState> {
+    VNODE_MANAGER
+        .lock()
+        .iter()
+        .map(|vnode| crate::snapshot_engine::VNodeState {
+            vnode_id: vnode.id,
+            image_hash: vnode.image_hash.0,
+            caps_hash: vnode.capability_hash(),
+        })
+        .collect()
+}
+
+pub fn spawn_from_snapshot(vnode: &crate::snapshot_engine::VNodeState) -> Result<(), String> {
+    let image_hash = Hash(vnode.image_hash);
+    let image = aetherfs::fs_read(image_hash)
+        .ok_or_else(|| format!("V-Node image hash {:02x?} is not readable", vnode.image_hash))?;
+    let elf_header = elf::ElfLoader::parse_elf_bytes(&image)?;
+
+    let current = aetherfs::current_snapshot().ok_or_else(|| "AetherFS has no active snapshot".to_string())?;
+    let descriptor = build_vnode_descriptor(
+        vnode.vnode_id,
+        "restored-vnode",
+        image_hash,
+        elf_header.entry_point,
+        Permissions::default(),
+        FsCapability {
+            root: current.root,
+            rights: FsRights::ReadOnly,
+        },
+    );
+
+    spawn_vnode_task(&descriptor, Vec::new())
+}
+
+fn sha2_256(bytes: &[u8]) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(bytes);
+    let digest = hasher.finalize();
+    let mut hash = [0u8; 32];
+    hash.copy_from_slice(&digest);
+    hash
 }
