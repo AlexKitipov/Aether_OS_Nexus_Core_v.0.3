@@ -15,6 +15,7 @@ edition = "2021"
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
 serde_derive = "1.0"
+bootloader = "0.11.15"
 bootloader_api = "0.11.15"
 
 [workspace.metadata]
