@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 aetheros_common = { path = "../common" }
+bootloader = { workspace = true }
 bootloader_api = { workspace = true }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = "0.9.8"
