@@ -10,7 +10,6 @@ CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
 RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 
 [unstable]
-json-target-spec = true
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
 
