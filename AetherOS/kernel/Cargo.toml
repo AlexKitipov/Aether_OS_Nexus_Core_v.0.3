@@ -19,5 +19,3 @@ default = ["alloc"]
 alloc = []
 bare_metal = []
 
-[build-dependencies]
-bootloader = { workspace = true }
