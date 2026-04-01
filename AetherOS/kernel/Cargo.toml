@@ -18,6 +18,3 @@ sha2 = { version = "0.10", default-features = false }
 default = ["alloc"]
 alloc = []
 bare_metal = []
-
-[build-dependencies]
-bootloader = "0.11.15"
