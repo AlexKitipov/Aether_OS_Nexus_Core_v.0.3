@@ -1,0 +1,69 @@
+name: AetherOS CI Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-test:
+    name: Build & Test (Workspace)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (lint)
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run tests (common + V-Nodes)
+        run: cargo test --workspace --exclude kernel
+
+  kernel-build:
+    name: Kernel Build (Nightly)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust nightly
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Add nightly components
+        run: |
+          rustup component add rust-src --toolchain nightly
+          rustup component add llvm-tools-preview --toolchain nightly
+
+      - name: Build kernel (JSON target)
+        working-directory: AetherOS
+        run: |
+          cargo +nightly build --release \
+            --target .cargo/aetheros-x86_64.json \
+            -Z build-std=core,alloc,compiler_builtins \
+            -Z build-std-features=compiler-builtins-mem \
+            -Z unstable-options \
+            -Z json-target-spec
