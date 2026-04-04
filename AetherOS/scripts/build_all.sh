@@ -11,7 +11,7 @@ unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
 unset CARGO_BUILD_RUSTFLAGS
 
-TOOLCHAIN="nightly-2026-03-13"
+TOOLCHAIN="nightly-2024-12-01"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
 VNODE_PKGS=(
@@ -24,8 +24,7 @@ VNODE_PKGS=(
 echo "[build_all] Building kernel (${KERNEL_PKG})"
 cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
   -Zbuild-std=core,alloc,compiler_builtins \
-  -Zbuild-std-features=compiler-builtins-mem \
-  -Zjson-target-spec
+  -Zbuild-std-features=compiler-builtins-mem
 
 echo "[build_all] Building V-Nodes on host target: ${VNODE_PKGS[*]}"
 VNODE_ARGS=()
