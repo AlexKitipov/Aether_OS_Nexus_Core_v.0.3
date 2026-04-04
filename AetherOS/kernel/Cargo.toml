@@ -5,14 +5,14 @@ edition = "2021"
 
 [dependencies]
 serde = { workspace = true }
-aetheros_common = { path = "../common" }
+aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
 # Keep a legacy `bootloader` dependency so `cargo bootimage` can resolve
 # its expected crate, while the project runtime flow remains on `bootloader_api`.
 bootloader = { version = "0.11.15", default-features = false, optional = true }
 bootloader_api = { workspace = true, default-features = false }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
-spin = "0.9.8"
-linked_list_allocator = "0.10.1"
+spin = { version = "0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
+linked_list_allocator = { version = "0.10.1", default-features = false }
 conquer-once = { version = "0.4.0", default-features = false }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 sha2 = { version = "0.10", default-features = false }
