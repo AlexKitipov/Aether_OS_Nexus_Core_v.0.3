@@ -163,7 +163,20 @@ error: unknown unstable option: `json-target-spec`
 ```
 
 you are likely using `bootimage`/legacy metadata flow, an unpinned nightly, or a mixed toolchain invocation where `cargo`
-and `rustc` come from different nightlies. This repo uses `bootloader_api` and `cargo +nightly-2024-12-01 build` directly.
+and `rustc` come from different nightlies. This repo uses `bootloader_api` and `cargo +nightly-2026-03-13 build` directly.
 Run `./scripts/build_kernel_image.sh` (or the build command above) instead of `cargo bootimage`.
+
+If you see:
+
+```text
+Error: An error occurred while trying to build the bootloader: Bootloader dependency not found
+You need to add a dependency on a crate named `bootloader` in your Cargo.toml.
+```
+
+you are invoking the legacy `cargo bootimage` workflow. Do **not** add `bootloader` to kernel runtime dependencies: that pulls host-only crates into the bare-metal dependency graph and breaks `no_std` builds. Keep only `bootloader_api` in `kernel/Cargo.toml` and build with:
+
+```bash
+./scripts/build_kernel_image.sh
+```
 
 **Join the Aether. Build the Nexus.**
