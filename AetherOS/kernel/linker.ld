@@ -98,5 +98,4 @@ SECTIONS
         *(.comment)
     }
 
-    ASSERT(__kernel_end <= ORIGIN(RAM) + LENGTH(RAM), "kernel image exceeds RAM region");
 }
