@@ -14,6 +14,12 @@ conquer-once = { version = "0.4.0", default-features = false }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 sha2 = { version = "0.10", default-features = false }
 
+[dev-dependencies]
+# Keep a named `bootloader` dependency for tooling that verifies the
+# bootloader-to-kernel handoff contract (e.g. cargo-bootimage metadata checks).
+# Version is pinned to the same release line as `bootloader_api` in workspace deps.
+bootloader = { workspace = true }
+
 [features]
 default = ["alloc"]
 alloc = []

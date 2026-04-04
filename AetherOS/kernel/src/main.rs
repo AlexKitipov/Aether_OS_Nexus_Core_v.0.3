@@ -9,6 +9,8 @@ use core::panic::PanicInfo;
 use core::arch::global_asm;
 #[cfg(target_os = "none")]
 use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
+#[cfg(target_os = "none")]
+use bootloader_api::info::Optional;
 use aetheros_kernel::{init, task};
 
 #[cfg(target_os = "none")]
@@ -17,6 +19,8 @@ global_asm!(
     .section .text._start, "ax"
     .global _start
 _start:
+    # bootloader_api 0.11 x86_64 handoff contract:
+    # rdi = *mut BootInfo
     mov rbx, rdi
     call init_stack
     mov rdi, rbx
@@ -51,18 +55,32 @@ pub unsafe extern "C" fn init_stack() {
 
 /// Kernel entry point in `no_std`/`no_main` mode.
 ///
-/// We export `_start` with `#[no_mangle]` so the symbol name stays exactly `_start`
-/// and the bootloader/CPU can jump to it directly.
-#[no_mangle] // Don't mangle the name of this function, so the bootloader can find it
+/// Calling convention contract:
+/// - `_start` (defined in global assembly above) receives `rdi = *mut BootInfo`.
+/// - `_start` forwards that raw pointer unchanged to this function.
+/// - this function is `extern "C"` so register/stack ABI matches the handoff.
+#[no_mangle]
 #[cfg(target_os = "none")]
-pub extern "C" fn kernel_entry(boot_info: &'static mut BootInfo) -> ! {
+pub unsafe extern "C" fn kernel_entry(boot_info_ptr: *mut BootInfo) -> ! {
+    // SAFETY: Bootloader guarantees a valid, unique BootInfo pointer for early boot.
+    // We immediately create one mutable reference and keep it scoped to this function.
+    let boot_info = unsafe {
+        boot_info_ptr
+            .as_mut()
+            .expect("bootloader contract violated: BootInfo pointer was null")
+    };
+
+    // BootInfo layout assumptions (bootloader_api 0.11.15):
+    // - `memory_regions` is passed by shared reference into allocator bootstrap.
+    // - `framebuffer` is `Optional<FrameBuffer>` and is converted via `as_mut()`.
+    // - `physical_memory_offset` is `Optional<u64>` and must be unwrapped via `into_option()`.
     // Kernel early initialization starts here.
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
     init(
         &boot_info.memory_regions,
         boot_info.framebuffer.as_mut(),
-        boot_info.physical_memory_offset,
+        Optional::into_option(boot_info.physical_memory_offset).unwrap_or(0),
     );
 
     aetheros_kernel::kprintln!("[kernel] Boot sequence complete, entering scheduler loop.");
