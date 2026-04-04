@@ -90,6 +90,12 @@ fn init_memory_and_heap(
 
         match heap_result {
             Some(Ok(())) => {
+                // Ordering invariant:
+                // 1) Boot memory map validated and frame allocator initialized.
+                // 2) Active mapper built from confirmed direct-map offset.
+                // 3) Heap pages mapped.
+                // Only after these steps do we expose dynamic page allocation.
+                memory::finalize_allocator_init();
                 heap::init_heap();
                 kprintln!("[kernel] Heap initialized.");
             }
