@@ -1,12 +1,16 @@
-[build]
-target = ".cargo/aetheros-x86_64.json"
-
-[alias]
-# Compatibility alias for users that still invoke `cargo bootimage`.
-# Keep `--release` out of the alias so callers can explicitly select profile
-# without triggering duplicate-flag errors (`cargo bootimage --release`).
-# This workspace uses `bootloader_api` and direct kernel builds.
-bootimage = "build --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem"
+# NOTE:
+# We intentionally do not define a `bootimage` cargo alias here. Cargo now warns
+# when a user alias shadows an external subcommand and this behavior is being
+# phased out (eventually becoming a hard error). In environments where
+# `cargo-bootimage` is installed, users can also end up on an unexpected legacy
+# code path that does not match this workspace's `bootloader_api` flow.
+#
+# Use the pinned commands from README.md or scripts/build_kernel_image.sh.
+#
+# We also intentionally do not set a workspace-wide `[build] target` because this
+# workspace includes both host binaries/tests and the no_std kernel target. A
+# forced global target causes host tests to compile against the custom target and
+# can trigger duplicate `core` lang-item failures during `cargo test`.
 
 [env]
 # Prevent host shell/compiler wrapper flags from leaking into dependency builds.
@@ -15,7 +19,3 @@ bootimage = "build --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,c
 RUSTFLAGS = { value = "", force = true }
 CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
 RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
-
-[unstable]
-build-std = ["core", "alloc", "compiler_builtins"]
-build-std-features = ["compiler-builtins-mem"]

@@ -99,7 +99,7 @@ From repository root, run:
 
 ```bash
 cd AetherOS
-cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
 ```
 
 Or use the helper:
@@ -136,14 +136,12 @@ This avoids mixing kernel/nightly-only targets with host-side service validation
 If you see:
 
 ```text
-WARNING: `CARGO_MANIFEST_DIR` env variable not set
-error: `.json` target specs require -Zjson-target-spec
+error: unknown `-Z` flag specified: json-target-spec
 ```
 
-you are likely either outside `AetherOS/`, on an unpinned nightly, invoking Cargo without `-Zjson-target-spec`, or mixing
-toolchains so `cargo` and `rustc` resolve to different nightlies. This workspace currently pins `nightly-2024-12-01` because
-newer nightly snapshots can fail during metadata discovery for JSON targets. Use `./scripts/build_kernel_image.sh` (from
-`AetherOS/`) or the full command above.
+you are likely using stale build instructions, outside `AetherOS/`, on an unpinned nightly, or mixing toolchains so `cargo`
+and `rustc` resolve to different nightlies. This workspace pins `nightly-2024-12-01`; use `./scripts/build_kernel_image.sh`
+(from `AetherOS/`) or the full command above (without `-Zjson-target-spec`).
 
 **Join the Aether. Build the Nexus.**
 
