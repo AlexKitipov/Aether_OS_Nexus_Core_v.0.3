@@ -9,8 +9,6 @@ use core::panic::PanicInfo;
 use core::arch::global_asm;
 #[cfg(target_os = "none")]
 use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
-#[cfg(target_os = "none")]
-use bootloader_api::info::Optional;
 use aetheros_kernel::{init, task};
 
 #[cfg(target_os = "none")]
@@ -21,6 +19,9 @@ global_asm!(
 _start:
     # bootloader_api 0.11 x86_64 handoff contract:
     # rdi = *mut BootInfo
+    # SysV ABI notes:
+    # - rbx is callee-saved, so we can carry BootInfo across the init_stack call.
+    # - init_stack establishes a 16-byte aligned kernel stack before any Rust call.
     mov rbx, rdi
     call init_stack
     mov rdi, rbx
@@ -41,9 +42,16 @@ struct KernelStack([u8; 4096 * 4]);
 static mut STACK: KernelStack = KernelStack([0; 4096 * 4]);
 
 /// Initializes the bootstrap kernel stack and enforces SysV 16-byte alignment.
+///
+/// The stack is in `.bss.stack`, grows downward, and is initialized to its top
+/// (`base + size`) before alignment masking.
 #[cfg(target_os = "none")]
 #[no_mangle]
 pub unsafe extern "C" fn init_stack() {
+    // SAFETY: `STACK` is a dedicated static bootstrap region that is only
+    // installed once during single-core early startup before scheduling.
+    // The computed address is in-bounds (`stack + size` points one-past-end),
+    // then rounded down to a 16-byte boundary for SysV call ABI compliance.
     core::arch::asm!(
         "lea rsp, [{stack} + {size}]",
         "and rsp, -16",
@@ -80,7 +88,7 @@ pub unsafe extern "C" fn kernel_entry(boot_info_ptr: *mut BootInfo) -> ! {
     init(
         &boot_info.memory_regions,
         boot_info.framebuffer.as_mut(),
-        Optional::into_option(boot_info.physical_memory_offset).unwrap_or(0),
+        boot_info.physical_memory_offset,
     );
 
     aetheros_kernel::kprintln!("[kernel] Boot sequence complete, entering scheduler loop.");
