@@ -13,5 +13,3 @@ RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
 
-[target.'cfg(all())']
-rustflags = ["--cfg", "no_std"]
