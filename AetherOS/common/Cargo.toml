@@ -8,7 +8,7 @@ serde = { workspace = true }
 postcard = { version = "1.0", default-features = false, features = ["alloc"] }
 
 # libnexus-net is now a direct dependency as NexusNetTransport uses it
-libnexus-net = { path = "../libnexus-net" }
+libnexus-net = { path = "../libnexus-net", default-features = false }
 
 # Dummy crate for `smoltcp` for network stack integration.
 # This would typically be a dependency of the network stack V-Node.
