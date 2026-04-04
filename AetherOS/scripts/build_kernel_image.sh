@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
 RUN_QEMU="${RUN_QEMU:-0}"
-TOOLCHAIN="nightly-2026-03-13"
+TOOLCHAIN="nightly-2024-12-01"
 
 cd "${ROOT_DIR}"
 
@@ -30,8 +30,7 @@ rustup component add llvm-tools-preview --toolchain "${TOOLCHAIN}"
 
 cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
   -Zbuild-std=core,alloc,compiler_builtins \
-  -Zbuild-std-features=compiler-builtins-mem \
-  -Zjson-target-spec
+  -Zbuild-std-features=compiler-builtins-mem
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 
