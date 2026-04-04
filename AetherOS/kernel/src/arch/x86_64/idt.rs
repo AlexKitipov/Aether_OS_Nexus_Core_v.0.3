@@ -105,6 +105,8 @@ extern "x86-interrupt" fn double_fault_handler(
     kprintln!("[kernel] EXCEPTION: DOUBLE FAULT");
     kprintln!("[kernel] Error Code: {}", error_code);
     kprintln!("[kernel] Stack Frame:\n{:#?}", stack_frame);
+    // NOTE: x86_64 v0.14 currently expects the double-fault handler type to be
+    // `extern "x86-interrupt" fn(...) -> !`.
     hlt_loop();
 }
 
