@@ -1,5 +1,6 @@
 #![no_std]
 #![no_main]
+#![feature(alloc_error_handler)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -143,7 +144,11 @@ impl InitService {
                 match postcard::from_bytes::<InitRequest>(&data) {
                     Ok(request) => {
                         let response = self.handle_request(request);
-                        let _ = self.client_chan.send(&response);
+                        if let Ok(serialized_response) = postcard::to_allocvec(&response) {
+                            let _ = self.client_chan.send_raw(&serialized_response);
+                        } else {
+                            log("Init Service: Failed to serialize InitResponse.");
+                        }
                     }
                     Err(_) => log("Init Service: Failed to deserialize InitRequest."),
                 }

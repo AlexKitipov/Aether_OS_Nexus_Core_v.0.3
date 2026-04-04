@@ -16,7 +16,8 @@ use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 use aetheros_common::ipc::vnode::VNodeChannel;
-use aetheros_common::swarm_engine::{SwarmEngine, SwarmTransport};
+use aetheros_common::arp_dht::PeerInfo;
+use aetheros_common::swarm_engine::{SwarmEngine, SwarmError, SwarmTransport};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS};
 use aetheros_common::trust::{Aid, TrustStore};
 
@@ -41,12 +42,25 @@ fn log(msg: &str) {
     let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
 }
 
+struct NoopTransport;
+
+impl SwarmTransport for NoopTransport {
+    fn fetch_chunk_from_peer(&self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+        Err(SwarmError::RoutingNotFound)
+    }
+}
+
 fn main() -> ! {
     let _channel = VNodeChannel::new(11);
     let _trust_store = TrustStore::new();
     let _aid = Aid([0; 32]);
-    let _swarm_engine = SwarmEngine;
-    let _swarm_transport = SwarmTransport;
+    let local_peer = PeerInfo {
+        ip_address: [127, 0, 0, 1],
+        port: 7777,
+        vnode_id: 11,
+    };
+    let swarm_engine = SwarmEngine::new(NoopTransport);
+    let _ = swarm_engine.fetch_chunk_from_peer(&local_peer, [0; 32]);
 
     let _buffer: Vec<u8> = vec![0, 1, 2, 3];
     let status: String = format!("display-compositor placeholder started (SUCCESS={})", SUCCESS);
