@@ -11,3 +11,8 @@ pub fn init() {
 pub fn set_irq_handler(vector: u8, handler: extern "x86-interrupt" fn(InterruptStackFrame)) {
     crate::arch::x86_64::idt::set_irq_handler(vector, handler);
 }
+
+/// Reloads the currently configured IDT (`lidt`).
+pub fn reload() {
+    crate::arch::x86_64::idt::reload();
+}

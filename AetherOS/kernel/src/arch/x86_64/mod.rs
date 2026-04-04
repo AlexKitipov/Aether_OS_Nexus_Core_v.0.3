@@ -42,9 +42,10 @@ pub fn init(boot_info: &'static mut BootInfo) {
         }
     }
 
-    // 6) IRQ/PIC wiring and hardware interrupt enable
+    // 6) IRQ/PIC wiring
+    // NOTE: Global interrupt enable is intentionally deferred to the top-level
+    // kernel init sequence after runtime subsystems are ready.
     irq::init();
-    unsafe { x86_64::instructions::interrupts::enable() };
 
     kprintln!("[kernel] x86_64: architecture initialization complete.");
 }

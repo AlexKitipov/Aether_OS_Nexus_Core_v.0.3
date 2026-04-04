@@ -53,7 +53,7 @@ pub fn tick() {
 
     // Request a scheduler decision every fixed time slice.
     if next % SCHEDULER_QUANTUM_TICKS == 0 {
-        crate::task::scheduler::request_reschedule();
+        crate::task::scheduler::request_reschedule_from_irq();
     }
 }
 
