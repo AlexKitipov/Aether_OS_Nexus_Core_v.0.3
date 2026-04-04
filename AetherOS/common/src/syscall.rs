@@ -107,6 +107,10 @@ pub fn syscall2(syscall_num: u64, arg1: u64, arg2: u64) -> u64 {
 #[inline(always)]
 pub fn syscall3(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64) -> u64 {
     let ret: u64;
+    // SAFETY: This emits a single `syscall` instruction using the x86_64 Linux-style
+    // register ABI expected by the AetherOS kernel entry glue:
+    // rax=syscall number, rdi/rsi/rdx=args 1..3, rcx/r11 clobbered by hardware.
+    // No stack memory is touched by the asm block itself (`nostack`).
     unsafe {
         core::arch::asm!(
             "syscall",
@@ -130,6 +134,7 @@ pub fn syscall3(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64) -> u64 {
 #[inline(always)]
 pub fn syscall4(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) -> u64 {
     let ret: u64;
+    // SAFETY: Same syscall ABI as `syscall3`, with arg4 in `r10`.
     unsafe {
         core::arch::asm!(
             "syscall",
@@ -155,6 +160,7 @@ pub fn syscall4(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64) ->
 #[inline(always)]
 pub fn syscall5(syscall_num: u64, arg1: u64, arg2: u64, arg3: u64, arg4: u64, arg5: u64) -> u64 {
     let ret: u64;
+    // SAFETY: Same syscall ABI as `syscall3`, with arg4 in `r10` and arg5 in `r8`.
     unsafe {
         core::arch::asm!(
             "syscall",
@@ -188,6 +194,7 @@ pub fn syscall6(
     arg6: u64,
 ) -> u64 {
     let ret: u64;
+    // SAFETY: Same syscall ABI as `syscall3`, with args 4..6 in r10/r8/r9.
     unsafe {
         core::arch::asm!(
             "syscall",

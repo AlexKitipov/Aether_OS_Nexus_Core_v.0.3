@@ -336,18 +336,40 @@ fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
             let out_cap = args.a3 as usize;
 
             if packet_len <= out_cap {
-                if let Some(buf_ptr) = dma::get_dma_buffer_ptr(dma_handle) {
-                    // SAFETY: Destination pointer comes from managed DMA map and has enough capacity.
-                    // We need to ensure buf_ptr is a valid address accessible by the current V-Node.
-                    unsafe { core::ptr::copy_nonoverlapping(simulated_packet.as_ptr(), buf_ptr, packet_len); }
-                    if dma::set_dma_buffer_len(dma_handle, packet_len).is_ok() {
-                        kprintln!("[kernel] SYS_NET_RX_POLL: Simulated packet of {} bytes copied to DMA handle {}.", packet_len, dma_handle);
-                        packet_len as u64
-                    } else {
-                        E_ERROR
-                    }
+                let Some(buf_capacity) = dma::get_dma_buffer_capacity(dma_handle) else {
+                    kprintln!(
+                        "[kernel] SYS_NET_RX_POLL: DMA buffer capacity lookup failed for handle {}.",
+                        dma_handle
+                    );
+                    return E_ERROR;
+                };
+
+                if packet_len > buf_capacity {
+                    kprintln!(
+                        "[kernel] SYS_NET_RX_POLL: packet {} exceeds DMA capacity {} for handle {}.",
+                        packet_len,
+                        buf_capacity,
+                        dma_handle
+                    );
+                    return E_ERROR;
+                }
+
+                if dma::write_to_buffer(dma_handle, &simulated_packet, 0).is_err() {
+                    kprintln!(
+                        "[kernel] SYS_NET_RX_POLL: failed writing packet into DMA handle {}.",
+                        dma_handle
+                    );
+                    return E_ERROR;
+                }
+
+                if dma::set_dma_buffer_len(dma_handle, packet_len).is_ok() {
+                    kprintln!(
+                        "[kernel] SYS_NET_RX_POLL: Simulated packet of {} bytes copied to DMA handle {}.",
+                        packet_len,
+                        dma_handle
+                    );
+                    packet_len as u64
                 } else {
-                    kprintln!("[kernel] SYS_NET_RX_POLL: DMA buffer pointer not found for handle {}.", dma_handle);
                     E_ERROR
                 }
             } else {

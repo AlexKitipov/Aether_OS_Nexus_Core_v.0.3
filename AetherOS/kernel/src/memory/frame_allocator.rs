@@ -38,7 +38,7 @@ impl BootInfoFrameAllocator {
     }
 
     /// Returns an iterator over the usable frames in the memory map.
-    fn usable_frames(&self) -> impl Iterator<Item = PhysFrame> {
+    fn usable_frames(&self) -> impl Iterator<Item = PhysFrame> + '_ {
         // We only walk validated, page-aligned ranges so we never allocate frames
         // outside bootloader-advertised usable RAM.
         let frame_addresses = self

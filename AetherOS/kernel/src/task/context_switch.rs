@@ -39,7 +39,7 @@ context_switch:
 );
 
 #[cfg(all(target_arch = "x86_64", target_os = "none"))]
-extern "C" {
+unsafe extern "C" {
     fn context_switch(old: *mut Registers, new: *const Registers);
 }
 
@@ -62,6 +62,12 @@ pub unsafe fn switch(old: &mut Registers, new: &Registers) {
 /// Transfers from kernel to user context on first task entry.
 #[cfg(all(target_arch = "x86_64", target_os = "none"))]
 pub unsafe fn enter_user_mode(entry: u64, user_stack: u64, rflags: u64) -> ! {
+    // SAFETY: Caller guarantees:
+    // - `entry` is a canonical user-mode RIP mapped executable.
+    // - `user_stack` is a canonical user-mode writable stack top.
+    // - `rflags` has architecturally required bits (e.g., bit 1) and desired IF state.
+    // We load the kernel RSP for the iret frame construction, then execute `iretq`
+    // to atomically transition privilege levels using fixed user segments.
     core::arch::asm!(
         "mov rsp, {stack}",
         "push 0x23",          // user data segment selector
