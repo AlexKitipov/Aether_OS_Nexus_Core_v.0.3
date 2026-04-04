@@ -14,9 +14,10 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
-serde_derive = "1.0"
-bootloader = "0.11.15"
-bootloader_api = "0.11.15"
+serde_core = { version = "1.0", default-features = false, features = ["alloc"] }
+serde_derive = { version = "1.0", default-features = false }
+bootloader = { version = "0.11.15", default-features = false, features = ["uefi"] }
+bootloader_api = { version = "0.11.15", default-features = false }
 
 [workspace.metadata]
 forbid-std = true
