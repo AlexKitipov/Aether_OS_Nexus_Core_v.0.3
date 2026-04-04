@@ -47,8 +47,9 @@ if command -v llvm-objdump >/dev/null 2>&1; then
     exit 1
   fi
 
-  if [[ "${text_addr}" != "00100000" ]]; then
-    echo "[build_kernel_image] ERROR: .text starts at 0x${text_addr}, expected 0x00100000" >&2
+  expected_text_addr="00100000"
+  if ! (( 16#${text_addr} == 16#${expected_text_addr} )); then
+    echo "[build_kernel_image] ERROR: .text starts at 0x${text_addr}, expected 0x${expected_text_addr}" >&2
     exit 1
   fi
 
