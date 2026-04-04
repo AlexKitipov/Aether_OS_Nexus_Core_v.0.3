@@ -32,6 +32,9 @@ unsafe fn unmask_irq(irq: u8) {
 /// - installs IRQ handlers in the IDT
 /// - unmasks required IRQ lines
 pub fn init() {
+    // Ordering assumptions:
+    // 1) `crate::idt::init()` already installed CPU exception handlers and loaded IDT.
+    // 2) IF flag is still cleared at this stage, so IRQ vectors can be patched safely.
     unsafe {
         pic::remap();
         kprintln!("[kernel] interrupts: PIC remapped to vectors 32-47.");
@@ -42,6 +45,8 @@ pub fn init() {
 
     idt::set_irq_handler(irq_vector(IRQ_TIMER), timer::handler);
     idt::set_irq_handler(irq_vector(IRQ_KEYBOARD), keyboard::handler);
+    idt::reload();
+    kprintln!("[kernel] interrupts: IDT reloaded after IRQ handler installation.");
 
     unsafe {
         unmask_irq(IRQ_TIMER);

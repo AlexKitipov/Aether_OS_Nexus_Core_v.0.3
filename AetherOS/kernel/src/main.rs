@@ -99,7 +99,9 @@ pub unsafe extern "C" fn kernel_entry(boot_info_ptr: *mut BootInfo) -> ! {
         if task::scheduler::take_reschedule_request() {
             task::schedule(); // Perform scheduling only when requested (e.g. from timer IRQ)
         }
-        x86_64::instructions::hlt(); // Halt the CPU until the next interrupt
+        // Atomically (re-)enable interrupts and halt to avoid a race where an
+        // IRQ arrives between the flag check above and a plain `hlt`.
+        x86_64::instructions::interrupts::enable_and_hlt();
     }
 }
 

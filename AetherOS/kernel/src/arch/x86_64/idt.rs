@@ -4,6 +4,7 @@
 
 use x86_64::registers::control::Cr2;
 use x86_64::PrivilegeLevel;
+use x86_64::instructions::interrupts;
 use x86_64::structures::idt::{
     InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode,
 };
@@ -15,7 +16,10 @@ static mut IDT: InterruptDescriptorTable = InterruptDescriptorTable::new();
 
 /// Initializes the IDT with core CPU exception handlers and loads it via `lidt`.
 pub fn init() {
-    unsafe {
+    interrupts::without_interrupts(|| unsafe {
+        // SAFETY: Early boot runs on a single core before task scheduling starts.
+        // We fully populate CPU exception entries before `lidt` so no interrupt
+        // can observe partially initialized descriptors.
         kprintln!("[kernel] idt: Initializing IDT...");
 
         IDT.breakpoint.set_handler_fn(breakpoint_handler);
@@ -30,14 +34,24 @@ pub fn init() {
             .set_privilege_level(PrivilegeLevel::Ring3);
         IDT.load();
         kprintln!("[kernel] idt: IDT loaded.");
-    }
+    });
 }
 
 /// Registers an external IRQ handler into the IDT at a given vector.
 pub fn set_irq_handler(vector: u8, handler: extern "x86-interrupt" fn(InterruptStackFrame)) {
-    unsafe {
+    interrupts::without_interrupts(|| unsafe {
+        // SAFETY: IDT is a single mutable static. We only mutate it with
+        // interrupts disabled to avoid observing partially written entries.
         IDT[vector as usize].set_handler_fn(handler);
-    }
+    });
+}
+
+/// Reloads IDT register from the global table after descriptor updates.
+pub fn reload() {
+    interrupts::without_interrupts(|| unsafe {
+        // SAFETY: `IDT` points to a static table with `'static` lifetime.
+        IDT.load();
+    });
 }
 
 extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {

@@ -9,9 +9,9 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
     if let Some(Some(handler)) = crate::device::with_manager(|m| m.irq_handler(IRQ_TIMER)) {
         handler.handle_irq();
     }
-    if crate::task::scheduler::take_reschedule_request() {
-        crate::task::schedule();
-    }
+    // Do not invoke the scheduler directly from interrupt context. The idle
+    // loop consumes this flag at a safe boundary and performs the switch.
+    crate::task::scheduler::request_reschedule_from_irq();
 
     unsafe {
         // SAFETY: We are running in the timer IRQ context, so acknowledging
