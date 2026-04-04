@@ -17,9 +17,9 @@ use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 use aetheros_common::ipc::keyboard_ipc::KeyEvent;
+use aetheros_common::ipc::IpcSend;
 use aetheros_common::ipc::vnode::VNodeChannel;
 use aetheros_common::ipc::webview::{WebViewCommand, WebViewResponse};
-use aetheros_common::swarm_engine::{SwarmEngine, SwarmTransport};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS};
 use aetheros_common::trust::{Aid, TrustStore};
 use aetheros_common::ui::css_engine::CssEngine;
@@ -44,6 +44,12 @@ fn init_allocator() {
 
 fn log(msg: &str) {
     let _ = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
+}
+
+fn send_response(channel: &mut VNodeChannel, response: &WebViewResponse) {
+    if let Ok(bytes) = postcard::to_allocvec(response) {
+        let _ = channel.send_raw(&bytes);
+    }
 }
 
 fn update_input_buffer(buffer: &mut String, event: KeyEvent) {
@@ -106,8 +112,6 @@ fn main() -> ! {
     let mut channel = VNodeChannel::new(12);
     let _trust_store = TrustStore::new();
     let _aid = Aid([1; 32]);
-    let _swarm_engine = SwarmEngine;
-    let _swarm_transport = SwarmTransport;
 
     let _framebuffer: Vec<u8> = vec![0; 4];
     let status: String = format!("webview placeholder started (SUCCESS={})", SUCCESS);
@@ -123,11 +127,11 @@ fn main() -> ! {
                         "webview: key scancode=0x{:02x} ascii={:?} input='{}'",
                         event.scancode, event.ascii, input_buffer
                     ));
-                    let _ = channel.send(&WebViewResponse::Ack);
+                    send_response(&mut channel, &WebViewResponse::Ack);
                 }
                 Ok(WebViewCommand::Navigate { url }) => {
                     log(&format!("webview: navigate request '{}'", url));
-                    let _ = channel.send(&WebViewResponse::Ack);
+                    send_response(&mut channel, &WebViewResponse::Ack);
                 }
                 Ok(WebViewCommand::RenderMailMessage {
                     message_id,
@@ -135,13 +139,16 @@ fn main() -> ! {
                     css,
                 }) => {
                     let response = render_mail_preview(message_id, html_body, css);
-                    let _ = channel.send(&response);
+                    send_response(&mut channel, &response);
                 }
                 Err(_) => {
                     log("webview: failed to decode command payload.");
-                    let _ = channel.send(&WebViewResponse::Error {
-                        message: String::from("failed to decode command payload"),
-                    });
+                    send_response(
+                        &mut channel,
+                        &WebViewResponse::Error {
+                            message: String::from("failed to decode command payload"),
+                        },
+                    );
                 }
             }
         }
