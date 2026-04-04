@@ -2,33 +2,34 @@ name: Build AetherOS
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: ./AetherOS
+
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y build-essential qemu-system-x86
+      - name: Install Rust nightly + rust-src
+        run: |
+          rustup toolchain install nightly --profile minimal
+          rustup component add rust-src --toolchain nightly
 
-    - name: Build kernel
-      working-directory: ./AetherOS
-      run: |
-        make kernel
+      - name: Build kernel (no_std target)
+        run: |
+          cargo +nightly build -p aetheros-kernel \
+            -Z build-std=core,alloc,compiler_builtins \
+            --target .cargo/aetheros-x86_64.json
 
-    - name: Build initrd
-      working-directory: ./AetherOS
-      run: |
-        make initrd
+      - name: Build webview vnode
+        run: cargo build -p webview
 
-    - name: Run smoke test
-      working-directory: ./AetherOS
-      run: |
-        make test
+      - name: Run workspace tests
+        run: cargo test
