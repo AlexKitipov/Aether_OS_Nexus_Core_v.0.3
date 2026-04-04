@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 aetheros_common = { path = "../common" }
+# Keep a legacy `bootloader` dependency so `cargo bootimage` can resolve
+# its expected crate, while the project runtime flow remains on `bootloader_api`.
+bootloader = { version = "0.11.15", default-features = false, optional = true }
 bootloader_api = { workspace = true, default-features = false }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = "0.9.8"
@@ -19,3 +22,4 @@ sha2 = { version = "0.10", default-features = false }
 default = ["alloc"]
 alloc = []
 bare_metal = []
+bootimage_compat = ["dep:bootloader"]
