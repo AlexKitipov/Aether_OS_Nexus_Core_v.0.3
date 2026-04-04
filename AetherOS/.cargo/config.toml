@@ -1,6 +1,11 @@
 [build]
 target = ".cargo/aetheros-x86_64.json"
 
+[alias]
+# Compatibility alias for users that still invoke `cargo bootimage`.
+# This workspace uses `bootloader_api` and direct kernel builds.
+bootimage = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem"
+
 [env]
 # Prevent host shell/compiler wrapper flags from leaking into dependency builds.
 # In particular, `-Z no-implicit-prelude` causes cascading missing `Option` /
@@ -12,4 +17,3 @@ RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 [unstable]
 build-std = ["core", "alloc", "compiler_builtins"]
 build-std-features = ["compiler-builtins-mem"]
-
