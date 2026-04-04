@@ -292,6 +292,7 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
 
         match heap_result {
             Some(Ok(())) => {
+                memory::finalize_allocator_init();
                 heap::init_heap();
                 kprintln!("[kernel] boot: Heap is ready. Dynamic allocation enabled.");
             }

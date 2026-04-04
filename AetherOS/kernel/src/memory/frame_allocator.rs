@@ -1,7 +1,10 @@
 #![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
 
+extern crate alloc;
+
 use crate::kprintln;
 use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
+use core::ops::Range;
 use x86_64::structures::paging::{FrameAllocator, PageSize, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;
 
@@ -12,7 +15,7 @@ const FRAME_SIZE: usize = Size4KiB::SIZE as usize;
 /// This allocator iterates through the memory regions provided by the bootloader
 /// and yields usable physical frames.
 pub struct BootInfoFrameAllocator {
-    memory_regions: &'static MemoryRegions,
+    usable_ranges: alloc::vec::Vec<Range<u64>>,
     next: usize,
 }
 
@@ -23,29 +26,73 @@ impl BootInfoFrameAllocator {
     /// memory regions are valid and represent the actual physical memory layout.
     pub unsafe fn init(memory_regions: &'static MemoryRegions) -> Self {
         kprintln!("[kernel] frame_allocator: Initializing BootInfoFrameAllocator...");
+        let usable_ranges = collect_usable_ranges(memory_regions);
+        assert!(
+            !usable_ranges.is_empty(),
+            "[kernel] frame_allocator: no usable RAM regions were provided by bootloader"
+        );
         BootInfoFrameAllocator {
-            memory_regions,
+            usable_ranges,
             next: 0,
         }
     }
 
     /// Returns an iterator over the usable frames in the memory map.
     fn usable_frames(&self) -> impl Iterator<Item = PhysFrame> {
-        // Get usable regions from memory map
-        let regions = self
-            .memory_regions
+        // We only walk validated, page-aligned ranges so we never allocate frames
+        // outside bootloader-advertised usable RAM.
+        let frame_addresses = self
+            .usable_ranges
             .iter()
-            .filter(|r| r.kind == MemoryRegionKind::Usable && r.end > r.start);
-
-        // Map each region to its address range
-        let addr_ranges = regions.map(|r| r.start..r.end);
-
-        // Transform to an iterator of frame start addresses
-        let frame_addresses = addr_ranges.flat_map(|r| r.step_by(FRAME_SIZE).map(PhysAddr::new));
+            .flat_map(|r| (r.start..r.end).step_by(FRAME_SIZE).map(PhysAddr::new));
 
         // Create PhysFrame for each address
         frame_addresses.map(|addr| PhysFrame::containing_address(addr))
     }
+}
+
+fn align_up(value: u64, align: u64) -> u64 {
+    ((value + (align - 1)) / align) * align
+}
+
+fn align_down(value: u64, align: u64) -> u64 {
+    (value / align) * align
+}
+
+fn collect_usable_ranges(memory_regions: &'static MemoryRegions) -> alloc::vec::Vec<Range<u64>> {
+    let mut usable = alloc::vec::Vec::new();
+    let frame_size = FRAME_SIZE as u64;
+
+    for region in memory_regions.iter() {
+        if region.end <= region.start {
+            kprintln!(
+                "[kernel] frame_allocator: skipping invalid region {:#x?}..{:#x?} ({:?}).",
+                region.start,
+                region.end,
+                region.kind
+            );
+            continue;
+        }
+
+        if region.kind != MemoryRegionKind::Usable {
+            continue;
+        }
+
+        let start = align_up(region.start, frame_size);
+        let end = align_down(region.end, frame_size);
+        if end <= start {
+            kprintln!(
+                "[kernel] frame_allocator: skipping tiny/unaligned usable region {:#x?}..{:#x?}.",
+                region.start,
+                region.end
+            );
+            continue;
+        }
+
+        usable.push(start..end);
+    }
+
+    usable
 }
 
 // Implement the `FrameAllocator` trait for `BootInfoFrameAllocator`.

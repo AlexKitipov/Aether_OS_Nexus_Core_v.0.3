@@ -94,6 +94,11 @@ pub fn get_kernel_pml4() -> u64 {
 /// mapping base for all physical memory and remains stable for the returned
 /// `OffsetPageTable` lifetime.
 pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+    assert!(
+        physical_memory_offset.as_u64() != 0,
+        "physical_memory_offset must not be zero for active paging init"
+    );
+    validate_canonical_virt(physical_memory_offset.as_u64());
     let (level_4_table_frame, _) = Cr3::read();
     let phys = level_4_table_frame.start_address();
     let virt = physical_memory_offset + phys.as_u64();
@@ -217,7 +222,12 @@ pub fn virt_to_phys(virt_addr: u64) -> u64 {
 /// Direct-map helper variant used by DMA paths that already have a known
 /// physical memory offset.
 pub fn virt_to_phys_with_offset(virt: u64, offset: u64) -> PhysAddr {
-    PhysAddr::new(virt.saturating_sub(offset))
+    assert!(offset != 0, "physical memory offset must not be zero");
+    assert!(
+        virt >= offset,
+        "virtual address {virt:#x} is below physical memory offset {offset:#x}"
+    );
+    PhysAddr::new(virt - offset)
 }
 
 /// Strict bootstrap virtual-to-physical translation.
