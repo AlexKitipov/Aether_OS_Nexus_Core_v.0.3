@@ -18,7 +18,7 @@ use aetheros_common::arp_dht::{DhtValue, InMemoryDht, NodeId, PeerInfo};
 use aetheros_common::examples;
 use aetheros_common::ipc::vnode::VNodeChannel;
 use aetheros_common::swarm_engine::global_search::{GlobalSearchService, SearchRequest};
-use aetheros_common::swarm_engine::{SwarmEngine, SwarmTransport};
+use aetheros_common::swarm_engine::{SwarmEngine, SwarmError, SwarmTransport};
 use aetheros_common::syscall::{syscall3, SYS_LOG, SUCCESS};
 use aetheros_common::trust::{Aid, TrustStore};
 
@@ -61,6 +61,14 @@ impl RegistryVNode {
     }
 }
 
+struct NoopTransport;
+
+impl SwarmTransport for NoopTransport {
+    fn fetch_chunk_from_peer(&self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+        Err(SwarmError::RoutingNotFound)
+    }
+}
+
 fn main() -> ! {
     let trust_store = TrustStore::new();
     let dht_for_init = InMemoryDht::new();
@@ -70,11 +78,18 @@ fn main() -> ! {
 
     let _aid = Aid([0xBB; 32]);
     let _node_id = NodeId([0xAA; 32]);
-    let _peer_info = PeerInfo;
-    let _swarm_engine = SwarmEngine;
-    let _swarm_transport = SwarmTransport;
-    let _search_service = GlobalSearchService;
-    let _search_request = SearchRequest;
+    let local_peer = PeerInfo {
+        ip_address: [127, 0, 0, 1],
+        port: 7777,
+        vnode_id: 1,
+    };
+
+    let swarm_engine = SwarmEngine::new(NoopTransport);
+    let _ = swarm_engine.fetch_chunk_from_peer(&local_peer, manifest.root_cid);
+
+    let search_service = GlobalSearchService::new();
+    let search_request = SearchRequest::new("hello");
+    let _selected = search_service.select_peers(core::slice::from_ref(&local_peer), &search_request);
 
     let startup_status: String = format!(
         "Registry V-Node initialized (syscall SUCCESS = {}, trust_store = {:p})",
