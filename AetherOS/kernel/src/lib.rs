@@ -74,40 +74,40 @@ fn init_memory_and_heap(
     physical_memory_offset: Optional<u64>,
 ) {
     memory::init(memory_regions);
+    let offset = physical_memory_offset
+        .into_option()
+        .expect("[kernel] heap mapping failed: physical_memory_offset is unavailable");
+    arch::x86_64::paging::configure_physical_memory_offset(offset);
     memory::init_virtual_memory_bootstrap();
     kprintln!("[kernel] Memory manager initialized.");
 
-    if let Some(offset) = physical_memory_offset.into_option() {
-        let heap_result = memory::with_frame_allocator(|frame_allocator| {
-            let mut mapper = unsafe { arch::x86_64::paging::init_mapper(x86_64::VirtAddr::new(offset)) };
-            arch::x86_64::paging::map_heap_region(
-                &mut mapper,
-                frame_allocator,
-                x86_64::VirtAddr::new(heap::HEAP_MAPPED_START),
-                heap::HEAP_SIZE,
-            )
-        });
+    let heap_result = memory::with_frame_allocator(|frame_allocator| {
+        let mut mapper = unsafe { arch::x86_64::paging::init_mapper(x86_64::VirtAddr::new(offset)) };
+        arch::x86_64::paging::map_heap_region(
+            &mut mapper,
+            frame_allocator,
+            x86_64::VirtAddr::new(heap::HEAP_MAPPED_START),
+            heap::HEAP_SIZE,
+        )
+    });
 
-        match heap_result {
-            Some(Ok(())) => {
-                // Ordering invariant:
-                // 1) Boot memory map validated and frame allocator initialized.
-                // 2) Active mapper built from confirmed direct-map offset.
-                // 3) Heap pages mapped.
-                // Only after these steps do we expose dynamic page allocation.
-                memory::finalize_allocator_init();
-                heap::init_heap();
-                kprintln!("[kernel] Heap initialized.");
-            }
-            Some(Err(error)) => {
-                panic!("[kernel] heap mapping failed: {}", error);
-            }
-            None => {
-                panic!("[kernel] heap mapping failed: frame allocator unavailable");
-            }
+    match heap_result {
+        Some(Ok(())) => {
+            // Ordering invariant:
+            // 1) Boot memory map validated and frame allocator initialized.
+            // 2) Active mapper built from confirmed direct-map offset.
+            // 3) Heap pages mapped.
+            // Only after these steps do we expose dynamic page allocation.
+            memory::finalize_allocator_init();
+            heap::init_heap();
+            kprintln!("[kernel] Heap initialized.");
         }
-    } else {
-        panic!("[kernel] heap mapping failed: physical_memory_offset is unavailable");
+        Some(Err(error)) => {
+            panic!("[kernel] heap mapping failed: {}", error);
+        }
+        None => {
+            panic!("[kernel] heap mapping failed: frame allocator unavailable");
+        }
     }
 }
 

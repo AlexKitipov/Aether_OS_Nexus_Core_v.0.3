@@ -92,7 +92,31 @@ fn collect_usable_ranges(memory_regions: &'static MemoryRegions) -> alloc::vec::
         usable.push(start..end);
     }
 
-    usable
+    // Bootloader maps are typically ordered, but we must not assume this.
+    // We normalize and merge to avoid double-allocating overlapping frames.
+    usable.sort_unstable_by_key(|r| r.start);
+    let mut normalized: alloc::vec::Vec<Range<u64>> = alloc::vec::Vec::new();
+
+    for range in usable {
+        if let Some(last) = normalized.last_mut() {
+            if range.start <= last.end {
+                if range.end > last.end {
+                    kprintln!(
+                        "[kernel] frame_allocator: merged overlapping usable ranges {:#x}..{:#x} and {:#x}..{:#x}.",
+                        last.start,
+                        last.end,
+                        range.start,
+                        range.end
+                    );
+                    last.end = range.end;
+                }
+                continue;
+            }
+        }
+        normalized.push(range);
+    }
+
+    normalized
 }
 
 // Implement the `FrameAllocator` trait for `BootInfoFrameAllocator`.

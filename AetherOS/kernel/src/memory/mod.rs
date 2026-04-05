@@ -47,6 +47,11 @@ pub fn init(memory_regions: &'static MemoryRegions) {
 /// Finalize virtual-memory bootstrap once bootloader handoff information
 /// (direct-map offset, current CR3 tables) is available.
 pub fn init_virtual_memory_bootstrap() {
+    if crate::arch::x86_64::paging::physical_memory_offset().is_none() {
+        kprintln!(
+            "[kernel] memory WARNING: physical memory offset not configured; using compatibility higher-half bootstrap map."
+        );
+    }
     crate::arch::x86_64::paging::init_bootstrap_mappings(
         crate::arch::x86_64::paging::EARLY_IDENTITY_LIMIT,
     );
@@ -116,6 +121,7 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
     let mut usable_region_count = 0usize;
     let mut usable_bytes = 0usize;
     let mut last_end = 0u64;
+    let mut unknown_region_count = 0usize;
 
     for (index, region) in memory_regions.iter().enumerate() {
         if region.end <= region.start {
@@ -139,9 +145,21 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
         }
         last_end = region.end.max(last_end);
 
-        if region.kind == MemoryRegionKind::Usable {
-            usable_region_count += 1;
-            usable_bytes = usable_bytes.saturating_add((region.end - region.start) as usize);
+        match region.kind {
+            MemoryRegionKind::Usable => {
+                usable_region_count += 1;
+                usable_bytes = usable_bytes.saturating_add((region.end - region.start) as usize);
+            }
+            MemoryRegionKind::UnknownUefi(_) | MemoryRegionKind::UnknownBios(_) => {
+                unknown_region_count += 1;
+                kprintln!(
+                    "[kernel] memory WARNING: unknown region type at #{}, {:#x}..{:#x}; treating as reserved.",
+                    index,
+                    region.start,
+                    region.end
+                );
+            }
+            _ => {}
         }
     }
 
@@ -150,6 +168,12 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
         usable_region_count,
         usable_bytes
     );
+    if unknown_region_count > 0 {
+        kprintln!(
+            "[kernel] memory: {} unknown firmware region(s) excluded from allocation.",
+            unknown_region_count
+        );
+    }
 
     MemoryValidation {
         usable_region_count,

@@ -20,6 +20,7 @@ pub const EARLY_IDENTITY_LIMIT: u64 = 1024 * 1024 * 1024;
 /// Synthetic frame allocator state for early bootstrap components that need
 /// stable "physical" addresses before the full MMU path is implemented.
 static NEXT_FREE_FRAME: AtomicU64 = AtomicU64::new(DMA_PHYS_START);
+static PHYSICAL_MEMORY_OFFSET: AtomicU64 = AtomicU64::new(0);
 
 /// Bootstrap virtual->physical page mappings used by DMA buffers.
 static BOOTSTRAP_TRANSLATIONS: Mutex<BTreeMap<u64, u64>> = Mutex::new(BTreeMap::new());
@@ -70,13 +71,40 @@ pub fn higher_half_to_phys(virt: u64) -> Option<u64> {
 pub fn init_bootstrap_mappings(identity_limit: u64) {
     let capped_limit = identity_limit.min(EARLY_IDENTITY_LIMIT);
     register_virt_mapping(0, 0, capped_limit as usize);
-    register_virt_mapping(KERNEL_VIRT_OFFSET, 0, capped_limit as usize);
+    if let Some(offset) = physical_memory_offset() {
+        register_virt_mapping(offset, 0, capped_limit as usize);
+    } else {
+        register_virt_mapping(KERNEL_VIRT_OFFSET, 0, capped_limit as usize);
+    }
     kprintln!(
-        "[kernel] paging: bootstrap mappings installed for identity [0..{:#x}) and higher-half [{:#x}..{:#x}).",
+        "[kernel] paging: bootstrap mappings installed for identity [0..{:#x}) and offset-based direct map.",
         capped_limit,
-        KERNEL_VIRT_OFFSET,
-        KERNEL_VIRT_OFFSET + capped_limit
     );
+}
+
+/// Persists and validates the physical-memory direct-map offset from BootInfo.
+pub fn configure_physical_memory_offset(offset: u64) {
+    assert!(offset != 0, "physical memory offset must not be zero");
+    validate_canonical_virt(offset);
+    assert!(
+        offset % FRAME_SIZE == 0,
+        "physical memory offset must be 4KiB-aligned"
+    );
+    PHYSICAL_MEMORY_OFFSET.store(offset, Ordering::Release);
+    kprintln!(
+        "[kernel] paging: configured physical memory offset at {:#x}.",
+        offset
+    );
+}
+
+/// Returns the configured physical-memory direct-map offset, if available.
+pub fn physical_memory_offset() -> Option<u64> {
+    let offset = PHYSICAL_MEMORY_OFFSET.load(Ordering::Acquire);
+    if offset == 0 {
+        None
+    } else {
+        Some(offset)
+    }
 }
 
 /// Returns the physical base address of the currently active kernel PML4 table.
@@ -99,6 +127,7 @@ pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPage
         "physical_memory_offset must not be zero for active paging init"
     );
     validate_canonical_virt(physical_memory_offset.as_u64());
+    configure_physical_memory_offset(physical_memory_offset.as_u64());
     let (level_4_table_frame, _) = Cr3::read();
     let phys = level_4_table_frame.start_address();
     let virt = physical_memory_offset + phys.as_u64();
@@ -214,6 +243,12 @@ pub fn virt_to_phys(virt_addr: u64) -> u64 {
     let mappings = BOOTSTRAP_TRANSLATIONS.lock();
     if let Some(phys_base) = mappings.get(&page_base) {
         return *phys_base + page_offset;
+    }
+
+    if let Some(offset) = physical_memory_offset() {
+        if virt_addr >= offset {
+            return virt_addr - offset;
+        }
     }
 
     virt_addr

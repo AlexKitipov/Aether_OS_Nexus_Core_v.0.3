@@ -87,16 +87,25 @@ pub fn get_phys_addr(handle: u64, physical_memory_offset: u64) -> Option<u64> {
     let buffers = DMA_BUFFERS.lock();
     buffers.get(&handle).map(|buf| {
         let virt_addr = buf.bytes.as_ptr() as u64;
-        let translated = if physical_memory_offset == 0 || virt_addr < physical_memory_offset {
+        let effective_offset = paging::physical_memory_offset().unwrap_or(physical_memory_offset);
+        if effective_offset != physical_memory_offset {
+            kprintln!(
+                "[kernel] dma: caller offset {:#x} differs from configured offset {:#x}; using configured value.",
+                physical_memory_offset,
+                effective_offset
+            );
+        }
+
+        let translated = if effective_offset == 0 || virt_addr < effective_offset {
             kprintln!(
                 "[kernel] dma: invalid direct-map offset {:#x} for handle {} (virt {:#x}).",
-                physical_memory_offset,
+                effective_offset,
                 handle,
                 virt_addr
             );
             buf.phys_base
         } else {
-            paging::virt_to_phys_with_offset(virt_addr, physical_memory_offset).as_u64()
+            paging::virt_to_phys_with_offset(virt_addr, effective_offset).as_u64()
         };
 
         if translated != buf.phys_base {
