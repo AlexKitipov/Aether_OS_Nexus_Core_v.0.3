@@ -2,10 +2,6 @@
 # Allow building from `AetherOS/kernel` without requiring an explicit --target.
 target = "../.cargo/aetheros-x86_64.json"
 
-[alias]
-# Compatibility alias for users that still invoke `cargo bootimage`.
-bootimage = "build --release --target ../.cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem"
-
 [env]
 # Keep host shell flags from leaking into dependency builds.
 RUSTFLAGS = { value = "", force = true }
