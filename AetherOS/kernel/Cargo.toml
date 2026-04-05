@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
+# Keep a legacy `bootloader` dependency so `cargo bootimage` can resolve
+# its expected crate, while the project runtime flow remains on `bootloader_api`.
+bootloader = { version = "0.11.15", default-features = false, optional = true }
 bootloader_api = { workspace = true, default-features = false }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = { version = "0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
@@ -19,14 +22,6 @@ sha2 = { version = "0.10", default-features = false }
 # so the hand-off `BootInfo` ABI/layout stays synchronized across crates.
 bootloader = { workspace = true, default-features = false }
 
-[dev-dependencies]
-# Keep `bootimage` aligned with the 0.11 bootloader line for contributors that
-# still use `cargo bootimage` locally while debugging.
-#
-# Older `bootimage` versions can fail against newer `bootloader` crates with:
-#   "No `package.metadata.bootloader.target` key found in Cargo.toml of bootloader"
-bootimage = "0.11"
-
 [package.metadata.bootloader]
 # Legacy `cargo-bootimage` compatibility:
 # tools in this family expect this key to be present when resolving the kernel
@@ -38,3 +33,4 @@ target = "../.cargo/aetheros-x86_64.json"
 default = ["alloc"]
 alloc = []
 bare_metal = []
+bootimage_compat = ["dep:bootloader"]
