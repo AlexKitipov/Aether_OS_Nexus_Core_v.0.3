@@ -17,40 +17,48 @@ static mut IDT: InterruptDescriptorTable = InterruptDescriptorTable::new();
 /// Initializes the IDT with core CPU exception handlers and loads it via `lidt`.
 pub fn init() {
     interrupts::without_interrupts(|| unsafe {
-        // SAFETY: Early boot runs on a single core before task scheduling starts.
+        // Early boot runs on a single core before task scheduling starts.
         // We fully populate CPU exception entries before `lidt` so no interrupt
         // can observe partially initialized descriptors.
         kprintln!("[kernel] idt: Initializing IDT...");
 
-        IDT.breakpoint.set_handler_fn(breakpoint_handler);
-        IDT.page_fault.set_handler_fn(page_fault_handler);
-        IDT.general_protection_fault
+        let idt = &mut *core::ptr::addr_of_mut!(IDT);
+
+        idt.breakpoint.set_handler_fn(breakpoint_handler);
+        idt.page_fault.set_handler_fn(page_fault_handler);
+        idt.general_protection_fault
             .set_handler_fn(general_protection_fault_handler);
-        IDT.double_fault
+        // SAFETY: `DOUBLE_FAULT_IST_INDEX` points to an IST slot initialized by
+        // `gdt::init()` before IDT setup, so loading this stack index is valid.
+        idt.double_fault
             .set_handler_fn(double_fault_handler)
             .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
-        IDT[0x80]
+        idt[0x80]
             .set_handler_fn(syscall_interrupt_handler)
             .set_privilege_level(PrivilegeLevel::Ring3);
-        IDT.load();
+        // Safety invariant: `lidt` is executed only after all required entries
+        // are configured, and while interrupts are disabled.
+        idt.load();
         kprintln!("[kernel] idt: IDT loaded.");
-    });
+    })
 }
 
 /// Registers an external IRQ handler into the IDT at a given vector.
 pub fn set_irq_handler(vector: u8, handler: extern "x86-interrupt" fn(InterruptStackFrame)) {
     interrupts::without_interrupts(|| unsafe {
-        // SAFETY: IDT is a single mutable static. We only mutate it with
-        // interrupts disabled to avoid observing partially written entries.
-        IDT[vector as usize].set_handler_fn(handler);
+        // We only mutate the table with interrupts disabled to avoid observing
+        // partially written entries.
+        let idt = &mut *core::ptr::addr_of_mut!(IDT);
+        idt[vector as usize].set_handler_fn(handler);
     });
 }
 
 /// Reloads IDT register from the global table after descriptor updates.
 pub fn reload() {
     interrupts::without_interrupts(|| unsafe {
-        // SAFETY: `IDT` points to a static table with `'static` lifetime.
-        IDT.load();
+        // The descriptor table has `'static` lifetime and can be safely reloaded.
+        let idt = &*core::ptr::addr_of!(IDT);
+        idt.load();
     });
 }
 
