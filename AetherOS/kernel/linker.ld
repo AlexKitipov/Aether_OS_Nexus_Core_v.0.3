@@ -24,12 +24,20 @@ SECTIONS
     . = ORIGIN(RAM);
     PROVIDE(__kernel_start = .);
 
-    /* Entry trampoline must remain at the very beginning of .text. */
-    .text : ALIGN(4K)
+    /*
+     * Keep the entry trampoline in its own section at image start so `_start`
+     * remains the first executable bytes regardless of compiler section naming.
+     */
+    .text.start : ALIGN(16)
     {
         PROVIDE(__text_start = .);
         KEEP(*(.text._start))
         KEEP(*(.text._start.*))
+    } > RAM
+
+    /* All remaining executable code follows the entry stub. */
+    .text : ALIGN(4K)
+    {
         *(.text .text.*)
         PROVIDE(__text_end = .);
     } > RAM
@@ -91,6 +99,24 @@ SECTIONS
     . = ALIGN(4K);
     PROVIDE(__kernel_end = .);
 
+    /* Compatibility aliases for low-level code expecting unprefixed symbols. */
+    PROVIDE(kernel_start = __kernel_start);
+    PROVIDE(kernel_end = __kernel_end);
+    PROVIDE(text_start = __text_start);
+    PROVIDE(text_end = __text_end);
+    PROVIDE(rodata_start = __rodata_start);
+    PROVIDE(rodata_end = __rodata_end);
+    PROVIDE(data_start = __data_start);
+    PROVIDE(data_end = __data_end);
+    PROVIDE(bss_start = __bss_start);
+    PROVIDE(bss_end = __bss_end);
+    PROVIDE(stack_start = __stack_start);
+    PROVIDE(stack_end = __stack_end);
+    PROVIDE(page_tables_start = __page_tables_start);
+    PROVIDE(page_tables_end = __page_tables_end);
+    PROVIDE(heap_start = __heap_start);
+    PROVIDE(heap_end = __heap_end);
+
     /DISCARD/ :
     {
         *(.eh_frame .eh_frame.*)
@@ -99,3 +125,6 @@ SECTIONS
     }
 
 }
+
+/* Fail the link if any section spills out of the RAM placement window. */
+ASSERT(__kernel_end <= ORIGIN(RAM) + LENGTH(RAM), "Kernel image exceeds RAM region");
