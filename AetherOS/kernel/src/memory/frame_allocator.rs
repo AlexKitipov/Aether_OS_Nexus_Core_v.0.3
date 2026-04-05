@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use crate::kprintln;
-use bootloader::info::{MemoryRegionKind, MemoryRegions};
+use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
 use core::ops::Range;
 use x86_64::structures::paging::{FrameAllocator, PageSize, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;

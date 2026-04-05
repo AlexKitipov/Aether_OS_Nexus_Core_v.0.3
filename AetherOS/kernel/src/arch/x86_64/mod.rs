@@ -1,6 +1,6 @@
 // kernel/src/arch/x86_64/mod.rs
 
-use bootloader::BootInfo;
+use bootloader_api::BootInfo;
 
 use crate::{
     drivers::vga_text,

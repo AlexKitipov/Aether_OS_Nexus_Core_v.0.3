@@ -1,4 +1,5 @@
 SHELL := /usr/bin/env bash
+KERNEL_DIR := kernel
 
 .PHONY: help kernel all initrd run test clean
 

@@ -2,7 +2,7 @@ pub mod frame_allocator;
 pub mod page_allocator;
 
 use crate::kprintln;
-use bootloader::info::{MemoryRegionKind, MemoryRegions};
+use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::Mutex;
 use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
