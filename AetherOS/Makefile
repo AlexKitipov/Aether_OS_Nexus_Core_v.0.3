@@ -12,7 +12,11 @@ help:
 	@echo "  make clean   - Cargo clean workspace"
 
 kernel:
-	./scripts/build_kernel_image.sh
+	@echo "Building kernel (pinned nightly flow)"
+	# Some tool wrappers and CI shells invoke `make` with no manifest context,
+	# which can trigger `CARGO_MANIFEST_DIR` warnings in legacy cargo-bootimage
+	# setups. Export a stable kernel manifest path for deterministic behavior.
+	CARGO_MANIFEST_DIR="$(CURDIR)/$(KERNEL_DIR)" ./scripts/build_kernel_image.sh
 
 all:
 	./scripts/build_all.sh

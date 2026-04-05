@@ -19,6 +19,14 @@ sha2 = { version = "0.10", default-features = false }
 # so the hand-off `BootInfo` ABI/layout stays synchronized across crates.
 bootloader = { workspace = true, default-features = false }
 
+[dev-dependencies]
+# Keep `bootimage` aligned with the 0.11 bootloader line for contributors that
+# still use `cargo bootimage` locally while debugging.
+#
+# Older `bootimage` versions can fail against newer `bootloader` crates with:
+#   "No `package.metadata.bootloader.target` key found in Cargo.toml of bootloader"
+bootimage = "0.11"
+
 [package.metadata.bootloader]
 # Legacy `cargo-bootimage` compatibility:
 # tools in this family expect this key to be present when resolving the kernel
