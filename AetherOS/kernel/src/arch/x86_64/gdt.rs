@@ -24,7 +24,13 @@ pub struct Selectors {
     pub tss_selector: SegmentSelector,
 }
 
-static mut DOUBLE_FAULT_STACK: [u8; DOUBLE_FAULT_STACK_SIZE] = [0; DOUBLE_FAULT_STACK_SIZE];
+#[repr(align(16))]
+struct DoubleFaultStack([u8; DOUBLE_FAULT_STACK_SIZE]);
+
+// Keep IST memory 16-byte aligned. x86_64 interrupt/trap entry itself is not
+// required to maintain SysV alignment, but handlers and called Rust code may
+// still rely on aligned stack accesses.
+static mut DOUBLE_FAULT_STACK: DoubleFaultStack = DoubleFaultStack([0; DOUBLE_FAULT_STACK_SIZE]);
 static mut TSS: Option<TaskStateSegment> = None;
 static mut GDT: Option<(GlobalDescriptorTable, Selectors)> = None;
 
@@ -35,7 +41,10 @@ fn ensure_gdt() {
         }
 
         let mut tss = TaskStateSegment::new();
-        let stack_start = VirtAddr::from_ptr(addr_of!(DOUBLE_FAULT_STACK));
+        // SAFETY: `addr_of!` avoids creating references to the mutable static.
+        // We then convert the raw address of the backing byte array into a
+        // virtual address and point IST to the high end because stacks grow down.
+        let stack_start = VirtAddr::from_ptr(addr_of!(DOUBLE_FAULT_STACK.0));
         let stack_end = stack_start + DOUBLE_FAULT_STACK_SIZE;
         tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = stack_end;
         TSS = Some(tss);
