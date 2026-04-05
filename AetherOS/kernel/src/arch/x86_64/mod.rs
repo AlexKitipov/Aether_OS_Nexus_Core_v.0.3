@@ -33,6 +33,10 @@ pub fn init(boot_info: &'static mut BootInfo) {
 
     // Keep the global memory subsystem in sync for later dynamic allocation paths.
     memory::init(&boot_info.memory_regions);
+    if let Some(physical_memory_offset) = boot_info.physical_memory_offset.into_option() {
+        paging::configure_physical_memory_offset(physical_memory_offset);
+    }
+    memory::init_virtual_memory_bootstrap();
 
     // 5) Virtual memory bootstrap + direct-map mapper (when provided)
     paging::init();
