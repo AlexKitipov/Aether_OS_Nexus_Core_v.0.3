@@ -6,7 +6,10 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
-bootloader_api = { workspace = true, default-features = false }
+# Legacy cargo-bootimage wrappers look for a dependency literally named
+# `bootloader`. Alias that name to bootloader_api so old tooling can detect
+# the expected key without pulling the deprecated crate/runtime path.
+bootloader = { package = "bootloader_api", version = "0.11.15", default-features = false }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = { version = "0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
 conquer-once = { version = "0.4.0", default-features = false }

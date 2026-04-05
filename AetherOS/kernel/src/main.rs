@@ -8,7 +8,7 @@ use core::panic::PanicInfo;
 #[cfg(target_os = "none")]
 use core::arch::global_asm;
 #[cfg(target_os = "none")]
-use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
+use bootloader::BootInfo; // Import BootInfo from the bootloader_api crate
 use aetheros_kernel::{init, task};
 
 #[cfg(target_os = "none")]
