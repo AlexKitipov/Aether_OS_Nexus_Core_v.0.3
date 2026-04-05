@@ -70,12 +70,14 @@ pub unsafe extern "C" fn init_stack() {
 #[no_mangle]
 #[cfg(target_os = "none")]
 pub unsafe extern "C" fn kernel_entry(boot_info_ptr: *mut BootInfo) -> ! {
-    // SAFETY: Bootloader guarantees a valid, unique BootInfo pointer for early boot.
-    // We immediately create one mutable reference and keep it scoped to this function.
+    // SAFETY: bootloader_api's handoff contract guarantees:
+    // - `boot_info_ptr` is non-null and points to a valid BootInfo.
+    // - The kernel receives unique mutable access during early boot.
+    // We convert exactly once here and do not create competing mutable aliases.
     let boot_info = unsafe {
-        boot_info_ptr
-            .as_mut()
+        core::ptr::NonNull::new(boot_info_ptr)
             .expect("bootloader contract violated: BootInfo pointer was null")
+            .as_mut()
     };
 
     // BootInfo layout assumptions (bootloader_api 0.11.15):
