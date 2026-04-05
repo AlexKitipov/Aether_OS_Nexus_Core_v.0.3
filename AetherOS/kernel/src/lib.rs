@@ -6,7 +6,7 @@ extern crate alloc;
 extern crate core;
 
 
-use bootloader::info::{FrameBuffer, MemoryRegions, Optional};
+use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
 
 pub mod arch;
 pub mod drivers;

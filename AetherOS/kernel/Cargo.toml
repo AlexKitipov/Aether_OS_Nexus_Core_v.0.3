@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bootloader = "0.11.15"
 serde = { workspace = true }
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
-bootloader = { workspace = true }
+bootloader_api = { workspace = true }
 x86_64 = { workspace = true }
 spin = { workspace = true }
 conquer-once = { workspace = true }
