@@ -37,28 +37,29 @@ echo "Built kernel artifact: ${KERNEL_PATH}"
 echo "[build_kernel_image] validating section memory map"
 if command -v llvm-objdump >/dev/null 2>&1; then
   section_table="$(llvm-objdump -h "${KERNEL_PATH}")"
+  text_start_addr="$(awk '$2==".text.start"{print $4}' <<<"${section_table}" | head -n1)"
   text_addr="$(awk '$2==".text"{print $4}' <<<"${section_table}" | head -n1)"
   rodata_addr="$(awk '$2==".rodata"{print $4}' <<<"${section_table}" | head -n1)"
   data_addr="$(awk '$2==".data"{print $4}' <<<"${section_table}" | head -n1)"
   bss_addr="$(awk '$2==".bss"{print $4}' <<<"${section_table}" | head -n1)"
 
-  if [[ -z "${text_addr}" || -z "${rodata_addr}" || -z "${data_addr}" || -z "${bss_addr}" ]]; then
-    echo "[build_kernel_image] ERROR: missing one or more required sections (.text/.rodata/.data/.bss)" >&2
+  if [[ -z "${text_start_addr}" || -z "${text_addr}" || -z "${rodata_addr}" || -z "${data_addr}" || -z "${bss_addr}" ]]; then
+    echo "[build_kernel_image] ERROR: missing one or more required sections (.text.start/.text/.rodata/.data/.bss)" >&2
     exit 1
   fi
 
-  expected_text_addr="00100000"
-  if ! (( 16#${text_addr} == 16#${expected_text_addr} )); then
-    echo "[build_kernel_image] ERROR: .text starts at 0x${text_addr}, expected 0x${expected_text_addr}" >&2
+  expected_text_start_addr="00100000"
+  if ! (( 16#${text_start_addr} == 16#${expected_text_start_addr} )); then
+    echo "[build_kernel_image] ERROR: .text.start starts at 0x${text_start_addr}, expected 0x${expected_text_start_addr}" >&2
     exit 1
   fi
 
-  if ! (( 16#${text_addr} < 16#${rodata_addr} && 16#${rodata_addr} < 16#${data_addr} && 16#${data_addr} <= 16#${bss_addr} )); then
-    echo "[build_kernel_image] ERROR: section order is invalid (.text -> .rodata -> .data -> .bss)" >&2
+  if ! (( 16#${text_start_addr} <= 16#${text_addr} && 16#${text_addr} < 16#${rodata_addr} && 16#${rodata_addr} < 16#${data_addr} && 16#${data_addr} <= 16#${bss_addr} )); then
+    echo "[build_kernel_image] ERROR: section order is invalid (.text.start -> .text -> .rodata -> .data -> .bss)" >&2
     exit 1
   fi
 
-  echo "[build_kernel_image] memory layout OK: .text=0x${text_addr}, .rodata=0x${rodata_addr}, .data=0x${data_addr}, .bss=0x${bss_addr}"
+  echo "[build_kernel_image] memory layout OK: .text.start=0x${text_start_addr}, .text=0x${text_addr}, .rodata=0x${rodata_addr}, .data=0x${data_addr}, .bss=0x${bss_addr}"
 else
   echo "[build_kernel_image] WARNING: llvm-objdump not found, skipping memory map validation" >&2
 fi
