@@ -15,6 +15,14 @@ use aetheros_kernel::{init, task};
 const KERNEL_BOOT_STACK_SIZE: usize = 4096 * 4;
 
 #[cfg(target_os = "none")]
+const _: () = {
+    // SysV x86_64 requires 16-byte stack alignment at call boundaries.
+    // Keep the static boot stack size a multiple of 16 so the computed
+    // stack-top can always be aligned without crossing the allocation.
+    assert!(KERNEL_BOOT_STACK_SIZE % 16 == 0);
+};
+
+#[cfg(target_os = "none")]
 global_asm!(
     r#"
     .section .text._start, "ax"
@@ -26,10 +34,13 @@ _start:
     # - rbx is callee-saved, so we can carry BootInfo while switching stacks.
     # - We must not call into Rust before setting rsp because Rust functions can
     #   legally emit a prologue that touches stack memory.
+    # - SysV ABI requires a cleared direction flag on function entry.
     # - SysV ABI requires 16-byte alignment before a `call`.
     mov rbx, rdi
+    cld
     lea rsp, [{stack} + {size}]
     and rsp, -16
+    xor rbp, rbp
     mov rdi, rbx
     call kernel_entry
 1:
@@ -41,12 +52,13 @@ _start:
 );
 
 #[cfg(target_os = "none")]
-#[repr(align(16))]
+#[repr(C, align(16))]
 struct KernelStack([u8; KERNEL_BOOT_STACK_SIZE]);
 
 #[cfg(target_os = "none")]
 #[no_mangle]
 #[link_section = ".bss.stack"]
+#[used]
 static mut STACK: KernelStack = KernelStack([0; KERNEL_BOOT_STACK_SIZE]);
 
 /// Kernel entry point in `no_std`/`no_main` mode.
