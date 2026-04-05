@@ -11,6 +11,7 @@ pub mod well_known {
 
     pub const UI_COMPOSITOR: ChannelId = 0x0101;
     pub const UI_WEBVIEW: ChannelId = 0x0102;
+    pub const DEV_INTERFACE: ChannelId = 0x010F;
 
     pub const VFS_SERVICE: ChannelId = 0x0201;
     pub const MAIL_SERVICE: ChannelId = 0x0202;
@@ -22,7 +23,7 @@ pub mod well_known {
 
     #[must_use]
     pub const fn is_ui(channel_id: ChannelId) -> bool {
-        matches!(channel_id, UI_COMPOSITOR | UI_WEBVIEW)
+        matches!(channel_id, UI_COMPOSITOR | UI_WEBVIEW | DEV_INTERFACE)
     }
 
     #[must_use]

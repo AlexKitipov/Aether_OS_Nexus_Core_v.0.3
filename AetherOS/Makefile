@@ -12,23 +12,28 @@ help:
 	@echo "  make clean   - Cargo clean workspace"
 
 kernel:
+	@echo "[diag][stage=make.kernel] launching kernel build script"
 	@echo "Building kernel (pinned nightly flow)"
 	# Some tool wrappers and CI shells invoke `make` with no manifest context,
 	# which can trigger `CARGO_MANIFEST_DIR` warnings in legacy cargo-bootimage
 	# setups. Export a stable kernel manifest path for deterministic behavior.
-	CARGO_MANIFEST_DIR="$(CURDIR)/$(KERNEL_DIR)" ./scripts/build_kernel_image.sh
+	CARGO_MANIFEST_DIR="$(CURDIR)/$(KERNEL_DIR)" bash ./scripts/build_kernel_image.sh
 
 all:
-	./scripts/build_all.sh
+	@echo "[diag][stage=make.all] launching full workspace build script"
+	bash ./scripts/build_all.sh
 
 initrd:
-	./scripts/build_initrd.sh
+	@echo "[diag][stage=make.initrd] building initrd archive"
+	bash ./scripts/build_initrd.sh
 
 run: kernel
-	./scripts/run_qemu.sh
+	@echo "[diag][stage=make.run] launching QEMU runtime"
+	bash ./scripts/run_qemu.sh
 
 test: kernel
-	./scripts/test_qemu.sh
+	@echo "[diag][stage=make.test] launching QEMU smoke test"
+	bash ./scripts/test_qemu.sh
 
 clean:
 	cargo clean

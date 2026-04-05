@@ -1,7 +1,7 @@
 extern crate alloc;
 
 use alloc::vec::Vec;
-use bootloader_api::info::{FrameBuffer, FrameBufferInfo, PixelFormat};
+use bootloader::info::{FrameBuffer, FrameBufferInfo, PixelFormat};
 use spin::Mutex;
 
 use crate::device::{Capability, CapabilitySet, Device, DeviceId, DeviceKind, IoDevice, IoResult, Rights, DEVICE_FRAMEBUFFER};

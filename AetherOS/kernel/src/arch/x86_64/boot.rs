@@ -7,7 +7,7 @@ use core::arch::x86_64::__cpuid;
 #[cfg(target_arch = "x86_64")]
 use core::arch::global_asm;
 
-use bootloader_api::BootInfo;
+use bootloader::BootInfo;
 
 use super::{gdt, idt, paging};
 use crate::{heap, interrupts, memory};
@@ -279,13 +279,13 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
 
     {
         let physical_memory_offset = x86_64::VirtAddr::new(physical_memory_offset);
-        unsafe {
-            let _ = paging::init_mapper(physical_memory_offset);
-        }
-        kprintln!("[kernel] boot: Active mapper initialized from direct map offset.");
-
         let heap_result = memory::with_frame_allocator(|frame_allocator| {
+            // Mapping model used by diagnostics/interface tooling:
+            // 1) Early identity range [0..EARLY_IDENTITY_LIMIT) for bootstrap probes.
+            // 2) Bootloader-provided direct map at `physical_memory_offset + phys`.
+            // 3) Kernel heap mapped in higher-half virtual space.
             let mut mapper = unsafe { paging::init_mapper(physical_memory_offset) };
+            kprintln!("[kernel] boot: Active mapper initialized from direct map offset.");
             paging::map_heap_region(
                 &mut mapper,
                 frame_allocator,

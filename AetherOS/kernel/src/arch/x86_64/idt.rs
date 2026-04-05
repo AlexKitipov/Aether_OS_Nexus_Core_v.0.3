@@ -20,6 +20,12 @@ pub fn init() {
         // Early boot runs on a single core before task scheduling starts.
         // We fully populate CPU exception entries before `lidt` so no interrupt
         // can observe partially initialized descriptors.
+        //
+        // Diagnostic vector contract:
+        // - CPU exceptions (architectural fixed vectors) are always present.
+        // - 0x80 is reserved for software syscall compatibility during bring-up.
+        // - PIC IRQ vectors (32-47) are installed later by `interrupts::init()`
+        //   and then this table is reloaded before global interrupts are enabled.
         kprintln!("[kernel] idt: Initializing IDT...");
 
         let idt = &mut *core::ptr::addr_of_mut!(IDT);

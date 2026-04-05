@@ -12,6 +12,11 @@ if [[ ! -d "${ROOTFS_DIR}" ]]; then
   exit 1
 fi
 
+if ! command -v cpio >/dev/null 2>&1; then
+  echo "[diag][stage=build_initrd.archive][status=error] cpio is required but not installed" >&2
+  exit 1
+fi
+
 (
   cd "${ROOTFS_DIR}"
   find . -print0 | cpio --null -o -H newc > "${OUT_FILE}"

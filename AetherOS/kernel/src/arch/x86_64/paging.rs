@@ -70,6 +70,12 @@ pub fn higher_half_to_phys(virt: u64) -> Option<u64> {
 /// Installs bootstrap software translations for identity + higher-half mapping.
 pub fn init_bootstrap_mappings(identity_limit: u64) {
     let capped_limit = identity_limit.min(EARLY_IDENTITY_LIMIT);
+    if capped_limit == 0 {
+        kprintln!(
+            "[kernel] paging WARNING: requested bootstrap mapping limit was zero; no identity/direct-map range installed."
+        );
+        return;
+    }
     register_virt_mapping(0, 0, capped_limit as usize);
     if let Some(offset) = physical_memory_offset() {
         register_virt_mapping(offset, 0, capped_limit as usize);
@@ -90,6 +96,13 @@ pub fn configure_physical_memory_offset(offset: u64) {
         offset % FRAME_SIZE == 0,
         "physical memory offset must be 4KiB-aligned"
     );
+    let existing = PHYSICAL_MEMORY_OFFSET.load(Ordering::Acquire);
+    if existing != 0 && existing != offset {
+        panic!(
+            "physical memory offset reconfigured from {:#x} to {:#x}; this risks double-offset bugs",
+            existing, offset
+        );
+    }
     PHYSICAL_MEMORY_OFFSET.store(offset, Ordering::Release);
     kprintln!(
         "[kernel] paging: configured physical memory offset at {:#x}.",
@@ -132,7 +145,21 @@ pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPage
     let phys = level_4_table_frame.start_address();
     let virt = physical_memory_offset + phys.as_u64();
     let page_table_ptr: *mut PageTable = virt.as_mut_ptr();
-    let level_4_table = &mut *page_table_ptr;
+
+    assert!(
+        !page_table_ptr.is_null(),
+        "direct-map translation produced a null PML4 pointer"
+    );
+    assert!(
+        (page_table_ptr as usize) % core::mem::align_of::<PageTable>() == 0,
+        "direct-map translation produced a misaligned PML4 pointer"
+    );
+
+    // SAFETY: The caller guarantees `physical_memory_offset` is a valid direct map
+    // for all physical frames for the full `'static` mapper lifetime. CR3 always
+    // points at a 4KiB-aligned active PML4 frame, and the checks above reject
+    // null/misaligned translations before creating a mutable reference.
+    let level_4_table = unsafe { &mut *page_table_ptr };
     OffsetPageTable::new(level_4_table, physical_memory_offset)
 }
 
@@ -258,6 +285,11 @@ pub fn virt_to_phys(virt_addr: u64) -> u64 {
 /// physical memory offset.
 pub fn virt_to_phys_with_offset(virt: u64, offset: u64) -> PhysAddr {
     assert!(offset != 0, "physical memory offset must not be zero");
+    validate_canonical_virt(offset);
+    assert!(
+        offset % FRAME_SIZE == 0,
+        "physical memory offset must be 4KiB-aligned"
+    );
     assert!(
         virt >= offset,
         "virtual address {virt:#x} is below physical memory offset {offset:#x}"

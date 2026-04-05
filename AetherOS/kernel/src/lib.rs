@@ -6,7 +6,7 @@ extern crate alloc;
 extern crate core;
 
 
-use bootloader_api::info::{FrameBuffer, MemoryRegions, Optional};
+use bootloader::info::{FrameBuffer, MemoryRegions, Optional};
 
 pub mod arch;
 pub mod drivers;
@@ -29,6 +29,7 @@ pub mod usercopy;
 pub mod config;
 pub mod network;
 pub mod runtime;
+pub mod dev_interface;
 pub mod snapshot_engine;
 
 /// Initialize all kernel subsystems in a deterministic startup order.
@@ -37,6 +38,15 @@ pub fn init(
     framebuffer: Option<&'static mut FrameBuffer>,
     physical_memory_offset: Optional<u64>,
 ) {
+    // Responsiveness lifecycle:
+    // - interrupts disabled during descriptor/controller setup
+    // - runtime subsystems initialized with deterministic state
+    // - interrupts enabled only after scheduler + IPC paths are ready
+    //
+    // Keeping this boundary explicit lets higher-level tooling reason about
+    // "pre-responsive" vs "responsive" kernel phases.
+    x86_64::instructions::interrupts::disable();
+
     init_console(framebuffer);
 
     gdt::init();
@@ -129,6 +139,9 @@ fn init_runtime_subsystems() {
     kprintln!("[kernel] Capability system initialized.");
     runtime::init();
     kprintln!("[kernel] Runtime services initialized.");
+
+    dev_interface::init();
+    kprintln!("[kernel] Developer interface bridge initialized.");
 
     network::init();
     kprintln!("[kernel] Network stack initialized.");

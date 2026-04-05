@@ -30,23 +30,32 @@ unsafe fn unmask_irq(irq: u8) {
 /// Initializes hardware IRQ handling:
 /// - remaps/initializes PIC
 /// - installs IRQ handlers in the IDT
+/// - configures PIT heartbeat source
 /// - unmasks required IRQ lines
 pub fn init() {
-    // Ordering assumptions:
-    // 1) `crate::idt::init()` already installed CPU exception handlers and loaded IDT.
-    // 2) IF flag is still cleared at this stage, so IRQ vectors can be patched safely.
+    // Interrupt lifecycle contract used by kernel tooling:
+    // 1) IF=0 while we wire PIC + IDT vectors (no asynchronous IRQ delivery yet).
+    // 2) Required handlers are installed and IDT is reloaded (`lidt`).
+    // 3) Timer source is configured.
+    // 4) Only then do we unmask specific IRQ lines.
+    //
+    // Global `sti` is still deferred to top-level kernel init, after runtime
+    // subsystems are ready to react to timer-driven rescheduling.
     unsafe {
         pic::remap();
         kprintln!("[kernel] interrupts: PIC remapped to vectors 32-47.");
     }
 
-    crate::timer::init();
-    kprintln!("[kernel] interrupts: PIT initialized.");
-
     idt::set_irq_handler(irq_vector(IRQ_TIMER), timer::handler);
     idt::set_irq_handler(irq_vector(IRQ_KEYBOARD), keyboard::handler);
     idt::reload();
     kprintln!("[kernel] interrupts: IDT reloaded after IRQ handler installation.");
+
+    // PIT drives the scheduler heartbeat and time-based runtime metrics.
+    // We configure it after vector wiring so future diagnostics can assume
+    // timer IRQs always land in a valid IDT entry once they are unmasked.
+    crate::timer::init();
+    kprintln!("[kernel] interrupts: PIT initialized.");
 
     unsafe {
         unmask_irq(IRQ_TIMER);

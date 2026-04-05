@@ -13,10 +13,20 @@ members = [
 edition = "2021"
 
 [workspace.dependencies]
-serde = { version = "1.0", default-features = false, features = ["alloc", "derive"] }
-bootloader_api = { version = "0.11.15", default-features = false }
-postcard = { version = "1.1.3", default-features = false, features = ["alloc"] }
-linked_list_allocator = { version = "0.10.5", default-features = false, features = ["use_spin"] }
+serde = { version = "=1.0.227", default-features = false, features = ["alloc", "derive"] }
+# Keep both names pinned to the exact same bootloader_api release:
+# - `bootloader_api` is used directly by some crates/tools.
+# - `bootloader` is a compatibility alias expected by legacy bootimage flows.
+# Declaring both here prevents accidental version drift in member crates.
+bootloader = { package = "bootloader_api", version = "=0.11.15", default-features = false }
+bootloader_api = { version = "=0.11.15", default-features = false }
+postcard = { version = "=1.1.3", default-features = false, features = ["alloc"] }
+linked_list_allocator = { version = "=0.10.5", default-features = false, features = ["use_spin"] }
+x86_64 = { version = "=0.14.13", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
+spin = { version = "=0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
+conquer-once = { version = "=0.4.0", default-features = false }
+sha2 = { version = "=0.10.9", default-features = false }
+smoltcp = { version = "=0.8.2", default-features = false, features = ["alloc", "proto-ipv4"] }
 
 [workspace.metadata]
 forbid-std = true

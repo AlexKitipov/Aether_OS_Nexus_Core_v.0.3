@@ -26,13 +26,16 @@ SECTIONS
 
     /*
      * Keep the entry trampoline in its own section at image start so `_start`
-     * remains the first executable bytes regardless of compiler section naming.
+     * is the first executable bytes in both the ELF and flat image views.
+     * Tooling can treat this as the canonical control-flow root symbol.
      */
-    .text.start : ALIGN(16)
+    .text._start : ALIGN(16)
     {
         PROVIDE(__text_start = .);
+        PROVIDE(__entry_start = .);
         KEEP(*(.text._start))
         KEEP(*(.text._start.*))
+        PROVIDE(__entry_end = .);
     } > RAM
 
     /* All remaining executable code follows the entry stub. */
@@ -69,6 +72,7 @@ SECTIONS
         . = ALIGN(16);
         PROVIDE(__stack_start = .);
         KEEP(*(.bss.stack))
+        . = ALIGN(16);
         PROVIDE(__stack_end = .);
 
         . = ALIGN(4K);
@@ -79,7 +83,10 @@ SECTIONS
         PROVIDE(__bss_end = .);
     } > RAM
 
-    /* Optional page-aligned custom sections used by architecture code. */
+    /*
+     * Optional page-aligned custom sections used by architecture code.
+     * These are `NOLOAD` so they remain zeroed diagnostics-friendly regions.
+     */
     .page_tables (NOLOAD) : ALIGN(4K)
     {
         PROVIDE(__page_tables_start = .);
@@ -102,6 +109,8 @@ SECTIONS
     /* Compatibility aliases for low-level code expecting unprefixed symbols. */
     PROVIDE(kernel_start = __kernel_start);
     PROVIDE(kernel_end = __kernel_end);
+    PROVIDE(entry_start = __entry_start);
+    PROVIDE(entry_end = __entry_end);
     PROVIDE(text_start = __text_start);
     PROVIDE(text_end = __text_end);
     PROVIDE(rodata_start = __rodata_start);
@@ -128,3 +137,21 @@ SECTIONS
 
 /* Fail the link if any section spills out of the RAM placement window. */
 ASSERT(__kernel_end <= ORIGIN(RAM) + LENGTH(RAM), "Kernel image exceeds RAM region");
+
+/* Section ordering checks: executable -> read-only -> writable -> zeroed. */
+ASSERT(__entry_start == __kernel_start, "Entry section is not at image start");
+ASSERT(__entry_end <= __text_end, "Entry section is not within executable text");
+ASSERT(__text_end <= __rodata_start, ".text overlaps .rodata");
+ASSERT(__rodata_end <= __data_start, ".rodata overlaps .data");
+ASSERT(__data_end <= __bss_start, ".data overlaps .bss");
+ASSERT(__bss_end <= __page_tables_start, ".bss overlaps .page_tables");
+ASSERT(__page_tables_end <= __heap_start, ".page_tables overlaps .heap");
+ASSERT(__stack_start >= __bss_start && __stack_end <= __bss_end, "Boot stack is outside .bss");
+
+/* x86_64 ABI + paging alignment constraints. */
+ASSERT(((__stack_start & 0xF) == 0), "Boot stack is not 16-byte aligned");
+ASSERT(((__stack_end & 0xF) == 0), "Boot stack end is not 16-byte aligned");
+ASSERT(((__page_tables_start & 0xFFF) == 0), "Page tables section is not 4KiB aligned");
+ASSERT(((__page_tables_end & 0xFFF) == 0), "Page tables section end is not 4KiB aligned");
+ASSERT(((__heap_start & 0xFFF) == 0), "Heap section is not 4KiB aligned");
+ASSERT(((__heap_end & 0xFFF) == 0), "Heap section end is not 4KiB aligned");

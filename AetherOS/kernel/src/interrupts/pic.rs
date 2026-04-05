@@ -14,6 +14,7 @@ const PIC_EOI: u8 = 0x20;
 const ICW1_INIT: u8 = 0x10;
 const ICW1_ICW4: u8 = 0x01;
 const ICW4_8086: u8 = 0x01;
+const PIC_MASK_ALL: u8 = 0xff;
 
 #[inline]
 unsafe fn io_wait() {
@@ -54,9 +55,15 @@ pub unsafe fn remap() {
     data2.write(ICW4_8086);
     io_wait();
 
-    // Restore masks.
-    data1.write(mask1);
-    data2.write(mask2);
+    // Deterministic startup contract:
+    // after remap all lines are masked, and higher-level IRQ init explicitly
+    // unmasks only the vectors it has installed in the IDT.
+    //
+    // This avoids inheriting firmware/bootloader PIC masks, which can cause
+    // unexpected unhandled IRQs before the kernel has registered handlers.
+    let _ = (mask1, mask2);
+    data1.write(PIC_MASK_ALL);
+    data2.write(PIC_MASK_ALL);
 }
 
 /// Sends End-of-Interrupt signal for an IRQ.

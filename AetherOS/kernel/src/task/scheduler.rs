@@ -181,6 +181,10 @@ pub fn kill_all() {
 /// where taking scheduler locks directly can deadlock.
 #[inline]
 pub fn request_reschedule_from_irq() {
+    // Invariant: IRQ handlers only set this flag; they never clear it.
+    // The main scheduler loop is the single clear point via
+    // `take_reschedule_request`, which makes reschedule intent observable and
+    // deterministic for diagnostics.
     RESCHEDULE_REQUESTED.store(true, Ordering::Release);
 }
 
@@ -194,6 +198,12 @@ pub fn request_reschedule() {
 #[inline]
 pub fn take_reschedule_request() -> bool {
     RESCHEDULE_REQUESTED.swap(false, Ordering::AcqRel)
+}
+
+/// Returns whether a reschedule is currently pending without clearing it.
+#[inline]
+pub fn reschedule_requested() -> bool {
+    RESCHEDULE_REQUESTED.load(Ordering::Acquire)
 }
 
 fn release_task_resources(task: &TaskControlBlock) {
@@ -315,6 +325,28 @@ pub fn get_task_context(task_id: u64) -> Option<Context> {
 /// Returns the ID of the currently executing task.
 pub fn get_current_task_id() -> u64 {
     *CURRENT_TASK_ID.lock()
+}
+
+
+/// Returns the total number of registered tasks.
+pub fn task_count() -> usize {
+    TASKS.lock().len()
+}
+
+/// Returns the number of runnable tasks currently queued.
+pub fn runnable_count() -> usize {
+    RUN_QUEUE.lock().len()
+}
+
+/// Allocates a fresh task identifier by scanning current scheduler state.
+pub fn allocate_task_id() -> u64 {
+    TASKS
+        .lock()
+        .keys()
+        .copied()
+        .max()
+        .map(|id| id.saturating_add(1))
+        .unwrap_or(1)
 }
 
 /// Returns the detected number of logical CPU cores.

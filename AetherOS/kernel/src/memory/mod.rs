@@ -2,7 +2,7 @@ pub mod frame_allocator;
 pub mod page_allocator;
 
 use crate::kprintln;
-use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
+use bootloader::info::{MemoryRegionKind, MemoryRegions};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::Mutex;
 use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB};
@@ -25,11 +25,15 @@ pub fn init(memory_regions: &'static MemoryRegions) {
         validation.usable_region_count > 0 && validation.usable_bytes >= 4096,
         "[kernel] memory: boot memory map has no usable RAM"
     );
+    assert!(
+        validation.invalid_or_overlapping_entries == 0,
+        "[kernel] memory: boot memory map contains invalid/overlapping regions; refusing unsafe allocator bootstrap"
+    );
 
-    let total = memory_regions
-        .iter()
-        .map(|region| (region.end.saturating_sub(region.start)) as usize)
-        .sum::<usize>();
+    // Runtime accounting intentionally tracks usable RAM only. Reserved/firmware
+    // ranges are excluded so diagnostics and interface memory viewers report
+    // allocatable capacity instead of full address-space coverage.
+    let total = validation.usable_bytes;
     TOTAL_MEMORY_BYTES.store(total, Ordering::Release);
     USED_MEMORY_ESTIMATE_BYTES.store(0, Ordering::Release);
 
@@ -40,6 +44,12 @@ pub fn init(memory_regions: &'static MemoryRegions) {
         *slot = Some(unsafe { frame_allocator::BootInfoFrameAllocator::init(memory_regions) });
     }
     kprintln!("[kernel] memory: BootInfoFrameAllocator wired from BootInfo map.");
+    if validation.unknown_region_count > 0 {
+        kprintln!(
+            "[kernel] memory: allocator excludes {} unknown firmware region(s) by policy.",
+            validation.unknown_region_count
+        );
+    }
 
     kprintln!("[kernel] memory: All memory modules initialized.");
 }
@@ -47,11 +57,10 @@ pub fn init(memory_regions: &'static MemoryRegions) {
 /// Finalize virtual-memory bootstrap once bootloader handoff information
 /// (direct-map offset, current CR3 tables) is available.
 pub fn init_virtual_memory_bootstrap() {
-    if crate::arch::x86_64::paging::physical_memory_offset().is_none() {
-        kprintln!(
-            "[kernel] memory WARNING: physical memory offset not configured; using compatibility higher-half bootstrap map."
-        );
-    }
+    assert!(
+        crate::arch::x86_64::paging::physical_memory_offset().is_some(),
+        "[kernel] memory: physical memory offset must be configured before virtual-memory bootstrap"
+    );
     crate::arch::x86_64::paging::init_bootstrap_mappings(
         crate::arch::x86_64::paging::EARLY_IDENTITY_LIMIT,
     );
@@ -62,6 +71,10 @@ pub fn init_virtual_memory_bootstrap() {
 
 /// Finalizes bootstrap allocators after direct-map paging is confirmed active.
 pub fn finalize_allocator_init() {
+    assert!(
+        crate::arch::x86_64::paging::physical_memory_offset().is_some(),
+        "physical memory offset must be configured before allocator finalization"
+    );
     let mut slot = FRAME_ALLOCATOR.lock();
     let frame_allocator = slot
         .as_mut()
@@ -115,6 +128,8 @@ pub fn free_memory() -> usize {
 struct MemoryValidation {
     usable_region_count: usize,
     usable_bytes: usize,
+    invalid_or_overlapping_entries: usize,
+    unknown_region_count: usize,
 }
 
 fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> MemoryValidation {
@@ -122,9 +137,11 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
     let mut usable_bytes = 0usize;
     let mut last_end = 0u64;
     let mut unknown_region_count = 0usize;
+    let mut invalid_or_overlapping_entries = 0usize;
 
     for (index, region) in memory_regions.iter().enumerate() {
         if region.end <= region.start {
+            invalid_or_overlapping_entries += 1;
             kprintln!(
                 "[kernel] memory WARNING: region #{} has invalid bounds {:#x}..{:#x} ({:?}).",
                 index,
@@ -136,6 +153,7 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
         }
 
         if index > 0 && region.start < last_end {
+            invalid_or_overlapping_entries += 1;
             kprintln!(
                 "[kernel] memory WARNING: out-of-order/overlapping region #{} start={:#x} < prev_end={:#x}.",
                 index,
@@ -178,5 +196,7 @@ fn validate_boot_memory_regions(memory_regions: &'static MemoryRegions) -> Memor
     MemoryValidation {
         usable_region_count,
         usable_bytes,
+        invalid_or_overlapping_entries,
+        unknown_region_count,
     }
 }

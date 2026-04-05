@@ -84,6 +84,26 @@ impl Mailbox {
         new_id
     }
 
+
+
+    /// Creates a channel with a fixed id if absent, returning the existing id otherwise.
+    pub fn create_or_get_channel(&self, id: ChannelId) -> ChannelId {
+        if self.get_channel(id).is_some() {
+            return id;
+        }
+
+        {
+            let mut next_id = self.next_channel_id.lock();
+            if id >= *next_id {
+                *next_id = id.saturating_add(1);
+            }
+        }
+
+        let channel = Arc::new(Channel::new(id));
+        self.channels.lock().push(channel);
+        id
+    }
+
     // Get a channel by its ID. Returns an Arc to the channel if found.
     pub fn get_channel(&self, id: ChannelId) -> Option<Arc<Channel>> {
         self.channels.lock().iter().find(|c| c.id == id).cloned()
@@ -214,4 +234,12 @@ pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usiz
     } else {
         Err("Channel not found")
     }
+}
+
+
+pub fn ensure_channel(channel_id: ChannelId) -> ChannelId {
+    MAILBOX
+        .get()
+        .expect("Mailbox not initialized")
+        .create_or_get_channel(channel_id)
 }

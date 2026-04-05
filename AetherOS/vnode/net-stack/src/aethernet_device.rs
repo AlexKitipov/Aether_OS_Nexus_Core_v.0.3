@@ -4,7 +4,6 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
 use alloc::collections::VecDeque; // Added for VecDeque
 use smoltcp::phy::{Device, RxToken, TxToken, Checksum, DeviceCapabilities};
 use smoltcp::time::Instant;
@@ -13,6 +12,36 @@ use smoltcp::wire::{EthernetAddress, HardwareAddress};
 use crate::ipc::vnode::VNodeChannel;
 use crate::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_NET_TX};
 use crate::ipc::net_ipc::NetPacketMsg;
+
+const TX_BUFFER_SIZE: usize = 1536;
+const MAX_DMA_VIEW_LEN: usize = TX_BUFFER_SIZE;
+
+/// Validates DMA pointer/length pairs before converting into `&mut [u8]`.
+///
+/// # Safety contract
+/// The kernel-side DMA allocator guarantees that successful handles map to a
+/// unique writable region until the handle is freed. This helper validates the
+/// parts that cannot be proven from Rust types alone:
+/// - pointer must be non-null (including zero-length views)
+/// - length must fit in `usize` and remain within the agreed DMA window
+///
+/// Violations are treated as interface contract errors and surfaced to logs so
+/// interface-driven debugging can distinguish bad packets from parser failures.
+fn dma_view_mut<'a>(ptr: *mut u8, len_u64: u64) -> Result<&'a mut [u8], &'static str> {
+    if ptr.is_null() {
+        return Err("DMA pointer was null");
+    }
+
+    let len = usize::try_from(len_u64).map_err(|_| "DMA length overflow")?;
+    if len > MAX_DMA_VIEW_LEN {
+        return Err("DMA length exceeded negotiated MTU window");
+    }
+
+    // SAFETY: `ptr` is non-null and comes from kernel DMA allocation. Length is
+    // bounded to the negotiated buffer window and converted losslessly to usize.
+    Ok(unsafe { core::slice::from_raw_parts_mut(ptr, len) })
+}
+
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
@@ -154,9 +183,24 @@ impl<'a> Device<'a> for AetherNetDevice {
         // Consume from the queue of packets pushed by net-bridge
         if let Some((dma_handle, len)) = self.rx_packet_queue.pop_front() {
             if let Ok(buf_ptr) = get_dma_buffer_ptr(dma_handle) {
-                // SAFETY: `buf_ptr` is obtained from a kernel DMA manager, pointing to a valid buffer.
-                // `len` is also provided by the kernel, guaranteeing the slice is within bounds.
-                let buffer = unsafe { core::slice::from_raw_parts_mut(buf_ptr, len as usize) };
+                let buffer = match dma_view_mut(buf_ptr, len) {
+                    Ok(buffer) => buffer,
+                    Err(e) => {
+                        log(&alloc::format!(
+                            "AetherNetDevice: Rejecting RX DMA handle {} due to invalid view: {}.",
+                            dma_handle,
+                            e
+                        ));
+                        if let Err(free_err) = net_free_buf(dma_handle) {
+                            log(&alloc::format!(
+                                "AetherNetDevice: Failed to free RX DMA buffer after invalid view (handle {}): {:?}",
+                                dma_handle,
+                                free_err
+                            ));
+                        }
+                        return None;
+                    }
+                };
                 Some((
                     PacketRxToken { buffer, dma_handle }, 
                     // Dummy TxToken for receive path, as receive doesn't directly transmit
@@ -185,16 +229,30 @@ impl<'a> Device<'a> for AetherNetDevice {
     fn transmit(&'a mut self, _timestamp: Instant) -> Option<Self::TxToken> {
         // Allocate a DMA buffer for outgoing packet
         // The size is typically the MTU + Ethernet header size
-        const TX_BUFFER_SIZE: usize = 1536;
         let dma_handle = match net_alloc_buf(TX_BUFFER_SIZE) {
             Ok(h) => h,
             Err(e) => { log(&alloc::format!("AetherNetDevice: Failed to alloc TX DMA buffer: {:?}", e)); return None; }
         };
 
         if let Ok(buf_ptr) = get_dma_buffer_ptr(dma_handle) {
-            // SAFETY: `buf_ptr` is obtained from a kernel DMA manager, pointing to a valid buffer.
-            // `TX_BUFFER_SIZE` is the allocated capacity, guaranteeing the slice is within bounds.
-            let buffer = unsafe { core::slice::from_raw_parts_mut(buf_ptr, TX_BUFFER_SIZE) };
+            let buffer = match dma_view_mut(buf_ptr, TX_BUFFER_SIZE as u64) {
+                Ok(buffer) => buffer,
+                Err(e) => {
+                    log(&alloc::format!(
+                        "AetherNetDevice: Rejecting TX DMA handle {} due to invalid view: {}.",
+                        dma_handle,
+                        e
+                    ));
+                    if let Err(free_err) = net_free_buf(dma_handle) {
+                        log(&alloc::format!(
+                            "AetherNetDevice: Failed to free TX DMA buffer after invalid view (handle {}): {:?}",
+                            dma_handle,
+                            free_err
+                        ));
+                    }
+                    return None;
+                }
+            };
             Some(PacketTxToken { buffer, dma_handle, len: 0, iface_id: self.iface_id, net_bridge_chan_id: self.net_bridge_chan_id })
         } else {
             log(&alloc::format!("AetherNetDevice: Failed to get buffer pointer for TX DMA handle {}. Freeing it.", dma_handle));

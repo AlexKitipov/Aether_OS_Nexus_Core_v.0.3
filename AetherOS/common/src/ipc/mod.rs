@@ -13,6 +13,7 @@ pub mod init_ipc;
 pub mod keyboard_ipc;
 pub mod socket_ipc;
 pub mod dns_ipc;
+pub mod dev_interface_ipc;
 
 pub trait IpcSend {
     fn send_raw(&mut self, bytes: &[u8]) -> Result<(), ()>;

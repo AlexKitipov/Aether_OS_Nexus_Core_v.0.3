@@ -12,7 +12,7 @@ libnexus-net = { path = "../libnexus-net", default-features = false }
 
 # Dummy crate for `smoltcp` for network stack integration.
 # This would typically be a dependency of the network stack V-Node.
-smoltcp = { version = "0.8", default-features = false, features = ["alloc"], optional = true }
+smoltcp = { workspace = true, optional = true }
 
 # Placeholder examples dependency
 examples = { path = "./examples", optional = true }
@@ -20,6 +20,7 @@ examples = { path = "./examples", optional = true }
 [features]
 default = ["alloc"]
 alloc = []
+std = ["serde/std", "postcard/use-std", "libnexus-net/std"]
 serde = []
 # Feature to enable `smoltcp` related items if needed directly in common
 smoltcp_enabled = ["dep:smoltcp"]

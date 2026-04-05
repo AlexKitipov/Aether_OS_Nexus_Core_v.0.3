@@ -14,6 +14,7 @@ unset CARGO_BUILD_RUSTFLAGS
 TOOLCHAIN="nightly-2024-12-01"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
+KERNEL_TARGET=".cargo/aetheros-x86_64.json"
 VNODE_PKGS=(
   registry
   init-service
@@ -22,21 +23,24 @@ VNODE_PKGS=(
 )
 
 echo "[build_all] Building kernel (${KERNEL_PKG})"
-cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
+cargo +"${TOOLCHAIN}" build --release --target "${KERNEL_TARGET}" \
   -Zbuild-std=core,alloc,compiler_builtins \
   -Zbuild-std-features=compiler-builtins-mem
 
-echo "[build_all] Building V-Nodes on host target: ${VNODE_PKGS[*]}"
+echo "[diag][stage=build_all.vnode_build] Building V-Nodes on kernel target: ${VNODE_PKGS[*]}"
 VNODE_ARGS=()
 for pkg in "${VNODE_PKGS[@]}"; do
   VNODE_ARGS+=( -p "${pkg}" )
 done
-cargo +"${TOOLCHAIN}" build --release "${VNODE_ARGS[@]}"
+cargo +"${TOOLCHAIN}" build --release --target "${KERNEL_TARGET}" \
+  -Zbuild-std=core,alloc,compiler_builtins \
+  -Zbuild-std-features=compiler-builtins-mem \
+  "${VNODE_ARGS[@]}"
 
 mkdir -p "${ROOTFS_DIR}/vnode" target
 
 for vnode in "${VNODE_PKGS[@]}"; do
-  src="target/release/${vnode}"
+  src="target/aetheros-x86_64/release/${vnode}"
   dst="${ROOTFS_DIR}/vnode/${vnode}"
   if [[ ! -f "${src}" ]]; then
     echo "[build_all] ERROR: expected binary not found: ${src}" >&2
