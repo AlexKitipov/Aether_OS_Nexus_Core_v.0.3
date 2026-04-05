@@ -7,7 +7,7 @@ use core::arch::x86_64::__cpuid;
 #[cfg(target_arch = "x86_64")]
 use core::arch::global_asm;
 
-use bootloader_api::BootInfo;
+use bootloader::BootInfo;
 
 use super::{gdt, idt, paging};
 use crate::{heap, interrupts, memory};
