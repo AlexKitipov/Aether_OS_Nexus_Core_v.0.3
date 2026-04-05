@@ -1,7 +1,5 @@
 // common/src/nexus_net_transport.rs
 
-#![no_std]
-
 extern crate alloc;
 use alloc::vec::Vec;
 use alloc::format;
