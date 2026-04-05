@@ -6,9 +6,6 @@ edition = "2021"
 [dependencies]
 serde = { workspace = true }
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
-# Keep a legacy `bootloader` dependency so `cargo bootimage` can resolve
-# its expected crate, while the project runtime flow remains on `bootloader_api`.
-bootloader = { version = "0.11.15", default-features = false, optional = true }
 bootloader_api = { workspace = true, default-features = false }
 x86_64 = { version = "0.14.9", default-features = false, features = ["instructions", "abi_x86_interrupt"] }
 spin = { version = "0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
@@ -16,11 +13,6 @@ conquer-once = { version = "0.4.0", default-features = false }
 linked_list_allocator = { workspace = true }
 postcard = { workspace = true }
 sha2 = { version = "0.10", default-features = false }
-
-[build-dependencies]
-# Keep `bootloader` and `bootloader_api` pinned to the same workspace version
-# so the hand-off `BootInfo` ABI/layout stays synchronized across crates.
-bootloader = { workspace = true, default-features = false }
 
 [package.metadata.bootloader]
 # Legacy `cargo-bootimage` compatibility:
@@ -33,4 +25,3 @@ target = "../.cargo/aetheros-x86_64.json"
 default = ["alloc"]
 alloc = []
 bare_metal = []
-bootimage_compat = ["dep:bootloader"]
