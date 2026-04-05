@@ -12,6 +12,9 @@ use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
 use aetheros_kernel::{init, task};
 
 #[cfg(target_os = "none")]
+const KERNEL_BOOT_STACK_SIZE: usize = 4096 * 4;
+
+#[cfg(target_os = "none")]
 global_asm!(
     r#"
     .section .text._start, "ax"
@@ -20,46 +23,31 @@ _start:
     # bootloader_api 0.11 x86_64 handoff contract:
     # rdi = *mut BootInfo
     # SysV ABI notes:
-    # - rbx is callee-saved, so we can carry BootInfo across the init_stack call.
-    # - init_stack establishes a 16-byte aligned kernel stack before any Rust call.
+    # - rbx is callee-saved, so we can carry BootInfo while switching stacks.
+    # - We must not call into Rust before setting rsp because Rust functions can
+    #   legally emit a prologue that touches stack memory.
+    # - SysV ABI requires 16-byte alignment before a `call`.
     mov rbx, rdi
-    call init_stack
+    lea rsp, [{stack} + {size}]
+    and rsp, -16
     mov rdi, rbx
     call kernel_entry
 1:
     hlt
     jmp 1b
-"#
+"#,
+    stack = sym STACK,
+    size = const KERNEL_BOOT_STACK_SIZE,
 );
 
 #[cfg(target_os = "none")]
 #[repr(align(16))]
-struct KernelStack([u8; 4096 * 4]);
+struct KernelStack([u8; KERNEL_BOOT_STACK_SIZE]);
 
 #[cfg(target_os = "none")]
 #[no_mangle]
 #[link_section = ".bss.stack"]
-static mut STACK: KernelStack = KernelStack([0; 4096 * 4]);
-
-/// Initializes the bootstrap kernel stack and enforces SysV 16-byte alignment.
-///
-/// The stack is in `.bss.stack`, grows downward, and is initialized to its top
-/// (`base + size`) before alignment masking.
-#[cfg(target_os = "none")]
-#[no_mangle]
-pub unsafe extern "C" fn init_stack() {
-    // SAFETY: `STACK` is a dedicated static bootstrap region that is only
-    // installed once during single-core early startup before scheduling.
-    // The computed address is in-bounds (`stack + size` points one-past-end),
-    // then rounded down to a 16-byte boundary for SysV call ABI compliance.
-    core::arch::asm!(
-        "lea rsp, [{stack} + {size}]",
-        "and rsp, -16",
-        stack = sym STACK,
-        size = const 4096 * 4,
-        options(nostack, preserves_flags)
-    );
-}
+static mut STACK: KernelStack = KernelStack([0; KERNEL_BOOT_STACK_SIZE]);
 
 /// Kernel entry point in `no_std`/`no_main` mode.
 ///
