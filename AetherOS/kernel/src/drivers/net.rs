@@ -3,7 +3,7 @@ extern crate alloc;
 use alloc::collections::VecDeque;
 use spin::Mutex;
 
-use crate::device::{CapabilitySet, Device, DeviceId, DeviceKind, IoDevice, IoError, IoResult};
+use crate::device::{CapabilitySet, Device, DeviceId, DeviceKind, IoDevice, IoResult};
 
 pub trait NetDevice: Send + Sync {
     fn send(&self, frame: &[u8]);

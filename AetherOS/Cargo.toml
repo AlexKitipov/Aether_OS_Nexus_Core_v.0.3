@@ -14,10 +14,8 @@ edition = "2021"
 
 [workspace.dependencies]
 serde = { version = "=1.0.227", default-features = false, features = ["alloc", "derive"] }
-# Keep both names pinned to the exact same bootloader_api release:
-# - `bootloader_api` is used directly by some crates/tools.
-# - `bootloader` is a compatibility alias expected by legacy bootimage flows.
-# Declaring both here prevents accidental version drift in member crates.
+# Keep both names pinned to the exact same bootloader_api release so member
+# crates can depend on either name without version drift.
 bootloader = { package = "bootloader_api", version = "=0.11.15", default-features = false }
 bootloader_api = { version = "=0.11.15", default-features = false }
 postcard = { version = "=1.1.3", default-features = false, features = ["alloc"] }
