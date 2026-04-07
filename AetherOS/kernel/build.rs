@@ -4,6 +4,9 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     println!("cargo:rerun-if-changed=linker.ld");
 
+    // Allow crates to use cfg(doc_cfg) without warnings
+    println!("cargo::rustc-check-cfg=cfg(doc_cfg)");
+
     let toolchain = Command::new("rustc")
         .arg("--version")
         .output()
