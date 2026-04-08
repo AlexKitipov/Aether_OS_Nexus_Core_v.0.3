@@ -35,3 +35,6 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(doc_cfg)'] }
