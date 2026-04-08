@@ -4,8 +4,7 @@ target = "../.cargo/aetheros-x86_64.json"
 
 [env]
 # Keep host shell flags from leaking into dependency builds.
-RUSTFLAGS = { value = "", force = true }
-CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
+
 RUST_TARGET_PATH = { value = "../.cargo", force = true, relative = true }
 
 [unstable]
