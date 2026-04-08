@@ -16,8 +16,7 @@
 # Prevent host shell/compiler wrapper flags from leaking into dependency builds.
 # In particular, `-Z no-implicit-prelude` causes cascading missing `Option` /
 # `Result` errors in crates like serde_core.
-RUSTFLAGS = { value = "", force = true }
-CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
+
 RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 
 [target.'cfg(all())']
