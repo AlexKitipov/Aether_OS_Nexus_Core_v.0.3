@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-TOOLCHAIN="nightly-2026-03-13"
+TOOLCHAIN="nightly-2024-12-01"
 cd "${ROOT_DIR}"
 
 # Avoid inheriting host-specific compiler flags that can break third-party crates
