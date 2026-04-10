@@ -21,4 +21,5 @@ fn main() {
     let linker_script = manifest_dir.join("linker.ld");
 
     println!("cargo:rustc-link-arg-bin=aetheros-kernel=-T{}", linker_script.display());
+    println!("cargo:rustc-link-arg-bin=aetheros-kernel=-no-pie");
 }
