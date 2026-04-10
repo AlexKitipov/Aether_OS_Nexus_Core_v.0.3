@@ -3,6 +3,7 @@ pub mod ui_protocol;
 pub mod display;
 pub mod webview;
 pub mod vfs_ipc;
+pub mod net_ipc;
 pub mod vnode;
 pub mod logger_ipc;
 pub mod echo_ipc;

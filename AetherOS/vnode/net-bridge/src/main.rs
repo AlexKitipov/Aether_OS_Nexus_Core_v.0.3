@@ -11,6 +11,7 @@ use alloc::vec::Vec;
 use alloc::format;
 
 use common::ipc::vnode::VNodeChannel;
+use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SYS_IRQ_REGISTER, SYS_NET_RX_POLL, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_NET_TX, SYS_IRQ_ACK, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_IPC_RECV_NONBLOCKING};
 use common::ipc::net_ipc::NetPacketMsg;
 
