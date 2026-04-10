@@ -1,0 +1,3200 @@
+[
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.aether",
+    "Name": ".aether",
+    "Length": null,
+    "Extension": ".aether"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github",
+    "Name": ".github",
+    "Length": null,
+    "Extension": ".github"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.vscode",
+    "Name": ".vscode",
+    "Length": null,
+    "Extension": ".vscode"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS",
+    "Name": "AetherOS",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.gitignore",
+    "Name": ".gitignore",
+    "Length": 705,
+    "Extension": ".gitignore"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\Build AetherOS.yml",
+    "Name": "Build AetherOS.yml",
+    "Length": 823,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\ci.yml",
+    "Name": "ci.yml",
+    "Length": 1722,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\CODE_OF_CONDUCT.md",
+    "Name": "CODE_OF_CONDUCT.md",
+    "Length": 5357,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\CONTRIBUTING.md",
+    "Name": "CONTRIBUTING.md",
+    "Length": 2709,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\kernel_layout.json",
+    "Name": "kernel_layout.json",
+    "Length": 0,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\LICENSE",
+    "Name": "LICENSE",
+    "Length": 1096,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\README.md",
+    "Name": "README.md",
+    "Length": 11768,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\rust-toolchain.toml",
+    "Name": "rust-toolchain.toml",
+    "Length": 152,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\SECURITY.md",
+    "Name": "SECURITY.md",
+    "Length": 1987,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.aether\\build-state.json",
+    "Name": "build-state.json",
+    "Length": 273,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.aether\\toolchain.json",
+    "Name": "toolchain.json",
+    "Length": 402,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\ISSUE_TEMPLATE",
+    "Name": "ISSUE_TEMPLATE",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\workflows",
+    "Name": "workflows",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\ISSUE_TEMPLATE\\bug_report.md",
+    "Name": "bug_report.md",
+    "Length": 872,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\ISSUE_TEMPLATE\\feature_request.md",
+    "Name": "feature_request.md",
+    "Length": 615,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\workflows\\Build AetherOS.yml",
+    "Name": "Build AetherOS.yml",
+    "Length": 643,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.github\\workflows\\ci.yml",
+    "Name": "ci.yml",
+    "Length": 1722,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.vscode\\launch.json",
+    "Name": "launch.json",
+    "Length": 1531,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\.vscode\\tasks.json",
+    "Name": "tasks.json",
+    "Length": 930,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\.cargo",
+    "Name": ".cargo",
+    "Length": null,
+    "Extension": ".cargo"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common",
+    "Name": "common",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs",
+    "Name": "docs",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel",
+    "Name": "kernel",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\libnexus-net",
+    "Name": "libnexus-net",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus",
+    "Name": "Nexus",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs",
+    "Name": "rootfs",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts",
+    "Name": "scripts",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target",
+    "Name": "target",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode",
+    "Name": "vnode",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\build_initrd_vnodes.sh",
+    "Name": "build_initrd_vnodes.sh",
+    "Length": 1711,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\cargo",
+    "Name": "cargo",
+    "Length": 0,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Cargo.lock",
+    "Name": "Cargo.lock",
+    "Length": 24586,
+    "Extension": ".lock"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 1296,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Makefile",
+    "Name": "Makefile",
+    "Length": 1347,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\PR_FINAL_INTEGRATION.md",
+    "Name": "PR_FINAL_INTEGRATION.md",
+    "Length": 5838,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\README.md",
+    "Name": "README.md",
+    "Length": 8872,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rust-toolchain.toml",
+    "Name": "rust-toolchain.toml",
+    "Length": 173,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\x86_64-unknown-none.json",
+    "Name": "x86_64-unknown-none.json",
+    "Length": 608,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\.cargo\\aetheros-x86_64.json",
+    "Name": "aetheros-x86_64.json",
+    "Length": 604,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\.cargo\\config.toml",
+    "Name": "config.toml",
+    "Length": 1254,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\allocator",
+    "Name": "allocator",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\examples",
+    "Name": "examples",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 894,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\allocator\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\allocator\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 94,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\allocator\\src\\lib.rs",
+    "Name": "lib.rs",
+    "Length": 12,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\examples\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\examples\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 97,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\examples\\src\\lib.rs",
+    "Name": "lib.rs",
+    "Length": 12,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\arp_dht",
+    "Name": "arp_dht",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\examples",
+    "Name": "examples",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc",
+    "Name": "ipc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\swarm_engine",
+    "Name": "swarm_engine",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\trust",
+    "Name": "trust",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ui",
+    "Name": "ui",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\channel.rs",
+    "Name": "channel.rs",
+    "Length": 1308,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\lib.rs",
+    "Name": "lib.rs",
+    "Length": 392,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\message.rs",
+    "Name": "message.rs",
+    "Length": 24,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\nexus_msg.rs",
+    "Name": "nexus_msg.rs",
+    "Length": 24,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\nexus_net_transport.rs",
+    "Name": "nexus_net_transport.rs",
+    "Length": 2597,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\syscall.rs",
+    "Name": "syscall.rs",
+    "Length": 8580,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\syscalls.rs",
+    "Name": "syscalls.rs",
+    "Length": 1182,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\arp_dht\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 545,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\examples\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 237,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\ai_governor_ipc.rs",
+    "Name": "ai_governor_ipc.rs",
+    "Length": 1419,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\dev_interface_ipc.rs",
+    "Name": "dev_interface_ipc.rs",
+    "Length": 1340,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\display.rs",
+    "Name": "display.rs",
+    "Length": 57,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\dns_ipc.rs",
+    "Name": "dns_ipc.rs",
+    "Length": 864,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\echo_ipc.rs",
+    "Name": "echo_ipc.rs",
+    "Length": 1938,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\file_manager_ipc.rs",
+    "Name": "file_manager_ipc.rs",
+    "Length": 1268,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\init_ipc.rs",
+    "Name": "init_ipc.rs",
+    "Length": 746,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\keyboard_ipc.rs",
+    "Name": "keyboard_ipc.rs",
+    "Length": 537,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\logger_ipc.rs",
+    "Name": "logger_ipc.rs",
+    "Length": 434,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\mail_ipc.rs",
+    "Name": "mail_ipc.rs",
+    "Length": 646,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 1022,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\model_runtime_ipc.rs",
+    "Name": "model_runtime_ipc.rs",
+    "Length": 1089,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\shell_ipc.rs",
+    "Name": "shell_ipc.rs",
+    "Length": 1778,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\socket_ipc.rs",
+    "Name": "socket_ipc.rs",
+    "Length": 1027,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\test_ipc.rs",
+    "Name": "test_ipc.rs",
+    "Length": 443,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\types.rs",
+    "Name": "types.rs",
+    "Length": 236,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\ui_protocol.rs",
+    "Name": "ui_protocol.rs",
+    "Length": 2480,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\vfs_ipc.rs",
+    "Name": "vfs_ipc.rs",
+    "Length": 2315,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\vnode.rs",
+    "Name": "vnode.rs",
+    "Length": 3105,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ipc\\webview.rs",
+    "Name": "webview.rs",
+    "Length": 1032,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\swarm_engine\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 9373,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\trust\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 122,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ui\\css_engine.rs",
+    "Name": "css_engine.rs",
+    "Length": 3232,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ui\\html_parser.rs",
+    "Name": "html_parser.rs",
+    "Length": 2398,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ui\\layout.rs",
+    "Name": "layout.rs",
+    "Length": 4020,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\common\\src\\ui\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 207,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\ai",
+    "Name": "ai",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\apps",
+    "Name": "apps",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\fs",
+    "Name": "fs",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\net",
+    "Name": "net",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system",
+    "Name": "system",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\user",
+    "Name": "user",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes",
+    "Name": "vnodes",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\ai\\model-runtime.md",
+    "Name": "model-runtime.md",
+    "Length": 5615,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\apps\\file-manager.md",
+    "Name": "file-manager.md",
+    "Length": 5334,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\apps\\mail.md",
+    "Name": "mail.md",
+    "Length": 5797,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\fs\\vfs.md",
+    "Name": "vfs.md",
+    "Length": 7396,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\net\\dns.md",
+    "Name": "dns.md",
+    "Length": 4146,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\net\\socket-api.md",
+    "Name": "socket-api.md",
+    "Length": 6605,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\dev-interface-kernel-bridge.md",
+    "Name": "dev-interface-kernel-bridge.md",
+    "Length": 3583,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\init.md",
+    "Name": "init.md",
+    "Length": 5097,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\qemu-first-test.md",
+    "Name": "qemu-first-test.md",
+    "Length": 1225,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\toolchain-synchronization-code-of-conduct.md",
+    "Name": "toolchain-synchronization-code-of-conduct.md",
+    "Length": 3385,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\v0.4_interactive_jump_plan.md",
+    "Name": "v0.4_interactive_jump_plan.md",
+    "Length": 1354,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\system\\v0.4-integration-plan.md",
+    "Name": "v0.4-integration-plan.md",
+    "Length": 9652,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\user\\shell.md",
+    "Name": "shell.md",
+    "Length": 6683,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\dns-resolver.md",
+    "Name": "dns-resolver.md",
+    "Length": 3380,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\file-manager.md",
+    "Name": "file-manager.md",
+    "Length": 3903,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\init-service.md",
+    "Name": "init-service.md",
+    "Length": 4282,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\mail-service.md",
+    "Name": "mail-service.md",
+    "Length": 4818,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\model-runtime.md",
+    "Name": "model-runtime.md",
+    "Length": 4884,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\docs\\vnodes\\net-bridge.md",
+    "Name": "net-bridge.md",
+    "Length": 4879,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\.cargo",
+    "Name": ".cargo",
+    "Length": null,
+    "Extension": ".cargo"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\build.rs",
+    "Name": "build.rs",
+    "Length": 856,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\cargo",
+    "Name": "cargo",
+    "Length": 0,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 546,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\config.rs",
+    "Name": "config.rs",
+    "Length": 614,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\error.rs",
+    "Name": "error.rs",
+    "Length": 3042,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\linker.ld",
+    "Name": "linker.ld",
+    "Length": 5231,
+    "Extension": ".ld"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\.cargo\\aetheros-x86_64.json",
+    "Name": "aetheros-x86_64.json",
+    "Length": 604,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\.cargo\\config.toml",
+    "Name": "config.toml",
+    "Length": 564,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch",
+    "Name": "arch",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers",
+    "Name": "drivers",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\interrupts",
+    "Name": "interrupts",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\ipc",
+    "Name": "ipc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\memory",
+    "Name": "memory",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\task",
+    "Name": "task",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\aetherfs.rs",
+    "Name": "aetherfs.rs",
+    "Length": 7853,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\caps.rs",
+    "Name": "caps.rs",
+    "Length": 2974,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\config.rs",
+    "Name": "config.rs",
+    "Length": 422,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\console.rs",
+    "Name": "console.rs",
+    "Length": 2351,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\dev_interface.rs",
+    "Name": "dev_interface.rs",
+    "Length": 4740,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\device.rs",
+    "Name": "device.rs",
+    "Length": 7375,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\elf.rs",
+    "Name": "elf.rs",
+    "Length": 2344,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\gdt.rs",
+    "Name": "gdt.rs",
+    "Length": 163,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\heap.rs",
+    "Name": "heap.rs",
+    "Length": 1459,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\idt.rs",
+    "Name": "idt.rs",
+    "Length": 574,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\lib.rs",
+    "Name": "lib.rs",
+    "Length": 5538,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 6308,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\network.rs",
+    "Name": "network.rs",
+    "Length": 10098,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\runtime.rs",
+    "Name": "runtime.rs",
+    "Length": 7269,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\snapshot_engine.rs",
+    "Name": "snapshot_engine.rs",
+    "Length": 8725,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\syscall.rs",
+    "Name": "syscall.rs",
+    "Length": 20895,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\timer.rs",
+    "Name": "timer.rs",
+    "Length": 2813,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\usercopy.rs",
+    "Name": "usercopy.rs",
+    "Length": 2339,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\vnode_loader.rs",
+    "Name": "vnode_loader.rs",
+    "Length": 5908,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64",
+    "Name": "x86_64",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 17,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\boot",
+    "Name": "boot",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\boot.rs",
+    "Name": "boot.rs",
+    "Length": 10555,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\dma.rs",
+    "Name": "dma.rs",
+    "Length": 7904,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\gdt.rs",
+    "Name": "gdt.rs",
+    "Length": 3344,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\idt.rs",
+    "Name": "idt.rs",
+    "Length": 5964,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\irq.rs",
+    "Name": "irq.rs",
+    "Length": 4185,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 1752,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\paging.rs",
+    "Name": "paging.rs",
+    "Length": 14604,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\arch\\x86_64\\boot\\long_mode.s",
+    "Name": "long_mode.s",
+    "Length": 317,
+    "Extension": ".s"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\framebuffer.rs",
+    "Name": "framebuffer.rs",
+    "Length": 4581,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 124,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\net.rs",
+    "Name": "net.rs",
+    "Length": 2647,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\serial.rs",
+    "Name": "serial.rs",
+    "Length": 1295,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\timer.rs",
+    "Name": "timer.rs",
+    "Length": 1273,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\drivers\\vga_text.rs",
+    "Name": "vga_text.rs",
+    "Length": 2631,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\interrupts\\keyboard.rs",
+    "Name": "keyboard.rs",
+    "Length": 2676,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\interrupts\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 2137,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\interrupts\\pic.rs",
+    "Name": "pic.rs",
+    "Length": 2136,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\interrupts\\timer.rs",
+    "Name": "timer.rs",
+    "Length": 822,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\ipc\\mailbox.rs",
+    "Name": "mailbox.rs",
+    "Length": 7633,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\ipc\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 206,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\memory\\frame_allocator.rs",
+    "Name": "frame_allocator.rs",
+    "Length": 4698,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\memory\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 7738,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\memory\\page_allocator.rs",
+    "Name": "page_allocator.rs",
+    "Length": 3195,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\task\\context_switch.rs",
+    "Name": "context_switch.rs",
+    "Length": 2580,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\task\\mod.rs",
+    "Name": "mod.rs",
+    "Length": 4299,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\task\\scheduler.rs",
+    "Name": "scheduler.rs",
+    "Length": 17147,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\kernel\\src\\task\\tcb.rs",
+    "Name": "tcb.rs",
+    "Length": 4106,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\libnexus-net\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\libnexus-net\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 157,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\libnexus-net\\src\\lib.rs",
+    "Name": "lib.rs",
+    "Length": 731,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI",
+    "Name": "UI",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\common",
+    "Name": "common",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs",
+    "Name": "docs",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\tools",
+    "Name": "tools",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode",
+    "Name": "vnode",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\README.md",
+    "Name": "README.md",
+    "Length": 1156,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\common\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\common\\src\\ipc",
+    "Name": "ipc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\common\\src\\ipc\\ui_protocol.rs",
+    "Name": "ui_protocol.rs",
+    "Length": 2358,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui",
+    "Name": "ui",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui\\colab-testing.md",
+    "Name": "colab-testing.md",
+    "Length": 5113,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui\\compositor.md",
+    "Name": "compositor.md",
+    "Length": 3306,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui\\ipc.md",
+    "Name": "ipc.md",
+    "Length": 4576,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui\\layout-engine.md",
+    "Name": "layout-engine.md",
+    "Length": 2222,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\docs\\ui\\webview.md",
+    "Name": "webview.md",
+    "Length": 2402,
+    "Extension": ".md"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\tools\\colab_ui_test.py",
+    "Name": "colab_ui_test.py",
+    "Length": 6135,
+    "Extension": ".py"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\tools\\colab_websocket_bridge.py",
+    "Name": "colab_websocket_bridge.py",
+    "Length": 2887,
+    "Extension": ".py"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\display-compositor",
+    "Name": "display-compositor",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\webview",
+    "Name": "webview",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\display-compositor\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\display-compositor\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 495,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\display-compositor\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1140,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\display-compositor\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 2068,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\webview\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\webview\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 473,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\webview\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1479,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\Nexus\\UI\\vnode\\webview\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 5101,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\bin",
+    "Name": "bin",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\etc",
+    "Name": "etc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\vnode",
+    "Name": "vnode",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\init",
+    "Name": "init",
+    "Length": 260,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\bin\\.gitkeep",
+    "Name": ".gitkeep",
+    "Length": 26,
+    "Extension": ".gitkeep"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\etc\\.gitkeep",
+    "Name": ".gitkeep",
+    "Length": 26,
+    "Extension": ".gitkeep"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\rootfs\\vnode\\.gitkeep",
+    "Name": ".gitkeep",
+    "Length": 28,
+    "Extension": ".gitkeep"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\build_all.sh",
+    "Name": "build_all.sh",
+    "Length": 1630,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\build_initrd.sh",
+    "Name": "build_initrd.sh",
+    "Length": 645,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\build_kernel.sh",
+    "Name": "build_kernel.sh",
+    "Length": 629,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\build_kernel_image.sh",
+    "Name": "build_kernel_image.sh",
+    "Length": 4031,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\run_qemu.sh",
+    "Name": "run_qemu.sh",
+    "Length": 604,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\scripts\\test_qemu.sh",
+    "Name": "test_qemu.sh",
+    "Length": 1210,
+    "Extension": ".sh"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc",
+    "Name": "ipc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\swarm_engine",
+    "Name": "swarm_engine",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\dns_ipc.rs",
+    "Name": "dns_ipc.rs",
+    "Length": 1117,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\file_manager_ipc.rs",
+    "Name": "file_manager_ipc.rs",
+    "Length": 1249,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\init_ipc.rs",
+    "Name": "init_ipc.rs",
+    "Length": 1137,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\logger_ipc.rs",
+    "Name": "logger_ipc.rs",
+    "Length": 446,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\mail_ipc.rs",
+    "Name": "mail_ipc.rs",
+    "Length": 1134,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\model_runtime_ipc.rs",
+    "Name": "model_runtime_ipc.rs",
+    "Length": 1079,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\net_ipc.rs",
+    "Name": "net_ipc.rs",
+    "Length": 1445,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\shell_ipc.rs",
+    "Name": "shell_ipc.rs",
+    "Length": 1159,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\socket_ipc.rs",
+    "Name": "socket_ipc.rs",
+    "Length": 1617,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\vfs_ipc.rs",
+    "Name": "vfs_ipc.rs",
+    "Length": 2322,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\ipc\\vnode.rs",
+    "Name": "vnode.rs",
+    "Length": 2499,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\src\\swarm_engine\\nexus_net_transport.rs",
+    "Name": "nexus_net_transport.rs",
+    "Length": 2654,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64",
+    "Name": "aetheros-x86_64",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release",
+    "Name": "release",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\.rustc_info.json",
+    "Name": ".rustc_info.json",
+    "Length": 2069,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\CACHEDIR.TAG",
+    "Name": "CACHEDIR.TAG",
+    "Length": 177,
+    "Extension": ".TAG"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release",
+    "Name": "release",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\CACHEDIR.TAG",
+    "Name": "CACHEDIR.TAG",
+    "Length": 177,
+    "Extension": ".TAG"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint",
+    "Name": ".fingerprint",
+    "Length": null,
+    "Extension": ".fingerprint"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build",
+    "Name": "build",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\deps",
+    "Name": "deps",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\examples",
+    "Name": "examples",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\incremental",
+    "Name": "incremental",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.cargo-build-lock",
+    "Name": ".cargo-build-lock",
+    "Length": 0,
+    "Extension": ".cargo-build-lock"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.cargo-lock",
+    "Name": ".cargo-lock",
+    "Length": 0,
+    "Extension": ".cargo-lock"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\aetheros_common-fba122fdb009e44b",
+    "Name": "aetheros_common-fba122fdb009e44b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\aetheros-kernel-82d5653e220c31d5",
+    "Name": "aetheros-kernel-82d5653e220c31d5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\aetheros-kernel-cf0169c6b9a7388f",
+    "Name": "aetheros-kernel-cf0169c6b9a7388f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\aetheros-kernel-f004f052ad73429f",
+    "Name": "aetheros-kernel-f004f052ad73429f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\alloc-6d4cd2f7c461442c",
+    "Name": "alloc-6d4cd2f7c461442c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\anyhow-07116efee5c588cc",
+    "Name": "anyhow-07116efee5c588cc",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\anyhow-66b73de1f8226034",
+    "Name": "anyhow-66b73de1f8226034",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bincode-a7f6c9306ab3ede2",
+    "Name": "bincode-a7f6c9306ab3ede2",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bit_field-3956c88b72c974d5",
+    "Name": "bit_field-3956c88b72c974d5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bitflags-8bf91cb645a84b1c",
+    "Name": "bitflags-8bf91cb645a84b1c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bitflags-ae190c65dda2845a",
+    "Name": "bitflags-ae190c65dda2845a",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bitvec-0837d5d22f9f41c0",
+    "Name": "bitvec-0837d5d22f9f41c0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\block-buffer-fa150f088bb57cf0",
+    "Name": "block-buffer-fa150f088bb57cf0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bootloader_api-1263bd1a24e6ba0b",
+    "Name": "bootloader_api-1263bd1a24e6ba0b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bootloader_api-13a5dcaf70db1399",
+    "Name": "bootloader_api-13a5dcaf70db1399",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bootloader-17ed6490bea1708f",
+    "Name": "bootloader-17ed6490bea1708f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bootloader-52368dd698348e6f",
+    "Name": "bootloader-52368dd698348e6f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\bootloader-boot-config-dd737f03a99e880c",
+    "Name": "bootloader-boot-config-dd737f03a99e880c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\byteorder-3d0226a9842beb60",
+    "Name": "byteorder-3d0226a9842beb60",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\cfg-if-e2fda38cb0268c27",
+    "Name": "cfg-if-e2fda38cb0268c27",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\cobs-e70fa7cebf0f468c",
+    "Name": "cobs-e70fa7cebf0f468c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\compiler_builtins-3229ad4587774edd",
+    "Name": "compiler_builtins-3229ad4587774edd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\compiler_builtins-a32733d108995d33",
+    "Name": "compiler_builtins-a32733d108995d33",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\conquer-once-81b03af3d59985c5",
+    "Name": "conquer-once-81b03af3d59985c5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\conquer-util-a248c0c8bcdadb23",
+    "Name": "conquer-util-a248c0c8bcdadb23",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\core-a898b6972184075d",
+    "Name": "core-a898b6972184075d",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\cpufeatures-d48f392a3d77faab",
+    "Name": "cpufeatures-d48f392a3d77faab",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\crc-a22df4c6ec7b545e",
+    "Name": "crc-a22df4c6ec7b545e",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\crc-catalog-0c609ebcd064f92b",
+    "Name": "crc-catalog-0c609ebcd064f92b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\crypto-common-7c7ac80292c4e8ae",
+    "Name": "crypto-common-7c7ac80292c4e8ae",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\digest-5d945b4550a85917",
+    "Name": "digest-5d945b4550a85917",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\fastrand-7587285036ad26dd",
+    "Name": "fastrand-7587285036ad26dd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\fatfs-6719287a67a63e9d",
+    "Name": "fatfs-6719287a67a63e9d",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\funty-63b83823559d12d7",
+    "Name": "funty-63b83823559d12d7",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\generic-array-380a6f9bcf378fc0",
+    "Name": "generic-array-380a6f9bcf378fc0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\generic-array-7fe2332b01ccbbae",
+    "Name": "generic-array-7fe2332b01ccbbae",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\getrandom-09fa0345041afb82",
+    "Name": "getrandom-09fa0345041afb82",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\getrandom-25c4a7b572e12c3b",
+    "Name": "getrandom-25c4a7b572e12c3b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\gpt-63cb1e285dac3a0a",
+    "Name": "gpt-63cb1e285dac3a0a",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\itoa-f2e9bbc9618412c3",
+    "Name": "itoa-f2e9bbc9618412c3",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\libnexus-net-4bc6544303ff62c1",
+    "Name": "libnexus-net-4bc6544303ff62c1",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\linked_list_allocator-d62d1bd0eb6e4ecf",
+    "Name": "linked_list_allocator-d62d1bd0eb6e4ecf",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\lock_api-a18664e2c1d6ebcd",
+    "Name": "lock_api-a18664e2c1d6ebcd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\log-de5b22c8d819e150",
+    "Name": "log-de5b22c8d819e150",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\mbrman-14627079d2885e7a",
+    "Name": "mbrman-14627079d2885e7a",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\memchr-1f93a45dd43294b1",
+    "Name": "memchr-1f93a45dd43294b1",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\once_cell-65e728da62a6778a",
+    "Name": "once_cell-65e728da62a6778a",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\postcard-5d34447e8f76c6d9",
+    "Name": "postcard-5d34447e8f76c6d9",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\radium-88cae95ffd3a8cba",
+    "Name": "radium-88cae95ffd3a8cba",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\radium-ae2a119b7aadc61f",
+    "Name": "radium-ae2a119b7aadc61f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\scopeguard-2bc6ee195b91ad39",
+    "Name": "scopeguard-2bc6ee195b91ad39",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde_core-5a70b849a39d2359",
+    "Name": "serde_core-5a70b849a39d2359",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde_core-65cce5a2294c1520",
+    "Name": "serde_core-65cce5a2294c1520",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde_json-07c7ef4f7f4abae5",
+    "Name": "serde_json-07c7ef4f7f4abae5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde_json-6863b932f44b6218",
+    "Name": "serde_json-6863b932f44b6218",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde-34f4911bda0834ef",
+    "Name": "serde-34f4911bda0834ef",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde-big-array-20fd6a16bee73e9d",
+    "Name": "serde-big-array-20fd6a16bee73e9d",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\serde-fbf9736cbe6ec08c",
+    "Name": "serde-fbf9736cbe6ec08c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\sha2-f53b5f73b6e73342",
+    "Name": "sha2-f53b5f73b6e73342",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\spin-b81fb67ca5ef89d6",
+    "Name": "spin-b81fb67ca5ef89d6",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\spinning_top-9fcda5cbcf4e6ba7",
+    "Name": "spinning_top-9fcda5cbcf4e6ba7",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\tap-db963d2cfcfb0374",
+    "Name": "tap-db963d2cfcfb0374",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\tempfile-ed34619b0aaebeae",
+    "Name": "tempfile-ed34619b0aaebeae",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\thiserror-06c60e209560ab1d",
+    "Name": "thiserror-06c60e209560ab1d",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\thiserror-3fb98aaf0d69c127",
+    "Name": "thiserror-3fb98aaf0d69c127",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\thiserror-7ec366176e88e57c",
+    "Name": "thiserror-7ec366176e88e57c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\thiserror-8c681e35de6da0fb",
+    "Name": "thiserror-8c681e35de6da0fb",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\typenum-51318fa6ec895ea3",
+    "Name": "typenum-51318fa6ec895ea3",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\typenum-b8a33a2ac2b20c56",
+    "Name": "typenum-b8a33a2ac2b20c56",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\uuid-bb40cfd063baaa8e",
+    "Name": "uuid-bb40cfd063baaa8e",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\volatile-b5ff577a2e056121",
+    "Name": "volatile-b5ff577a2e056121",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\wyz-7db221ccbf63de5c",
+    "Name": "wyz-7db221ccbf63de5c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\x86_64-f3118cefdc312f45",
+    "Name": "x86_64-f3118cefdc312f45",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\zmij-30e0da60153a7fcf",
+    "Name": "zmij-30e0da60153a7fcf",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\zmij-d3da0c56fa2b0416",
+    "Name": "zmij-d3da0c56fa2b0416",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\core-a898b6972184075d\\dep-lib-core",
+    "Name": "dep-lib-core",
+    "Length": 17408,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\core-a898b6972184075d\\invoked.timestamp",
+    "Name": "invoked.timestamp",
+    "Length": 48,
+    "Extension": ".timestamp"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\core-a898b6972184075d\\lib-core",
+    "Name": "lib-core",
+    "Length": 16,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\.fingerprint\\core-a898b6972184075d\\lib-core.json",
+    "Name": "lib-core.json",
+    "Length": 519,
+    "Extension": ".json"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\aetheros-kernel-cf0169c6b9a7388f",
+    "Name": "aetheros-kernel-cf0169c6b9a7388f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\anyhow-66b73de1f8226034",
+    "Name": "anyhow-66b73de1f8226034",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\bootloader_api-13a5dcaf70db1399",
+    "Name": "bootloader_api-13a5dcaf70db1399",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\bootloader-52368dd698348e6f",
+    "Name": "bootloader-52368dd698348e6f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\compiler_builtins-3229ad4587774edd",
+    "Name": "compiler_builtins-3229ad4587774edd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\generic-array-380a6f9bcf378fc0",
+    "Name": "generic-array-380a6f9bcf378fc0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\getrandom-25c4a7b572e12c3b",
+    "Name": "getrandom-25c4a7b572e12c3b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\radium-ae2a119b7aadc61f",
+    "Name": "radium-ae2a119b7aadc61f",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde_core-65cce5a2294c1520",
+    "Name": "serde_core-65cce5a2294c1520",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde_json-6863b932f44b6218",
+    "Name": "serde_json-6863b932f44b6218",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde-fbf9736cbe6ec08c",
+    "Name": "serde-fbf9736cbe6ec08c",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\thiserror-06c60e209560ab1d",
+    "Name": "thiserror-06c60e209560ab1d",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\thiserror-8c681e35de6da0fb",
+    "Name": "thiserror-8c681e35de6da0fb",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\typenum-b8a33a2ac2b20c56",
+    "Name": "typenum-b8a33a2ac2b20c56",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\zmij-30e0da60153a7fcf",
+    "Name": "zmij-30e0da60153a7fcf",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\aetheros-kernel-cf0169c6b9a7388f\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\anyhow-66b73de1f8226034\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\bootloader-52368dd698348e6f\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\bootloader_api-13a5dcaf70db1399\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\compiler_builtins-3229ad4587774edd\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\generic-array-380a6f9bcf378fc0\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\getrandom-25c4a7b572e12c3b\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\radium-ae2a119b7aadc61f\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde-fbf9736cbe6ec08c\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde_core-65cce5a2294c1520\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\serde_json-6863b932f44b6218\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\thiserror-06c60e209560ab1d\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\thiserror-8c681e35de6da0fb\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\typenum-b8a33a2ac2b20c56\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\build\\zmij-30e0da60153a7fcf\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\deps\\core-a898b6972184075d.d",
+    "Name": "core-a898b6972184075d.d",
+    "Length": 218005,
+    "Extension": ".d"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\deps\\libcore-a898b6972184075d.rlib",
+    "Name": "libcore-a898b6972184075d.rlib",
+    "Length": 60278776,
+    "Extension": ".rlib"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\aetheros-x86_64\\release\\deps\\libcore-a898b6972184075d.rmeta",
+    "Name": "libcore-a898b6972184075d.rmeta",
+    "Length": 59510121,
+    "Extension": ".rmeta"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint",
+    "Name": ".fingerprint",
+    "Length": null,
+    "Extension": ".fingerprint"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build",
+    "Name": "build",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\deps",
+    "Name": "deps",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\examples",
+    "Name": "examples",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\incremental",
+    "Name": "incremental",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.cargo-build-lock",
+    "Name": ".cargo-build-lock",
+    "Length": 0,
+    "Extension": ".cargo-build-lock"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.cargo-lock",
+    "Name": ".cargo-lock",
+    "Length": 0,
+    "Extension": ".cargo-lock"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\aetheros-kernel-ecb33f897cb18f40",
+    "Name": "aetheros-kernel-ecb33f897cb18f40",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\anyhow-2ff992e7fd290277",
+    "Name": "anyhow-2ff992e7fd290277",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\bootloader_api-f7be54e9c9638209",
+    "Name": "bootloader_api-f7be54e9c9638209",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\bootloader-f3d75ebd2f2af341",
+    "Name": "bootloader-f3d75ebd2f2af341",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\compiler_builtins-b00e39590f7fcff4",
+    "Name": "compiler_builtins-b00e39590f7fcff4",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\generic-array-d6f61f3547f6ba8e",
+    "Name": "generic-array-d6f61f3547f6ba8e",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\getrandom-e75189684d39d202",
+    "Name": "getrandom-e75189684d39d202",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\llvm-tools-c03e03a2b87a7ef5",
+    "Name": "llvm-tools-c03e03a2b87a7ef5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\proc-macro2-19b88145950a2917",
+    "Name": "proc-macro2-19b88145950a2917",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\proc-macro2-3847e3cf253ca2ae",
+    "Name": "proc-macro2-3847e3cf253ca2ae",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\proc-macro2-95346d557d2625aa",
+    "Name": "proc-macro2-95346d557d2625aa",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\quote-78c569f7de8bf6d0",
+    "Name": "quote-78c569f7de8bf6d0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\quote-895da1738ab61535",
+    "Name": "quote-895da1738ab61535",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\quote-d8ed9315a8bf9481",
+    "Name": "quote-d8ed9315a8bf9481",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\radium-8089314ec18ca690",
+    "Name": "radium-8089314ec18ca690",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\rustversion-033a49222ba08b54",
+    "Name": "rustversion-033a49222ba08b54",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\rustversion-5cb50ea21061bdb5",
+    "Name": "rustversion-5cb50ea21061bdb5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\rustversion-ac91f760f11961f7",
+    "Name": "rustversion-ac91f760f11961f7",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\serde_core-30b1cd5b8ce19250",
+    "Name": "serde_core-30b1cd5b8ce19250",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\serde_derive-ed6256275ff99fd4",
+    "Name": "serde_derive-ed6256275ff99fd4",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\serde_json-de849790aa402b77",
+    "Name": "serde_json-de849790aa402b77",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\serde-40555174c191d0d0",
+    "Name": "serde-40555174c191d0d0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\syn-64680e4668db2cea",
+    "Name": "syn-64680e4668db2cea",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\thiserror-8a288a2f34b1a158",
+    "Name": "thiserror-8a288a2f34b1a158",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\thiserror-b546a606de7d09b4",
+    "Name": "thiserror-b546a606de7d09b4",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\thiserror-impl-1bfc19fd7d761e38",
+    "Name": "thiserror-impl-1bfc19fd7d761e38",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\thiserror-impl-79a2f04dadfbac9e",
+    "Name": "thiserror-impl-79a2f04dadfbac9e",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\typenum-8062771936182b34",
+    "Name": "typenum-8062771936182b34",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\unicode-ident-a91f23cb6350b1a6",
+    "Name": "unicode-ident-a91f23cb6350b1a6",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\version_check-f163677fd2175f1b",
+    "Name": "version_check-f163677fd2175f1b",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\zmij-4b6ca291cf445980",
+    "Name": "zmij-4b6ca291cf445980",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\compiler_builtins-b00e39590f7fcff4\\invoked.timestamp",
+    "Name": "invoked.timestamp",
+    "Length": 48,
+    "Extension": ".timestamp"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\compiler_builtins-b00e39590f7fcff4\\output-build-script-build-script-build",
+    "Name": "output-build-script-build-script-build",
+    "Length": 1711,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\proc-macro2-3847e3cf253ca2ae\\invoked.timestamp",
+    "Name": "invoked.timestamp",
+    "Length": 48,
+    "Extension": ".timestamp"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\.fingerprint\\proc-macro2-3847e3cf253ca2ae\\output-build-script-build-script-build",
+    "Name": "output-build-script-build-script-build",
+    "Length": 1711,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\aetheros-kernel-ecb33f897cb18f40",
+    "Name": "aetheros-kernel-ecb33f897cb18f40",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\anyhow-2ff992e7fd290277",
+    "Name": "anyhow-2ff992e7fd290277",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\bootloader_api-f7be54e9c9638209",
+    "Name": "bootloader_api-f7be54e9c9638209",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\bootloader-f3d75ebd2f2af341",
+    "Name": "bootloader-f3d75ebd2f2af341",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4",
+    "Name": "compiler_builtins-b00e39590f7fcff4",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\generic-array-d6f61f3547f6ba8e",
+    "Name": "generic-array-d6f61f3547f6ba8e",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\getrandom-e75189684d39d202",
+    "Name": "getrandom-e75189684d39d202",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-19b88145950a2917",
+    "Name": "proc-macro2-19b88145950a2917",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-3847e3cf253ca2ae",
+    "Name": "proc-macro2-3847e3cf253ca2ae",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\quote-895da1738ab61535",
+    "Name": "quote-895da1738ab61535",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\quote-d8ed9315a8bf9481",
+    "Name": "quote-d8ed9315a8bf9481",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\radium-8089314ec18ca690",
+    "Name": "radium-8089314ec18ca690",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\rustversion-5cb50ea21061bdb5",
+    "Name": "rustversion-5cb50ea21061bdb5",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\rustversion-ac91f760f11961f7",
+    "Name": "rustversion-ac91f760f11961f7",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\serde_core-30b1cd5b8ce19250",
+    "Name": "serde_core-30b1cd5b8ce19250",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\serde_json-de849790aa402b77",
+    "Name": "serde_json-de849790aa402b77",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\serde-40555174c191d0d0",
+    "Name": "serde-40555174c191d0d0",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\thiserror-8a288a2f34b1a158",
+    "Name": "thiserror-8a288a2f34b1a158",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\thiserror-b546a606de7d09b4",
+    "Name": "thiserror-b546a606de7d09b4",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\typenum-8062771936182b34",
+    "Name": "typenum-8062771936182b34",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\zmij-4b6ca291cf445980",
+    "Name": "zmij-4b6ca291cf445980",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4\\build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.0.rcgu.o",
+    "Name": "build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.0.rcgu.o",
+    "Length": 75421,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4\\build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.1.rcgu.o",
+    "Name": "build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.1.rcgu.o",
+    "Length": 164758,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4\\build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.2.rcgu.o",
+    "Name": "build_script_build-b00e39590f7fcff4.build_script_build.e8123a08b89febba-cgu.2.rcgu.o",
+    "Length": 68980,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4\\build_script_build-b00e39590f7fcff4.cwc0ttlmh9xsg75iyrewbufw4.rcgu.o",
+    "Name": "build_script_build-b00e39590f7fcff4.cwc0ttlmh9xsg75iyrewbufw4.rcgu.o",
+    "Length": 1355,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\compiler_builtins-b00e39590f7fcff4\\build_script_build-b00e39590f7fcff4.d",
+    "Name": "build_script_build-b00e39590f7fcff4.d",
+    "Length": 1226,
+    "Extension": ".d"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-19b88145950a2917\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-3847e3cf253ca2ae\\build_script_build-3847e3cf253ca2ae.build_script_build.5221f67e25af54c5-cgu.0.rcgu.o",
+    "Name": "build_script_build-3847e3cf253ca2ae.build_script_build.5221f67e25af54c5-cgu.0.rcgu.o",
+    "Length": 193249,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-3847e3cf253ca2ae\\build_script_build-3847e3cf253ca2ae.c9hlm57ehkygl33r6kagrkjfs.rcgu.o",
+    "Name": "build_script_build-3847e3cf253ca2ae.c9hlm57ehkygl33r6kagrkjfs.rcgu.o",
+    "Length": 1355,
+    "Extension": ".o"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\proc-macro2-3847e3cf253ca2ae\\build_script_build-3847e3cf253ca2ae.d",
+    "Name": "build_script_build-3847e3cf253ca2ae.d",
+    "Length": 634,
+    "Extension": ".d"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\quote-895da1738ab61535\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\target\\release\\build\\rustversion-5cb50ea21061bdb5\\out",
+    "Name": "out",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-healthd",
+    "Name": "aether-healthd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-logd",
+    "Name": "aether-logd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-metricsd",
+    "Name": "aether-metricsd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-recoverd",
+    "Name": "aether-recoverd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-telemetryd",
+    "Name": "aether-telemetryd",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\dns-resolver",
+    "Name": "dns-resolver",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\echo",
+    "Name": "echo",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\file-manager",
+    "Name": "file-manager",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\init-service",
+    "Name": "init-service",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\keyboard",
+    "Name": "keyboard",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\logger",
+    "Name": "logger",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\mail-service",
+    "Name": "mail-service",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\model-runtime",
+    "Name": "model-runtime",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-bridge",
+    "Name": "net-bridge",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack",
+    "Name": "net-stack",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\registry",
+    "Name": "registry",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\shell",
+    "Name": "shell",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\socket-api",
+    "Name": "socket-api",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\test",
+    "Name": "test",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\vfs",
+    "Name": "vfs",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-healthd\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 242,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-logd\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 152,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-metricsd\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 210,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-recoverd\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 223,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\aether-telemetryd\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 202,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\dns-resolver\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\dns-resolver\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 530,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\dns-resolver\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1131,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\dns-resolver\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 11523,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\echo\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\echo\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 398,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\echo\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 101,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\echo\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 617,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\file-manager\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\file-manager\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 530,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\file-manager\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1199,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\file-manager\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 13507,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\init-service\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\init-service\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 434,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\init-service\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1271,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\init-service\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 6125,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\keyboard\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\keyboard\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 310,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\keyboard\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 452,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\keyboard\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 11713,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\logger\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\logger\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 400,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\logger\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 124,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\logger\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 2461,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\mail-service\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\mail-service\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 530,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\mail-service\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1374,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\mail-service\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 8994,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\model-runtime\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\model-runtime\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 532,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\model-runtime\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1488,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\model-runtime\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 11880,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-bridge\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-bridge\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 526,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-bridge\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1027,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-bridge\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 10469,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\aethernet_device.rs",
+    "Name": "aethernet_device.rs",
+    "Length": 7761,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 674,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\example.rs",
+    "Name": "example.rs",
+    "Length": 469,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\main.rs",
+    "Name": "main.rs",
+    "Length": 12195,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1263,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\src\\aethernet_device.rs",
+    "Name": "aethernet_device.rs",
+    "Length": 10946,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\net-stack\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 16700,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\registry\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\registry\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 426,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\registry\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 862,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\registry\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 3218,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\shell\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\shell\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 666,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\shell\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1326,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\shell\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 15403,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\socket-api\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\socket-api\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 676,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\socket-api\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1027,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\socket-api\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 18946,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\test\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\test\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 398,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\test\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 120,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\test\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 2037,
+    "Extension": ".rs"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\vfs\\src",
+    "Name": "src",
+    "Length": null,
+    "Extension": ""
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\vfs\\Cargo.toml",
+    "Name": "Cargo.toml",
+    "Length": 662,
+    "Extension": ".toml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\vfs\\vnode.yml",
+    "Name": "vnode.yml",
+    "Length": 1608,
+    "Extension": ".yml"
+  },
+  {
+    "FullName": "C:\\Users\\Alex Kitipov\\Downloads\\Aether_OS_Nexus_Core_v.0.3\\AetherOS\\vnode\\vfs\\src\\main.rs",
+    "Name": "main.rs",
+    "Length": 12110,
+    "Extension": ".rs"
+  }
+]
