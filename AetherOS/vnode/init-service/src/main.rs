@@ -168,12 +168,12 @@ pub extern "C" fn _start() -> ! {
     init_service.run_loop();
 }
 
-fn main() -> ! {
-    // TODO: реална логика за init-service
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn main() -> ! {
+    // TODO: реална логика за init-service
     loop {}
 }

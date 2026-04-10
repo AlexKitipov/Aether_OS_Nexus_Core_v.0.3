@@ -19,7 +19,12 @@ if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
 fi
 
-if ! rustup toolchain list | rg -q "^${TOOLCHAIN}"; then
+if command -v rg >/dev/null 2>&1; then
+  RUSTUP_TOOLCHAIN_CHECK="rustup toolchain list | rg -q '^${TOOLCHAIN}'"
+else
+  RUSTUP_TOOLCHAIN_CHECK="rustup toolchain list | grep -q '^${TOOLCHAIN}'"
+fi
+if ! eval "${RUSTUP_TOOLCHAIN_CHECK}"; then
   echo "${TOOLCHAIN} toolchain is not available. Installing ${TOOLCHAIN}..."
   rustup toolchain install "${TOOLCHAIN}"
 fi
@@ -51,7 +56,7 @@ if [[ -n "${OBJDUMP_TOOL}" ]]; then
   if [[ -z "${section_table}" ]]; then
     echo "[diag][stage=build_kernel_image.section_validation][status=warn] no section table available; skipping memory map validation" >&2
   else
-    text_start_addr="$(awk '$2==".text.start"{print $4}' <<<"${section_table}" | head -n1)"
+    text_start_addr="$(awk '$2==".text.start" || $2==".text._start"{print $4}' <<<"${section_table}" | head -n1)"
     text_addr="$(awk '$2==".text"{print $4}' <<<"${section_table}" | head -n1)"
     rodata_addr="$(awk '$2==".rodata"{print $4}' <<<"${section_table}" | head -n1)"
     data_addr="$(awk '$2==".data"{print $4}' <<<"${section_table}" | head -n1)"
