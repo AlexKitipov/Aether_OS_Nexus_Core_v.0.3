@@ -15,6 +15,7 @@ use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr, Ipv4Add
 use smoltcp::time::Instant;
 
 use crate::ipc::vnode::VNodeChannel;
+use crate::IpcSend;
 use crate::syscall::{syscall2, syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_TIME};
 use crate::ipc::net_ipc::{NetPacketMsg, NetStackRequest, NetStackResponse};
 
@@ -209,7 +210,7 @@ pub extern "C" fn _start() -> ! {
                         }
                     },
                 };
-                own_chan.send(&response).unwrap_or_else(|_| log("AetherNet: Failed to send response."));
+                own_chan.send_raw(&response).unwrap_or_else(|_| log("AetherNet: Failed to send response."));
             } else {
                 log("AetherNet: Failed to deserialize NetStackRequest.");
             }

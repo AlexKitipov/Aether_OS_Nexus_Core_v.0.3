@@ -8,7 +8,7 @@ use core::panic::PanicInfo;
 
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest, LoggerResponse};
 use common::ipc::vnode::VNodeChannel;
-use common::ipc::IpcSend;
+use common::IpcSend;
 use common::syscall::{syscall_log, syscall3, SYS_TIME};
 use linked_list_allocator::LockedHeap;
 

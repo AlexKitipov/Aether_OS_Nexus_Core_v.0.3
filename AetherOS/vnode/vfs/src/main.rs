@@ -10,9 +10,10 @@ use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 
-use crate::ipc::vnode::VNodeChannel;
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
-use crate::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};
+use common::ipc::vnode::VNodeChannel;
+use common::IpcSend;
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
+use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};
 
 // Temporary log function for V-Nodes
 

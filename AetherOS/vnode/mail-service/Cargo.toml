@@ -9,8 +9,6 @@ common = { package = "aetheros_common", path = "../../common" }
 serde = { version = "1.0", default-features = false, features = ["derive", "alloc"] }
 postcard = { version = "1.1.3", default-features = false, features = ["alloc"] }
 
-[lib]
-crate-type = ["cdylib"]
 
 # The binary target for the V-Node itself
 [[bin]]

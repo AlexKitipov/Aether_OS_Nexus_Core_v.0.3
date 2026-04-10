@@ -13,6 +13,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
+use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ipc::socket_ipc::{SocketRequest, SocketResponse, SocketFd};
 use common::ipc::dns_ipc::{DnsRequest, DnsResponse};

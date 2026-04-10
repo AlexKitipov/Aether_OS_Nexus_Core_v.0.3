@@ -14,6 +14,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
+use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::shell_ipc::{ShellRequest, ShellResponse, LogLevel};
 use common::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};

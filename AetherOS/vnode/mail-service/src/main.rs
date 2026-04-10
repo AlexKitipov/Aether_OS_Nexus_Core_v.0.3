@@ -17,6 +17,7 @@ use common::ipc::mail_ipc::{MailRequest, MailResponse};
 use common::ipc::socket_ipc::{SocketRequest, SocketResponse};
 use common::ipc::vfs_ipc::{VfsRequest, VfsResponse};
 use common::ipc::vnode::VNodeChannel;
+use common::IpcSend;
 use common::syscall::{syscall3, SUCCESS, SYS_LOG, SYS_TIME};
 
 const VNODE_HEAP_SIZE: usize = 64 * 1024;
