@@ -3,12 +3,14 @@
 use serde::{Deserialize, Serialize};
 use alloc::string::String;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum EchoRequest {
     Echo { message: String },
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum EchoResponse {
     EchoReply { message: String },
     Error(String),
@@ -45,6 +47,7 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "serde")]
     #[test]
     fn request_round_trip_serialization_works() {
         let request = EchoRequest::Echo {
@@ -57,6 +60,7 @@ mod tests {
         assert_eq!(decoded, request);
     }
 
+    #[cfg(feature = "serde")]
     #[test]
     fn response_round_trip_serialization_works() {
         let response = EchoResponse::EchoReply {

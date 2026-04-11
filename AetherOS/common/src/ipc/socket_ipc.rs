@@ -9,7 +9,8 @@ use serde::{Deserialize, Serialize};
 pub type SocketFd = u32;
 
 /// Socket-related requests shared across V-Nodes.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum SocketRequest {
     Socket { domain: i32, ty: i32, protocol: i32 },
     Bind { fd: SocketFd, addr: [u8; 4], port: u16 },
@@ -22,7 +23,8 @@ pub enum SocketRequest {
 }
 
 /// Socket-related responses shared across V-Nodes.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum SocketResponse {
     Success(i32),
     Data(Vec<u8>),

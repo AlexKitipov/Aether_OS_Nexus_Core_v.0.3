@@ -5,13 +5,15 @@ use alloc::string::String;
 
 pub use crate::ipc::logger_ipc::LogLevel;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum TestRequest {
     RunEchoTest { message: String },
     RunLoggerTest { message: String, level: LogLevel },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum TestResponse {
     EchoResult { reply: String },
     LoggerResult { success: bool },
