@@ -5,7 +5,7 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
-use postcard::to_allocvec;
+// use postcard::to_allocvec;
 use sha2::{Digest, Sha256};
 use spin::Mutex;
 
@@ -54,7 +54,7 @@ struct ManagedVNode {
 
 impl ManagedVNode {
     fn capability_hash(&self) -> [u8; 32] {
-        let encoded = to_allocvec(&self.capabilities).unwrap_or_default();
+        let encoded = Vec::new(); // TODO: serialize capabilities
         sha2_256(&encoded)
     }
 }

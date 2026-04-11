@@ -35,7 +35,8 @@ rustup component add llvm-tools-preview --toolchain "${TOOLCHAIN}"
 
 cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
   -Zbuild-std=core,alloc,compiler_builtins \
-  -Zbuild-std-features=compiler-builtins-mem
+  -Zbuild-std-features=compiler-builtins-mem \
+  -p aetheros-kernel
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 

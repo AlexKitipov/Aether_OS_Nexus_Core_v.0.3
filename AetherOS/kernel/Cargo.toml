@@ -3,8 +3,11 @@ name = "aetheros-kernel"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "aetheros-kernel"
+path = "src/main.rs"
+
 [dependencies]
-serde = { workspace = true }
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
 bootloader_api = { workspace = true }
 bootloader = { workspace = true }
@@ -12,7 +15,7 @@ x86_64 = { workspace = true }
 spin = { workspace = true }
 conquer-once = { workspace = true }
 linked_list_allocator = { workspace = true }
-postcard = { workspace = true }
+# postcard = { workspace = true }
 sha2 = { workspace = true }
 
 
