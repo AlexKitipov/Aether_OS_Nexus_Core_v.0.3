@@ -3,14 +3,11 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 use crate::ipc::keyboard_ipc::KeyEvent;
 
 /// Commands accepted by the WebView V-Node.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum WebViewCommand {
     /// Streams keyboard input events into the currently focused document/input field.
     InjectKeyEvent { event: KeyEvent },
@@ -26,7 +23,7 @@ pub enum WebViewCommand {
 
 /// Replies emitted by the WebView V-Node.
 #[derive(Debug, Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum WebViewResponse {
     Ack,
     RenderedMail {
