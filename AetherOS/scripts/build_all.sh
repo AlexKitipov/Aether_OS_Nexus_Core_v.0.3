@@ -11,7 +11,7 @@ unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
 unset CARGO_BUILD_RUSTFLAGS
 
-TOOLCHAIN="nightly-2024-12-01"
+TOOLCHAIN="nightly-2024-10-01"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
 KERNEL_TARGET=".cargo/aetheros-x86_64.json"

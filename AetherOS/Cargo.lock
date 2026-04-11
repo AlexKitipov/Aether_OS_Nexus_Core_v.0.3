@@ -21,7 +21,6 @@ dependencies = [
  "bootloader_api",
  "conquer-once",
  "linked_list_allocator",
- "postcard",
  "sha2",
  "spin",
  "x86_64",

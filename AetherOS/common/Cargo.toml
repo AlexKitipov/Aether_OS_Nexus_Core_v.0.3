@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 serde = { workspace = true, optional = true }
-postcard = { workspace = true, optional = true }
+# postcard = { workspace = true, optional = true }
 
 # libnexus-net is now a direct dependency as NexusNetTransport uses it
 libnexus-net = { path = "../libnexus-net", default-features = false }
@@ -20,8 +20,8 @@ examples = { path = "./examples", optional = true }
 [features]
 default = ["alloc"]
 alloc = []
-std = ["serde?/std", "postcard?/use-std", "libnexus-net/std"]
-serde = ["dep:serde", "dep:postcard"]
+std = ["serde?/std", "libnexus-net/std"]
+serde = ["dep:serde"]
 # Feature to enable `smoltcp` related items if needed directly in common
 smoltcp_enabled = ["dep:smoltcp"]
 # Feature to enable `examples` for building test V-Nodes
