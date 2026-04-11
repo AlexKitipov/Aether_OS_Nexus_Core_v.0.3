@@ -1,9 +1,11 @@
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 pub struct NodeId(pub [u8; 32]);
 
 /// Minimal peer routing metadata shared across transport + swarm layers.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct PeerInfo {
     pub ip_address: [u8; 4],
     pub port: u16,

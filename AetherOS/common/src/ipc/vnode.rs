@@ -63,6 +63,7 @@ impl VNodeChannel {
         }
     }
 
+    #[cfg(feature = "serde")]
     pub fn send_and_recv<Req: serde::Serialize, Resp: serde::de::DeserializeOwned>(
         &mut self, request: &Req
     ) -> core::result::Result<Resp, ()> {

@@ -26,7 +26,8 @@ pub enum NetPacketMsg {
 }
 
 // IPC API for other V-Nodes (Socket API)
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum NetStackRequest {
     OpenSocket(u32, u16), // type (0=TCP, 1=UDP), local_port (0 for ephemeral)
     Send(u32, Vec<u8>), // socket_handle, data
@@ -35,7 +36,8 @@ pub enum NetStackRequest {
     CloseSocket(u32), // socket_handle
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum NetStackResponse {
     SocketOpened(u32), // socket_handle
     Data(Vec<u8>),

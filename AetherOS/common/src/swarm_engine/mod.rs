@@ -187,6 +187,7 @@ pub enum SwarmMessage {
     Pong(u64),
 }
 
+#[cfg(feature = "serde")]
 impl SwarmMessage {
     /// Serialize to compact deterministic binary envelope.
     pub fn encode(&self) -> Result<Vec<u8>, SwarmError> {
