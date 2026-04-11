@@ -135,7 +135,7 @@ fn inspect_vnode(task_id: u64) -> DevInterfaceResponse {
     }
 }
 
-fn send_response(response: DevInterfaceResponse) -> Result<(), ()> {
+fn send_response(_response: DevInterfaceResponse) -> Result<(), ()> {
     let payload = Vec::new(); // TODO: postcard::to_allocvec(&response).map_err(|_| ())?;
     ipc::mailbox::send(well_known::DEV_INTERFACE, DEV_INTERFACE_TASK_ID, &payload).map_err(|_| ())
 }

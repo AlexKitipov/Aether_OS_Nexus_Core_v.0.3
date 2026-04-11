@@ -21,7 +21,7 @@ examples = { path = "./examples", optional = true }
 default = ["alloc"]
 alloc = []
 std = ["serde?/std", "libnexus-net/std"]
-serde = ["dep:serde"]
+serde = ["dep:serde", "dep:postcard"]
 # Feature to enable `smoltcp` related items if needed directly in common
 smoltcp_enabled = ["dep:smoltcp"]
 # Feature to enable `examples` for building test V-Nodes
