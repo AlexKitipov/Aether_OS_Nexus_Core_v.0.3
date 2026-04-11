@@ -60,7 +60,8 @@ pub enum UiRequest {
 }
 
 /// Represents responses from the UI Compositor or other UI services to client V-Nodes.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum UiResponse {
     /// Indicates a successful operation, optionally with a window ID.
     Success {
@@ -78,7 +79,8 @@ pub enum UiResponse {
     },
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum MouseEventType {
     MouseDown,
     MouseUp,
@@ -86,13 +88,15 @@ pub enum MouseEventType {
     Scroll,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum KeyEventType {
     KeyDown,
     KeyUp,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct WindowInfo {
     pub id: u32,
     pub title: String,
