@@ -5,7 +5,8 @@ use alloc::vec::Vec;
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DevInterfaceRequest {
     Ping,
     RunTask {
@@ -19,7 +20,8 @@ pub enum DevInterfaceRequest {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DevInterfaceResponse {
     Pong,
     TaskStarted {
@@ -45,13 +47,15 @@ pub enum DevInterfaceResponse {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum TaskLaunchMode {
     Inherit,
     SpawnFromAetherFs,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct DeviceRightSummary {
     pub device_id: u64,
     pub can_read: bool,

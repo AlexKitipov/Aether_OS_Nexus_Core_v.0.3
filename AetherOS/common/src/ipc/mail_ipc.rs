@@ -6,7 +6,8 @@ use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
 
 /// Requests sent to the mail-service V-Node.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum MailRequest {
     SendMail {
         recipient: String,
@@ -21,7 +22,8 @@ pub enum MailRequest {
 }
 
 /// Responses returned by the mail-service V-Node.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum MailResponse {
     Success(String),
     Mailboxes(Vec<String>),

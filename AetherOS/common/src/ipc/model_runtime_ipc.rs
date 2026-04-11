@@ -6,7 +6,8 @@ use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
 
 /// Requests sent to the Model Runtime V-Node.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum InferRequest {
     /// Request image classification for raw image bytes.
     ImageClassification {
@@ -22,7 +23,8 @@ pub enum InferRequest {
 }
 
 /// Responses returned from the Model Runtime V-Node.
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum InferResponse {
     /// Classification labels and associated probabilities.
     ImageClassificationResult {

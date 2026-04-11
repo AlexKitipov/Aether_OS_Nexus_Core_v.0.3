@@ -5,7 +5,8 @@ use alloc::string::String;
 use serde::{Deserialize, Serialize};
 
 /// Runtime class used by the AI governor when assigning execution budget.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AiPriority {
     Interactive,
     Background,
@@ -13,7 +14,8 @@ pub enum AiPriority {
 }
 
 /// Request messages for an AI resource-governor V-Node.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AiGovernorRequest {
     /// Reserve CPU quota for a model-runtime session.
     ReserveCpu {
@@ -31,7 +33,8 @@ pub enum AiGovernorRequest {
 }
 
 /// Response messages returned by the AI resource-governor V-Node.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum AiGovernorResponse {
     Granted {
         requester: String,
