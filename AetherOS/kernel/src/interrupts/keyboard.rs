@@ -1,5 +1,8 @@
 //! Keyboard IRQ handler.
 
+extern crate alloc;
+
+use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU32, Ordering};
 
 use aetheros_common::ipc::keyboard_ipc::KeyEvent;
@@ -45,7 +48,7 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
         return;
     }
 
-    let key_event = KeyEvent::new(scancode, None);
+    let _key_event = KeyEvent::new(scancode, None);
     let payload = Vec::new(); // TODO: postcard::to_allocvec(&key_event)
     // let payload = match postcard::to_allocvec(&key_event) {
     //     Ok(payload) => payload,
