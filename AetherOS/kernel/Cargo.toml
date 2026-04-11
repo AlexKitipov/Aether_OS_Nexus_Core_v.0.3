@@ -10,7 +10,6 @@ path = "src/main.rs"
 [dependencies]
 aetheros_common = { path = "../common", default-features = false, features = ["alloc"] }
 bootloader_api = { workspace = true }
-bootloader = { workspace = true }
 x86_64 = { workspace = true }
 spin = { workspace = true }
 conquer-once = { workspace = true }
