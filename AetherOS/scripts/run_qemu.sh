@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-KERNEL="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
+KERNEL="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
 
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "[run_qemu] ERROR: qemu-system-x86_64 is not installed" >&2

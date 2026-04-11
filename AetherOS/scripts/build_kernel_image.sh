@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
+KERNEL_PATH="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
 RUN_QEMU="${RUN_QEMU:-0}"
-TOOLCHAIN="nightly-2024-10-01"
+TOOLCHAIN="nightly-2024-12-01"
 
 cd "${ROOT_DIR}"
 
@@ -33,9 +33,7 @@ rustup override set "${TOOLCHAIN}"
 rustup component add rust-src --toolchain "${TOOLCHAIN}"
 rustup component add llvm-tools-preview --toolchain "${TOOLCHAIN}"
 
-cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
-  -Zbuild-std=core,alloc,compiler_builtins \
-  -Zbuild-std-features=compiler-builtins-mem \
+cargo +"${TOOLCHAIN}" build --release --target x86_64-unknown-none \
   -p aetheros-kernel \
   -p aetheros-kernel
 
@@ -87,7 +85,7 @@ else
 fi
 
 echo "Run with:"
-echo "qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel -serial stdio -no-reboot -d int"
+echo "qemu-system-x86_64 -kernel target/x86_64-unknown-none/release/aetheros-kernel -serial stdio -no-reboot -d int"
 
 if [[ "${RUN_QEMU}" == "1" ]]; then
   qemu-system-x86_64 \
