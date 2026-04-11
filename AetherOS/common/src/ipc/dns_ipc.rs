@@ -1,6 +1,7 @@
 extern crate alloc;
 
 use alloc::string::String;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Represents a DNS query request from a client V-Node to the DNS Resolver V-Node.

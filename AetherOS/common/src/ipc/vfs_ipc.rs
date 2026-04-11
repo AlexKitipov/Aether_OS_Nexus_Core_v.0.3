@@ -6,6 +6,7 @@ use alloc::vec::Vec;
 use alloc::string::String;
 use alloc::collections::BTreeMap;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 // Placeholder for File Descriptor type

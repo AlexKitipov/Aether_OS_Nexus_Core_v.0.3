@@ -2,6 +2,7 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Represents a socket file descriptor within the socket-api V-Node.

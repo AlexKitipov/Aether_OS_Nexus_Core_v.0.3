@@ -4,6 +4,7 @@
 extern crate alloc;
 use alloc::vec::Vec;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 // IPC message format for data plane operations between net-bridge and aethernet-service

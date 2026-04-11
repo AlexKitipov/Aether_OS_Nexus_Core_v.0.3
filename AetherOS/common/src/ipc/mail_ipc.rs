@@ -2,6 +2,7 @@ extern crate alloc;
 
 use alloc::string::String;
 use alloc::vec::Vec;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Requests sent to the mail-service V-Node.

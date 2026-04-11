@@ -1,6 +1,7 @@
 use alloc::vec::Vec;
 use core::cmp::min;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::arp_dht::PeerInfo;
@@ -40,12 +41,14 @@ pub mod global_search {
     extern crate alloc;
 
     use alloc::{string::String, vec::Vec};
+    #[cfg(feature = "serde")]
     use serde::{Deserialize, Serialize};
 
     use crate::arp_dht::PeerInfo;
 
     /// Cross-peer search request emitted by shell/UI services.
-    #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
     pub struct SearchRequest {
         pub query: String,
         /// Optional maximum number of results expected by caller.

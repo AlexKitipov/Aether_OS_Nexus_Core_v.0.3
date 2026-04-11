@@ -5,6 +5,7 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::string::String;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::ipc::vfs_ipc::VfsMetadata; // Reusing VfsMetadata

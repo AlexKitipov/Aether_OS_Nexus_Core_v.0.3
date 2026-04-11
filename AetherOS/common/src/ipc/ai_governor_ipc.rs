@@ -1,6 +1,7 @@
 extern crate alloc;
 
 use alloc::string::String;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Runtime class used by the AI governor when assigning execution budget.

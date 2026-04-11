@@ -5,6 +5,7 @@ extern crate alloc;
 use alloc::vec::Vec;
 use alloc::string::String;
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 pub use crate::logger_ipc::LogLevel;

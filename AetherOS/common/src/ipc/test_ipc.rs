@@ -1,4 +1,5 @@
 
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use alloc::string::String;
 

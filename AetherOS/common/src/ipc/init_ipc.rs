@@ -1,6 +1,7 @@
 extern crate alloc;
 
 use alloc::string::String;
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
