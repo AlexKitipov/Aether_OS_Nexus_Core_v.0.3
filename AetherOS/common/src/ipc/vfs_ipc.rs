@@ -13,7 +13,8 @@ use serde::{Deserialize, Serialize};
 pub type Fd = u32;
 
 // Placeholder for VFS metadata structure
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct VfsMetadata {
     pub is_dir: bool,
     pub size: u64,
@@ -24,7 +25,8 @@ pub struct VfsMetadata {
 }
 
 /// Represents requests from client V-Nodes to the VFS V-Node.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum VfsRequest {
     /// Open a file or directory.
     Open { path: String, flags: u32 }, // flags could be O_RDONLY, O_WRONLY, O_CREAT, etc.
@@ -47,7 +49,8 @@ pub enum VfsRequest {
 }
 
 /// Represents responses from the VFS V-Node to client V-Nodes.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum VfsResponse {
     /// Indicates a successful operation, optionally with a return value (e.g., new Fd).
     Success(i32), // Typically 0 for success, or a new Fd

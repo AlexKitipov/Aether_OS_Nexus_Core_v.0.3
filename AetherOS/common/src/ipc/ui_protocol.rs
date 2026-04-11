@@ -3,11 +3,12 @@ extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
 
-
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 /// Represents requests from client V-Nodes to the UI Compositor or other UI services.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum UiRequest {
     /// Request to create a new window surface.
     CreateWindow {

@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 serde = { workspace = true, optional = true }
-# postcard = { workspace = true, optional = true }
+postcard = { workspace = true, optional = true }
 
 # libnexus-net is now a direct dependency as NexusNetTransport uses it
 libnexus-net = { path = "../libnexus-net", default-features = false }

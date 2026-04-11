@@ -8,7 +8,8 @@ use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
 
 // IPC message format for data plane operations between net-bridge and aethernet-service
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum NetPacketMsg {
     /// Sent from net-bridge to aethernet-service when a packet is received.
     /// Contains the DMA handle and the length of the received packet.
