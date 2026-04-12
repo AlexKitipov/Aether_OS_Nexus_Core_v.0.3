@@ -98,6 +98,8 @@ rustup component add llvm-tools-preview
 
 For a centralized dependency list and setup instructions, see [`docs/dependencies.md`](docs/dependencies.md).
 
+For a machine-by-machine validation checklist, see [`docs/environment_audit_checklist.md`](docs/environment_audit_checklist.md).
+
 Quick start:
 
 ```bash
