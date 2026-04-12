@@ -8,7 +8,7 @@ use core::panic::PanicInfo;
 #[cfg(target_os = "none")]
 use core::arch::global_asm;
 #[cfg(target_os = "none")]
-use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
+use bootloader_api::{BootInfo, BootloaderConfig};
 #[cfg(target_os = "none")]
 use aetheros_kernel::{init, task};
 
@@ -29,6 +29,12 @@ const _: () = {
     assert!(KERNEL_BOOT_STACK_SIZE % 16 == 0);
     assert!(KERNEL_BOOT_STACK_SIZE >= 4096);
 };
+
+#[cfg(target_os = "none")]
+#[used]
+#[unsafe(link_section = ".bootloader-config")]
+static BOOTLOADER_CONFIG: [u8; BootloaderConfig::SERIALIZED_LEN] =
+    BootloaderConfig::new_default().serialize();
 
 #[cfg(target_os = "none")]
 global_asm!(

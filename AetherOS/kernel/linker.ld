@@ -49,6 +49,7 @@ SECTIONS
     .rodata : ALIGN(4K)
     {
         PROVIDE(__rodata_start = .);
+        KEEP(*(.bootloader-config))
         *(.rodata .rodata.*)
         PROVIDE(__rodata_end = .);
     } > RAM
