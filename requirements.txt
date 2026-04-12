@@ -1,0 +1,5 @@
+# Python dependencies used by AetherOS/Nexus/UI/tools/*.py
+websockets
+numpy
+Pillow
+IPython
