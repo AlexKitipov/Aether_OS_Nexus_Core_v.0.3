@@ -18,6 +18,7 @@
 # `Result` errors in crates like serde_core.
 RUSTFLAGS = { value = "", force = true }
 CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
+CARGO_BUILD_RUSTFLAGS = { value = "", force = true }
 RUST_TARGET_PATH = { value = ".cargo", force = true, relative = true }
 
 [target.'cfg(all())']

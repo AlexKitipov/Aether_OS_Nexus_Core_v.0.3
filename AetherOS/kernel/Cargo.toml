@@ -16,7 +16,7 @@ spin = { workspace = true }
 conquer-once = { workspace = true }
 linked_list_allocator = { workspace = true }
 postcard = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, default-features = false, features = ["alloc", "derive"] }
 sha2 = { workspace = true }
 
 
