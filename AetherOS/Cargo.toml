@@ -38,6 +38,10 @@ spin = { version = "=0.9.8", default-features = false, features = ["mutex", "spi
 conquer-once = { version = "=0.4.0", default-features = false }
 sha2 = { version = "=0.10.9", default-features = false }
 smoltcp = { version = "=0.8.2", default-features = false, features = ["alloc", "proto-ipv4"] }
+bootloader = { workspace = true }
+bootloader_api = { workspace = true }
+serde_core = { workspace = true }
+
 
 [workspace.metadata]
 forbid-std = true
