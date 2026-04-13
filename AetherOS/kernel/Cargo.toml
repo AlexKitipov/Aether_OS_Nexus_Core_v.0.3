@@ -26,4 +26,5 @@ alloc = []
 bare_metal = []
 
 [package.metadata.bootloader]
-build = false
+target = "x86_64-unknown-uefi"
+
