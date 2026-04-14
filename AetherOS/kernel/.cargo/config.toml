@@ -1,18 +1,28 @@
-[build]
-# Allow building from `AetherOS/kernel` without requiring an explicit --target.
-target = "../.cargo/aetheros-x86_64.json"
-
 [env]
-# Keep host shell flags from leaking into dependency builds.
-RUSTFLAGS = { value = "", force = true }
-CARGO_ENCODED_RUSTFLAGS = { value = "", force = true }
-RUST_TARGET_PATH = { value = "../.cargo", force = true, relative = true }
-
-[unstable]
-build-std = ["core", "alloc", "compiler_builtins"]
-build-std-features = ["compiler-builtins-mem"]
+RUST_TARGET_PATH = ".cargo"
 
 [target.'cfg(all())']
 rustflags = [
     "--check-cfg=cfg(doc_cfg)"
 ]
+
+[alias]
+build-host = "build -p common"
+build-kernel = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-
+
+std-features=compiler-builtins-mem -p aetheros-kernel"
+build-vnode-webview = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -
+
+Zbuild-std-features=compiler-builtins-mem -p webview"
+build-vnode-display-compositor = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-
+
+std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -p display-compositor"
+build-vnode-init-service = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins 
+
+-Zbuild-std-features=compiler-builtins-mem -p init-service"
+build-vnode-registry = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -
+
+Zbuild-std-features=compiler-builtins-mem -p registry"
+build-baremetal-all = "build --release --workspace --target .cargo/aetheros-x86_64.json -Zbuild-
+
+std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem"
