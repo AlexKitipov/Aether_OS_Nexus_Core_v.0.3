@@ -36,7 +36,7 @@ impl NexusNetTransport {
 #[cfg(feature = "serde")]
 impl SwarmTransport for NexusNetTransport {
     #[cfg(feature = "serde")]
-    fn fetch_chunk_from_peer(&self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+    fn fetch_chunk_from_peer(&mut self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
         log(&format!("NexusNetTransport: Fetching chunk {:?} from peer {:?}:{}",
             &cid, peer.ip_address, peer.port));
 
@@ -48,7 +48,7 @@ impl SwarmTransport for NexusNetTransport {
             self.udp_socket_handle,
             peer.ip_address,
             peer.port,
-            request_payload
+            &request_payload // Corrected: pass as reference
         ).map_err(|e| {
             log(&format!("NexusNetTransport: Failed to send request: {:?}", e));
             SwarmError::NetworkError
@@ -67,4 +67,4 @@ impl SwarmTransport for NexusNetTransport {
         log(&format!("NexusNetTransport: Received {} bytes for chunk {:?}", response_payload.len(), &cid));
         Ok(response_payload)
     }
-}
+}----------------------------------------------------
