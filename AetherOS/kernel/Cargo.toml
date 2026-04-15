@@ -9,7 +9,7 @@ name = "aetheros-kernel"
 path = "src/main.rs"
 
 [dependencies]
-aetheros_common = { path = "../common", default-features = false, features = ["alloc", "serde"] }
+aetheros_common = { path = "../common", default-features = false, features = [ "alloc", "serde" ] } # Re-enabled 'alloc' feature
 bootloader = { workspace = true }
 bootloader_api = { workspace = true }
 x86_64 = { workspace = true }
@@ -17,14 +17,13 @@ spin = { workspace = true }
 conquer-once = { workspace = true }
 linked_list_allocator = { workspace = true }
 postcard = { workspace = true }
-serde = { workspace = true, default-features = false, features = ["alloc", "derive"] }
+serde = { workspace = true, default-features = false, features = [ "derive" ] }
 sha2 = { workspace = true }
 
 
 [features]
-default = ["alloc"]
-alloc = []
+default = []
 bare_metal = []
 
 [package.metadata.bootloader]
-target = "x86_64-unknown-uefi"
+target = "aetheros-x86_64"
