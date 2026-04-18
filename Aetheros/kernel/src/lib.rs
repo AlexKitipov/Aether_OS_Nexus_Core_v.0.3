@@ -5,25 +5,25 @@
 
 extern crate alloc;
 
+use bootloader_api::BootInfo;
 use core::panic::PanicInfo;
-use bootloader_api::info::{MemoryRegion, MemoryRegionKind, MemoryRegions};
 
-pub mod arch;
-pub mod drivers;
-pub mod memory;
-pub mod task;
-pub mod ipc;
-pub mod syscall;
-pub mod console;
-pub mod heap;
 pub mod aetherfs;
-pub mod elf;
-pub mod vnode_loader;
+pub mod arch;
 pub mod caps;
+pub mod console;
+pub mod drivers;
+pub mod elf;
+pub mod heap;
+pub mod ipc;
+pub mod memory;
+pub mod syscall;
+pub mod task;
 pub mod timer;
+pub mod vnode_loader;
 
 // Initialize the kernel.
-pub fn init(memory_regions: &'static MemoryRegions) {
+pub fn init(boot_info: &'static BootInfo) {
     drivers::serial::init();
     kprintln!("[kernel] Serial output initialized.");
 
@@ -33,13 +33,15 @@ pub fn init(memory_regions: &'static MemoryRegions) {
     arch::x86_64::idt::init();
     kprintln!("[kernel] IDT initialized.");
 
-    unsafe { arch::x86_64::irq::init_pic(); }
+    unsafe {
+        arch::x86_64::irq::init_pic();
+    }
     kprintln!("[kernel] PIC initialized.");
 
     x86_64::instructions::interrupts::enable();
     kprintln!("[kernel] Interrupts enabled.");
 
-    memory::init(memory_regions);
+    memory::init(boot_info);
     kprintln!("[kernel] Memory manager initialized.");
 
     heap::init_heap();
@@ -83,7 +85,6 @@ macro_rules! kprintln {
     ($fmt:expr) => ($crate::kprint!(concat!($fmt, "
 ")));
 }
-
 
 pub fn hlt_loop() -> ! {
     loop {

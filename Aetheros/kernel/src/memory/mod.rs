@@ -1,26 +1,26 @@
 pub mod frame_allocator;
 pub mod page_allocator;
 
+use bootloader_api::BootInfo;
+
+use crate::arch::x86_64::paging;
 use crate::kprintln;
-use bootloader_api::info::MemoryRegions;
 
 /// Initializes the memory management modules.
 /// This function is called early in the kernel's boot process.
-pub fn init(memory_regions: &'static MemoryRegions) {
+pub fn init(boot_info: &'static BootInfo) {
     kprintln!("[kernel] memory: Initializing memory modules...");
 
-    // Initialize the frame allocator with the bootloader's memory map.
-    // SAFETY: The caller must guarantee that the memory_regions are valid
-    // and accurately describe the physical memory layout.
-    let mut frame_allocator =
-        unsafe { frame_allocator::BootInfoFrameAllocator::init(memory_regions) };
-    kprintln!("[kernel] memory: BootInfoFrameAllocator initialized.");
+    frame_allocator::init_global(&boot_info.memory_regions)
+        .expect("Failed to initialize frame allocator");
+    kprintln!("[kernel] memory: Frame allocator initialized.");
 
-    // Initialize the page allocator, which uses the frame allocator.
-    // In a real system, the page allocator would manage kernel and user virtual address spaces.
-    page_allocator::PageAllocator::init(&mut frame_allocator);
+    let phys_offset = boot_info.physical_memory_offset.into_option();
+    paging::init(phys_offset).expect("Failed to initialize page table manager");
+    kprintln!("[kernel] memory: Page table manager initialized.");
+
+    page_allocator::PageAllocator::init();
     kprintln!("[kernel] memory: PageAllocator initialized.");
 
     kprintln!("[kernel] memory: All memory modules initialized.");
 }
-

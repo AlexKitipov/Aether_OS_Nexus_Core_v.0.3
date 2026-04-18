@@ -3,8 +3,8 @@
 #![no_std] // Don't link the Rust standard library
 #![no_main] // Disable all Rust-level entry points
 
-use core::panic::PanicInfo;
-use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
+use bootloader_api::BootInfo;
+use core::panic::PanicInfo; // Import BootInfo from the bootloader_api crate
 
 /// The main entry point for the AetherOS kernel.
 /// This function is called by the bootloader after setting up basic environment.
@@ -12,7 +12,7 @@ use bootloader_api::BootInfo; // Import BootInfo from the bootloader_api crate
 pub extern "C" fn _start(boot_info: &'static mut BootInfo) -> ! {
     // Initialize all core kernel modules.
     // We pass the boot_info.memory_regions to the kernel's init function.
-    crate::init(&boot_info.memory_regions);
+    crate::init(boot_info);
 
     crate::kprintln!("[kernel] Welcome to AetherOS!");
 
@@ -35,4 +35,3 @@ fn panic(info: &PanicInfo) -> ! {
         x86_64::instructions::hlt(); // Halt the CPU
     }
 }
-
