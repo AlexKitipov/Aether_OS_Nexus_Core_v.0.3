@@ -32,8 +32,8 @@ use aetheros_common::syscall::{
     SYS_AI_CALL,
 };
 
-use crate::{caps, ipc, kprintln, task, timer};
-use crate::arch::x86_64::{dma, irq}; // Use refactored arch modules
+use crate::{caps, ipc, irq, kprintln, task, timer};
+use crate::arch::x86_64::dma; // Use refactored arch modules
 use crate::usercopy::{copy_from_user, copy_to_user, copy_utf8_from_user};
 use aetheros_common::channel::well_known;
 use core::cmp::min;
@@ -285,13 +285,7 @@ fn syscall_dispatch_inner(n: u64, args: SyscallArgs) -> u64 {
                 return E_ACC_DENIED;
             }
 
-            if irq_num == 1 {
-                // IRQ1 is routed through the dedicated PS/2 keyboard handler,
-                // which reads port 0x60 and IPC-forwards scancodes.
-                crate::interrupts::keyboard::register_channel(channel_id);
-            } else {
-                irq::register_irq_handler(irq_num, channel_id);
-            }
+            irq::register_irq_handler(irq_num, channel_id);
             SUCCESS
         }
         SYS_NET_RX_POLL => {
