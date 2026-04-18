@@ -41,7 +41,6 @@ pub fn init(boot_info: &'static mut BootInfo) {
     memory::init_virtual_memory_bootstrap();
 
     // 5) Virtual memory bootstrap + direct-map mapper (when provided)
-    paging::init();
     unsafe {
         let _ = paging::init_mapper(x86_64::VirtAddr::new(physical_memory_offset));
     }
