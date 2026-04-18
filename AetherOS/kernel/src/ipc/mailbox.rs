@@ -1,92 +1,185 @@
-
 extern crate alloc;
 
 use alloc::collections::VecDeque;
-use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use alloc::vec;
 use alloc::vec::Vec;
 use aetheros_common::channel::id::ChannelId;
-use spin::Mutex;
 use conquer_once::spin::OnceCell;
+use spin::Mutex;
+
 use crate::usercopy::{copy_from_user, copy_to_user};
 
-const MAX_MESSAGE_SIZE: usize = 4096; // Maximum size of an IPC message
+const MAX_INLINE_MESSAGE_SIZE: usize = 4096;
+const DEFAULT_MAX_DEPTH: usize = 64;
+const DEFAULT_MAX_INFLIGHT_BYTES: usize = 256 * 1024;
 
-// A channel represents an endpoint for IPC communication.
-// It holds a queue of messages and can be owned by multiple V-Nodes (Weak for clients, Arc for server)
+#[derive(Clone)]
+pub struct SharedMemoryGrant {
+    owner_task_id: u64,
+    data: Arc<[u8]>,
+}
+
+impl SharedMemoryGrant {
+    pub fn new(owner_task_id: u64, data: Vec<u8>) -> Self {
+        Self {
+            owner_task_id,
+            data: data.into(),
+        }
+    }
+
+    pub fn owner_task_id(&self) -> u64 {
+        self.owner_task_id
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    pub fn as_slice(&self) -> &[u8] {
+        &self.data
+    }
+}
+
+#[derive(Clone)]
+pub enum MessagePayload {
+    Inline(Vec<u8>),
+    SharedMemory(SharedMemoryGrant),
+}
+
+#[derive(Clone)]
+pub struct Message {
+    pub sender: u32,
+    pub payload: MessagePayload,
+}
+
+impl Message {
+    fn payload_len(&self) -> usize {
+        match &self.payload {
+            MessagePayload::Inline(data) => data.len(),
+            MessagePayload::SharedMemory(grant) => grant.len(),
+        }
+    }
+}
+
 pub struct Channel {
     id: ChannelId,
     message_queue: Mutex<VecDeque<Message>>,
-}
-
-pub struct Message {
-    pub sender: u32,
-    pub data: Vec<u8>,
+    receiver_waiters: Mutex<VecDeque<u64>>,
+    inflight_bytes: Mutex<usize>,
+    max_depth: usize,
+    max_inflight_bytes: usize,
 }
 
 impl Channel {
-    fn new(id: ChannelId) -> Self {
-        Channel {
+    fn new(id: ChannelId, max_depth: usize, max_inflight_bytes: usize) -> Self {
+        Self {
             id,
             message_queue: Mutex::new(VecDeque::new()),
+            receiver_waiters: Mutex::new(VecDeque::new()),
+            inflight_bytes: Mutex::new(0),
+            max_depth,
+            max_inflight_bytes,
         }
     }
 
-    pub fn send(&self, sender: u32, message: &[u8]) -> Result<(), &'static str> {
-        if message.len() > MAX_MESSAGE_SIZE {
-            return Err("Message too large");
-        }
+    fn enqueue(&self, sender: u32, payload: MessagePayload) -> Result<(), &'static str> {
+        let payload_len = match &payload {
+            MessagePayload::Inline(data) => data.len(),
+            MessagePayload::SharedMemory(grant) => grant.len(),
+        };
+
         let mut queue = self.message_queue.lock();
-        queue.push_back(Message {
-            sender,
-            data: message.to_vec(),
-        });
+        if queue.len() >= self.max_depth {
+            return Err("Channel queue full");
+        }
+
+        let mut inflight = self.inflight_bytes.lock();
+        if payload_len > self.max_inflight_bytes.saturating_sub(*inflight) {
+            return Err("Channel inflight byte budget exceeded");
+        }
+
+        *inflight += payload_len;
+        queue.push_back(Message { sender, payload });
         Ok(())
     }
 
+    pub fn send(&self, sender: u32, message: &[u8]) -> Result<(), &'static str> {
+        if message.len() > MAX_INLINE_MESSAGE_SIZE {
+            return Err("Inline message too large");
+        }
+        self.enqueue(sender, MessagePayload::Inline(message.to_vec()))
+    }
+
+    pub fn send_shared_memory(
+        &self,
+        sender: u32,
+        grant: SharedMemoryGrant,
+    ) -> Result<(), &'static str> {
+        self.enqueue(sender, MessagePayload::SharedMemory(grant))
+    }
+
     pub fn recv(&self) -> Option<Message> {
-        let mut queue = self.message_queue.lock();
-        queue.pop_front()
+        let message = self.message_queue.lock().pop_front();
+        if let Some(message) = &message {
+            let payload_len = message.payload_len();
+            let mut inflight = self.inflight_bytes.lock();
+            *inflight = inflight.saturating_sub(payload_len);
+        }
+        message
     }
 
     pub fn peek(&self) -> bool {
         !self.message_queue.lock().is_empty()
     }
+
+    pub fn register_receiver_waiter(&self, task_id: u64) {
+        let mut waiters = self.receiver_waiters.lock();
+        if waiters.contains(&task_id) {
+            return;
+        }
+        waiters.push_back(task_id);
+    }
+
+    pub fn wake_one_receiver(&self) {
+        let waiter = self.receiver_waiters.lock().pop_front();
+        if let Some(task_id) = waiter {
+            crate::task::scheduler::unblock_task(task_id);
+        }
+    }
 }
 
-// The Mailbox manages all active IPC channels.
-// It's a global singleton protected by a spinlock.
 pub struct Mailbox {
     next_channel_id: Mutex<ChannelId>,
     channels: Mutex<Vec<Arc<Channel>>>,
-    waiters: Mutex<BTreeMap<ChannelId, Vec<u64>>>,
 }
 
 impl Mailbox {
     pub const fn new() -> Self {
-        Mailbox {
+        Self {
             next_channel_id: Mutex::new(1),
             channels: Mutex::new(Vec::new()),
-            waiters: Mutex::new(BTreeMap::new()),
         }
     }
 
-    // Create a new channel and return its ID.
     pub fn create_channel(&self) -> ChannelId {
+        self.create_channel_with_limits(DEFAULT_MAX_DEPTH, DEFAULT_MAX_INFLIGHT_BYTES)
+    }
+
+    pub fn create_channel_with_limits(&self, max_depth: usize, max_inflight_bytes: usize) -> ChannelId {
         let mut next_id = self.next_channel_id.lock();
         let new_id = *next_id;
         *next_id += 1;
 
-        let channel = Arc::new(Channel::new(new_id));
+        let channel = Arc::new(Channel::new(new_id, max_depth, max_inflight_bytes));
         self.channels.lock().push(channel);
-
         new_id
     }
 
-
-
-    /// Creates a channel with a fixed id if absent, returning the existing id otherwise.
     pub fn create_or_get_channel(&self, id: ChannelId) -> ChannelId {
         if self.get_channel(id).is_some() {
             return id;
@@ -99,54 +192,25 @@ impl Mailbox {
             }
         }
 
-        let channel = Arc::new(Channel::new(id));
+        let channel = Arc::new(Channel::new(
+            id,
+            DEFAULT_MAX_DEPTH,
+            DEFAULT_MAX_INFLIGHT_BYTES,
+        ));
         self.channels.lock().push(channel);
         id
     }
 
-    // Get a channel by its ID. Returns an Arc to the channel if found.
     pub fn get_channel(&self, id: ChannelId) -> Option<Arc<Channel>> {
         self.channels.lock().iter().find(|c| c.id == id).cloned()
-    }
-
-    fn register_waiter(&self, channel_id: ChannelId, task_id: u64) {
-        let mut waiters = self.waiters.lock();
-        let channel_waiters = waiters.entry(channel_id).or_default();
-        if !channel_waiters.contains(&task_id) {
-            channel_waiters.push(task_id);
-        }
-    }
-
-    fn wake_one_waiter(&self, channel_id: ChannelId) {
-        let waiter = {
-            let mut waiters = self.waiters.lock();
-            let Some(channel_waiters) = waiters.get_mut(&channel_id) else {
-                return;
-            };
-            let task = if channel_waiters.is_empty() {
-                None
-            } else {
-                Some(channel_waiters.remove(0))
-            };
-            if channel_waiters.is_empty() {
-                waiters.remove(&channel_id);
-            }
-            task
-        };
-
-        if let Some(task_id) = waiter {
-            crate::task::scheduler::unblock_task(task_id);
-        }
     }
 }
 
 static MAILBOX: OnceCell<Mailbox> = OnceCell::uninit();
 
 pub fn init() {
-    MAILBOX.init_once(|| Mailbox::new());
+    MAILBOX.init_once(Mailbox::new);
 }
-
-// --- Public API for IPC syscalls ---
 
 pub fn create_channel() -> ChannelId {
     MAILBOX.get().expect("Mailbox not initialized").create_channel()
@@ -154,13 +218,22 @@ pub fn create_channel() -> ChannelId {
 
 pub fn send(channel_id: ChannelId, sender: u32, message: &[u8]) -> Result<(), &'static str> {
     let mailbox = MAILBOX.get().expect("Mailbox not initialized");
-    if let Some(channel) = mailbox.get_channel(channel_id) {
-        channel.send(sender, message)?;
-        mailbox.wake_one_waiter(channel_id);
-        Ok(())
-    } else {
-        Err("Channel not found")
-    }
+    let channel = mailbox.get_channel(channel_id).ok_or("Channel not found")?;
+    channel.send(sender, message)?;
+    channel.wake_one_receiver();
+    Ok(())
+}
+
+pub fn send_shared_memory(
+    channel_id: ChannelId,
+    sender: u32,
+    grant: SharedMemoryGrant,
+) -> Result<(), &'static str> {
+    let mailbox = MAILBOX.get().expect("Mailbox not initialized");
+    let channel = mailbox.get_channel(channel_id).ok_or("Channel not found")?;
+    channel.send_shared_memory(sender, grant)?;
+    channel.wake_one_receiver();
+    Ok(())
 }
 
 pub fn recv(channel_id: ChannelId) -> Option<Message> {
@@ -179,63 +252,74 @@ pub fn peek(channel_id: ChannelId) -> bool {
         .is_some_and(|channel| channel.peek())
 }
 
-pub fn send_message(channel_id: ChannelId, message_ptr: *const u8, message_len: usize) -> Result<(), &'static str> {
+pub fn register_receiver_waiter(channel_id: ChannelId, task_id: u64) -> Result<(), &'static str> {
+    let mailbox = MAILBOX.get().expect("Mailbox not initialized");
+    let channel = mailbox.get_channel(channel_id).ok_or("Channel not found")?;
+    channel.register_receiver_waiter(task_id);
+    Ok(())
+}
+
+pub fn send_message(
+    channel_id: ChannelId,
+    message_ptr: *const u8,
+    message_len: usize,
+) -> Result<(), &'static str> {
     if !crate::caps::Capability::IpcManage.check_current() {
         return Err("Permission denied: No IpcManage capability");
     }
 
-    if message_len > MAX_MESSAGE_SIZE {
+    if message_len > MAX_INLINE_MESSAGE_SIZE {
         return Err("Message too large");
     }
 
-    let mailbox = MAILBOX.get().expect("Mailbox not initialized");
-    if let Some(channel) = mailbox.get_channel(channel_id) {
-        let mut message = vec![0u8; message_len];
-        copy_from_user(&mut message, message_ptr)?;
-        let sender = crate::task::scheduler::get_current_task_id() as u32;
-        channel.send(sender, &message)?;
-        mailbox.wake_one_waiter(channel_id);
-        Ok(())
-    } else {
-        Err("Channel not found")
-    }
+    let mut message = vec![0u8; message_len];
+    copy_from_user(&mut message, message_ptr)?;
+
+    let sender = crate::task::scheduler::get_current_task_id() as u32;
+    send(channel_id, sender, &message)
 }
 
-/// Injects a kernel-originated hardware event into a mailbox channel.
-///
-/// This path bypasses userspace buffer copying and capability checks because the
-/// event data is already owned by the kernel and arrives from an IRQ context.
-pub fn inject_hardware_event(channel_id: ChannelId, irq: u8, payload: &[u8]) -> Result<(), &'static str> {
+pub fn inject_hardware_event(
+    channel_id: ChannelId,
+    irq: u8,
+    payload: &[u8],
+) -> Result<(), &'static str> {
     send(channel_id, irq as u32, payload)
 }
 
-pub fn recv_message(channel_id: ChannelId, buffer_ptr: *mut u8, buffer_len: usize, blocking: bool) -> Result<usize, &'static str> {
+pub fn recv_message(
+    channel_id: ChannelId,
+    buffer_ptr: *mut u8,
+    buffer_len: usize,
+    blocking: bool,
+) -> Result<usize, &'static str> {
     if !crate::caps::Capability::IpcManage.check_current() {
         return Err("Permission denied: No IpcManage capability");
     }
 
-    let mailbox = MAILBOX.get().expect("Mailbox not initialized");
-    if let Some(channel) = mailbox.get_channel(channel_id) {
-        loop {
-            if let Some(message) = channel.recv() {
-                if message.data.len() > buffer_len {
+    loop {
+        let Some(message) = recv(channel_id) else {
+            if !blocking {
+                return Ok(0);
+            }
+            crate::task::block_current_on_channel(channel_id);
+            continue;
+        };
+
+        match message.payload {
+            MessagePayload::Inline(data) => {
+                if data.len() > buffer_len {
                     return Err("Buffer too small");
                 }
-                copy_to_user(buffer_ptr, &message.data)?;
-                return Ok(message.data.len());
-            } else if !blocking {
-                return Ok(0); // No message, non-blocking
+                copy_to_user(buffer_ptr, &data)?;
+                return Ok(data.len());
             }
-
-            let current_id = crate::task::scheduler::get_current_task_id();
-            mailbox.register_waiter(channel_id, current_id);
-            crate::task::scheduler::block_current_task();
+            MessagePayload::SharedMemory(_grant) => {
+                return Err("Message is shared-memory payload; inline recv buffer is incompatible")
+            }
         }
-    } else {
-        Err("Channel not found")
     }
 }
-
 
 pub fn ensure_channel(channel_id: ChannelId) -> ChannelId {
     MAILBOX

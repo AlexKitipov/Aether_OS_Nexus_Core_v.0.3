@@ -12,6 +12,7 @@ use aetheros_common::ipc::dev_interface_ipc::{
 };
 
 use crate::device::Right;
+use crate::ipc::mailbox::MessagePayload;
 use crate::{ipc, kprintln, memory, task, timer};
 
 const DEV_INTERFACE_TASK_ID: u32 = 0;
@@ -29,7 +30,17 @@ pub fn poll_once() {
         return;
     };
 
-    let request = match postcard::from_bytes::<DevInterfaceRequest>(&message.data) {
+    let payload = match message.payload {
+        MessagePayload::Inline(data) => data,
+        MessagePayload::SharedMemory(_) => {
+            let _ = send_response(DevInterfaceResponse::Error {
+                message: String::from("shared-memory payloads are unsupported for dev-interface"),
+            });
+            return;
+        }
+    };
+
+    let request = match postcard::from_bytes::<DevInterfaceRequest>(&payload) {
         Ok(request) => request,
         Err(_) => {
             let _ = send_response(DevInterfaceResponse::Error {
