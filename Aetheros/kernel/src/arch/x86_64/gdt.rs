@@ -1,53 +1,53 @@
 // kernel/src/arch/x86_64/gdt.rs
 
-#![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
+#![allow(dead_code)]
 
-use x86_64::VirtAddr;
-use x86_64::instructions::segmentation::{CS, Segment};
-use x86_64::instructions::tables::lgdt;
-use x86_64::structures::gdt::{Descriptor, SegmentSelector, GlobalDescriptorTable};
 use crate::kprintln;
+use x86_64::{
+    instructions::{
+        segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+        tables::load_tss,
+    },
+    structures::{
+        gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
+        tss::TaskStateSegment,
+    },
+    VirtAddr,
+};
 
-/// Define our Global Descriptor Table
-/// The GDT contains entries for kernel code and data segments.
+pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
+const DOUBLE_FAULT_STACK_SIZE: usize = 4096 * 5;
+
 static mut GDT: GlobalDescriptorTable = GlobalDescriptorTable::new();
+static mut TSS: TaskStateSegment = TaskStateSegment::new();
+static mut DOUBLE_FAULT_STACK: [u8; DOUBLE_FAULT_STACK_SIZE] = [0; DOUBLE_FAULT_STACK_SIZE];
 
-/// Define our segment selectors
-/// These are used to load the segment registers after the GDT is loaded.
-/// The `CS` selector is special and requires a far jump.
-static mut KERNEL_CODE_SELECTOR: SegmentSelector;
-static mut KERNEL_DATA_SELECTOR: SegmentSelector;
+static mut KERNEL_CODE_SELECTOR: SegmentSelector = SegmentSelector(0);
+static mut KERNEL_DATA_SELECTOR: SegmentSelector = SegmentSelector(0);
+static mut TSS_SELECTOR: SegmentSelector = SegmentSelector(0);
 
-/// Initializes the GDT and loads it into the CPU.
-/// Also reloads segment registers with the new selectors.
 pub fn init() {
-    // SAFETY: We are writing to static mut variables, but this is only called once at boot.
     unsafe {
         kprintln!("[kernel] gdt: Initializing GDT...");
 
-        // Add kernel code and data segments to the GDT
+        let stack_start = VirtAddr::from_ptr(DOUBLE_FAULT_STACK.as_ptr());
+        let stack_end = stack_start + DOUBLE_FAULT_STACK_SIZE;
+        TSS.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] = stack_end;
+
         KERNEL_CODE_SELECTOR = GDT.add_entry(Descriptor::kernel_code_segment());
         KERNEL_DATA_SELECTOR = GDT.add_entry(Descriptor::kernel_data_segment());
+        TSS_SELECTOR = GDT.add_entry(Descriptor::tss_segment(&TSS));
 
-        // Load the GDT into the CPU
-        lgdt(&GDT.base_linear_addr(), GDT.len() as u16);
-        kprintln!("[kernel] gdt: GDT loaded. Base: {:#x}, Length: {}.", GDT.base_linear_addr().as_u64(), GDT.len());
+        GDT.load();
 
-        // Reload segment registers
-        // Reloading CS requires a far jump, which is handled by a helper function.
         CS::set_reg(KERNEL_CODE_SELECTOR);
-        kprintln!("[kernel] gdt: CS reloaded with selector {:#?}.", KERNEL_CODE_SELECTOR);
-        
-        // Reload other segment registers (DS, ES, FS, GS, SS)
-        // For 64-bit mode, these are often zeroed out or set to the data segment selector.
-        // The x86_64 crate's SegmentSelector allows setting them.
-        x86_64::instructions::segmentation::DS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::ES::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::FS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::GS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::SS::set_reg(KERNEL_DATA_SELECTOR);
+        DS::set_reg(KERNEL_DATA_SELECTOR);
+        ES::set_reg(KERNEL_DATA_SELECTOR);
+        FS::set_reg(KERNEL_DATA_SELECTOR);
+        GS::set_reg(KERNEL_DATA_SELECTOR);
+        SS::set_reg(KERNEL_DATA_SELECTOR);
+        load_tss(TSS_SELECTOR);
 
-        kprintln!("[kernel] gdt: Segment registers reloaded.");
+        kprintln!("[kernel] gdt: GDT and TSS loaded.");
     }
 }
-
