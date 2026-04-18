@@ -16,7 +16,26 @@ static IRQ_TO_CHANNEL_MAP: Mutex<BTreeMap<u8, ipc::ChannelId>> = Mutex::new(BTre
 
 /// Initializes interrupt controller plumbing.
 pub fn init() {
-    kprintln!("[kernel] irq: Interrupt subsystem initialized.");
+    // Wire PIC + initial vectors before interrupts are enabled globally.
+    unsafe {
+        pic::remap();
+    }
+
+    // Keep timer/keyboard vectors present even before userspace IRQ
+    // channel registration begins.
+    crate::arch::x86_64::idt::set_irq_handler(PIC_1_OFFSET + 0, irq_entry_0);
+    crate::arch::x86_64::idt::set_irq_handler(PIC_1_OFFSET + 1, irq_entry_1);
+    crate::arch::x86_64::idt::reload();
+
+    // PIT heartbeat source setup stays in the common timer module.
+    crate::timer::init();
+
+    unsafe {
+        unmask_irq(0);
+        unmask_irq(1);
+    }
+
+    kprintln!("[kernel] irq: PIC remapped and IRQ vectors installed.");
 }
 
 /// Register an interrupt handler.
@@ -61,6 +80,10 @@ pub fn acknowledge_irq(irq_number: u8) {
 /// This function is called by the actual hardware interrupt handler.
 /// It dispatches an IPC message to the registered V-Node.
 pub fn handle_irq(irq_number: u8) {
+    if irq_number == 0 {
+        crate::timer::tick();
+    }
+
     let channel_id = {
         let map = IRQ_TO_CHANNEL_MAP.lock();
         map.get(&irq_number).cloned()

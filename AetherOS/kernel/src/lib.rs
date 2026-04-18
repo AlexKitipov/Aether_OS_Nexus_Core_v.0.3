@@ -24,6 +24,7 @@ pub mod caps;
 pub mod timer;
 pub mod gdt;
 pub mod idt;
+pub mod irq;
 pub mod interrupts;
 pub mod usercopy;
 pub mod config;
@@ -55,8 +56,8 @@ pub fn init(
     idt::init();
     kprintln!("[kernel] IDT initialized.");
 
-    interrupts::init();
-    kprintln!("[kernel] Interrupts initialized.");
+    irq::init();
+    kprintln!("[kernel] IRQ subsystem initialized.");
 
     init_memory_and_heap(memory_regions, physical_memory_offset);
     init_runtime_subsystems();
