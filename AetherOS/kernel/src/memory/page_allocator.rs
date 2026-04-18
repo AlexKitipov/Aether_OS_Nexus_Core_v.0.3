@@ -1,33 +1,20 @@
-#![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
+#![allow(dead_code)]
 
-extern crate alloc;
+use x86_64::structures::paging::{FrameAllocator, FrameDeallocator, PageTableFlags};
+use x86_64::{PhysAddr, VirtAddr};
 
-use crate::arch::x86_64::paging;
+use crate::arch::x86_64::paging::{self, AddressSpace};
 use crate::kprintln;
-use crate::memory;
-use crate::memory::frame_allocator::BootInfoFrameAllocator;
-use core::sync::atomic::{AtomicU64, Ordering};
-use spin::Mutex;
-use x86_64::VirtAddr;
+use crate::memory::frame_allocator::GlobalFrameAllocator;
 
 const PAGE_SIZE: u64 = 4096;
-const PAGE_FLAGS_PRESENT_WRITABLE: u64 = 0x3;
 const DYNAMIC_VIRT_START: u64 = 0xFFFF_9000_0000_0000;
 
-/// Next available high-half virtual page for bootstrap allocations.
-static NEXT_VIRT_PAGE: AtomicU64 = AtomicU64::new(DYNAMIC_VIRT_START);
+static NEXT_DYNAMIC_VIRT: core::sync::atomic::AtomicU64 =
+    core::sync::atomic::AtomicU64::new(DYNAMIC_VIRT_START);
 
-/// Tracks virtual->physical bindings created through `PageAllocator`.
-static PAGE_BINDINGS: Mutex<alloc::collections::BTreeMap<u64, u64>> =
-    Mutex::new(alloc::collections::BTreeMap::new());
-
-/// A page allocator that binds virtual pages to physical frames.
-///
-/// The allocator is bootstrap-oriented: it uses the global `BootInfoFrameAllocator`
-/// and the architecture paging shim to install mappings.
-pub struct PageAllocator {
-    _private: (),
-}
+/// Page allocator that maps pages into kernel or user address spaces.
+pub struct PageAllocator;
 
 impl Default for PageAllocator {
     fn default() -> Self {
@@ -36,57 +23,71 @@ impl Default for PageAllocator {
 }
 
 impl PageAllocator {
-    /// Creates a new, uninitialized PageAllocator.
     pub const fn new() -> Self {
-        PageAllocator { _private: () }
+        Self
     }
 
-    /// Initializes the Page Allocator.
-    pub fn init(_frame_allocator: &mut BootInfoFrameAllocator) {
-        kprintln!("[kernel] page_allocator: Initializing...");
-        NEXT_VIRT_PAGE.store(DYNAMIC_VIRT_START, Ordering::SeqCst);
-        PAGE_BINDINGS.lock().clear();
-        kprintln!(
-            "[kernel] page_allocator: Initialized at virtual base {:#x}.",
-            DYNAMIC_VIRT_START
-        );
+    pub fn init() {
+        NEXT_DYNAMIC_VIRT.store(DYNAMIC_VIRT_START, core::sync::atomic::Ordering::SeqCst);
+        kprintln!("[kernel] page_allocator: Initialized.");
     }
 
-    /// Allocates one virtual page and maps it to a fresh physical frame.
+    pub fn allocate_kernel_page(
+        virtual_address: VirtAddr,
+        flags: PageTableFlags,
+    ) -> Option<PhysAddr> {
+        let mut allocator = GlobalFrameAllocator;
+        let frame = allocator.allocate_frame()?;
+        let physical = frame.start_address();
+
+        paging::map_kernel_page(
+            virtual_address,
+            physical,
+            flags | PageTableFlags::PRESENT | PageTableFlags::WRITABLE,
+        )
+        .ok()?;
+
+        Some(physical)
+    }
+
+    pub fn allocate_user_page(
+        address_space: AddressSpace,
+        virtual_address: VirtAddr,
+        flags: PageTableFlags,
+    ) -> Option<PhysAddr> {
+        let mut allocator = GlobalFrameAllocator;
+        let frame = allocator.allocate_frame()?;
+        let physical = frame.start_address();
+
+        paging::map_user_page(
+            address_space,
+            virtual_address,
+            physical,
+            flags | PageTableFlags::PRESENT | PageTableFlags::WRITABLE,
+        )
+        .ok()?;
+
+        Some(physical)
+    }
+
+    pub fn deallocate_kernel_page(virtual_address: VirtAddr) {
+        if let Ok(frame) = paging::unmap_kernel_page(virtual_address) {
+            unsafe {
+                let mut allocator = GlobalFrameAllocator;
+                allocator.deallocate_frame(frame);
+            }
+        }
+    }
+
+    /// Compatibility helper retained for current scheduler/vnode call sites.
     pub fn allocate_page() -> Option<VirtAddr> {
-        let phys = memory::alloc_frame_addr()?.as_u64();
-        let virt = NEXT_VIRT_PAGE.fetch_add(PAGE_SIZE, Ordering::SeqCst);
-
-        // Install the mapping in the architecture paging layer.
-        paging::map_page_real(phys, virt, PAGE_FLAGS_PRESENT_WRITABLE);
-
-        PAGE_BINDINGS.lock().insert(virt, phys);
-
-        kprintln!(
-            "[kernel] page_allocator: mapped virt {:#x} -> phys {:#x}.",
-            virt,
-            phys
-        );
-
+        let virt = NEXT_DYNAMIC_VIRT.fetch_add(PAGE_SIZE, core::sync::atomic::Ordering::SeqCst);
+        Self::allocate_kernel_page(VirtAddr::new(virt), PageTableFlags::empty())?;
         Some(VirtAddr::new(virt))
     }
 
-    /// Deallocates a previously allocated virtual page.
-    ///
-    /// Bootstrap limitation: physical frames are not yet returned to the free pool,
-    /// but virtual mappings are removed from the software translation table.
+    /// Compatibility helper retained for current scheduler/vnode call sites.
     pub fn deallocate_page(page_addr: VirtAddr) {
-        let virt = page_addr.as_u64() & !(PAGE_SIZE - 1);
-        let removed = PAGE_BINDINGS.lock().remove(&virt);
-
-        if removed.is_some() {
-            paging::unregister_virt_mapping(virt, PAGE_SIZE as usize);
-            kprintln!("[kernel] page_allocator: unmapped virt {:#x}.", virt);
-        } else {
-            kprintln!(
-                "[kernel] page_allocator: deallocate ignored, virt {:#x} not tracked.",
-                virt
-            );
-        }
+        Self::deallocate_kernel_page(VirtAddr::new(page_addr.as_u64() & !(PAGE_SIZE - 1)));
     }
 }

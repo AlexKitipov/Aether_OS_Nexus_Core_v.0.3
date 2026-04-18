@@ -338,7 +338,9 @@ pub fn entry_point(boot_info: &'static mut BootInfo) {
 /// Backward-compatible bootstrap entry point that discovers the active PML4
 /// when an explicit bootloader hand-off is not yet wired.
 pub fn entry_point_from_current_cr3() {
-    paging::init();
+    if let Some(offset) = paging::physical_memory_offset() {
+        let _ = paging::init(Some(offset));
+    }
     let pml4_addr = paging::get_kernel_pml4();
     let config = LongModeConfig::new(pml4_addr);
     match architecture_init(config) {
