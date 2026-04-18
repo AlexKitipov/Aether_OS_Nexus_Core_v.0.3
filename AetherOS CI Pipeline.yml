@@ -1,6 +1,9 @@
 name: AetherOS CI Pipeline
 
 on:
+permissions:
+  contents: read
+
   push:
     branches: ["main", "dev"]
   pull_request:
