@@ -4,15 +4,13 @@
 
 extern crate alloc;
 
-use alloc::vec::Vec;
 use alloc::string::String;
-use crate::caps::Capability;
-use crate::task::tcb::{TaskControlBlock, TaskState};
+use alloc::vec::Vec;
 use crate::task::scheduler;
+use crate::task::tcb::TaskControlBlock;
 
-// Re-export TaskState and Capability for convenience if needed by external modules
-pub use crate::task::tcb::TaskState;
 pub use crate::caps::Capability;
+pub use crate::task::tcb::TaskState;
 
 /// Initializes the task management system, which includes the scheduler.
 pub fn init() {
@@ -30,13 +28,11 @@ pub fn get_current_task() -> TaskControlBlock {
     scheduler::get_current_task_tcb()
 }
 
-/// Blocks the current task on an IPC channel.
+/// Blocks the current task on an IPC channel and records wait intent with the IPC subsystem.
 pub fn block_current_on_channel(channel_id: u32) {
-    // In a real IPC implementation, the channel ID would be associated with the task
-    // and used by `ipc::kernel_send` to unblock.
-    // For now, this just marks the task as blocked and triggers a schedule.
+    let current_id = get_current_task().id;
+    let _ = crate::ipc::kernel_register_receiver_waiter(channel_id, current_id);
     scheduler::block_current_task();
-    // The IPC module will directly unblock by calling `scheduler::unblock_task`.
 }
 
 /// Unblocks a task that was waiting on a specific IPC channel.
