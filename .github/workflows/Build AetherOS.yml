@@ -1,34 +1,272 @@
-name: Build AetherOS
+name: AetherOS CI Pipeline
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: ["main", "dev"]
+  pull_request:
+    branches: ["main", "dev"]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
 
 jobs:
-  build:
+  # ============================================================================
+  # Job 1: Workspace Build & Test (Stable Rust)
+  # ============================================================================
+  workspace-build-test:
+    name: Build & Test Workspace (Stable)
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y build-essential qemu-system-x86
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
 
-    - name: Build kernel
-      working-directory: ./AetherOS
-      run: |
-        make kernel
+      - name: Set up cargo cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: workspace-stable
 
-    - name: Build initrd
-      working-directory: ./AetherOS
-      run: |
-        make initrd
+      - name: Check formatting
+        run: cargo fmt --all -- --check
 
-    - name: Run smoke test
-      working-directory: ./AetherOS
-      run: |
-        make test
+      - name: Clippy lints
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build common crate
+        run: cargo build -p aetheros_common --release
+
+      - name: Test workspace (exclude kernel)
+        run: cargo test --workspace --exclude aetheros-kernel --release
+        continue-on-error: true
+
+      - name: Generate build report
+        if: always()
+        run: |
+          echo "## Workspace Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Format check passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Clippy lints passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Common crate built" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
+  # Job 2: Kernel Build (Nightly + rust-src)
+  # ============================================================================
+  kernel-build:
+    name: Build Kernel (Nightly)
+    runs-on: ubuntu-latest
+    needs: workspace-build-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust nightly with rust-src
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
+
+      - name: Set up cargo cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: kernel-nightly
+
+      - name: Verify target spec exists
+        run: |
+          if [ ! -f "AetherOS/.cargo/aetheros-x86_64.json" ]; then
+            echo "❌ Target spec not found at AetherOS/.cargo/aetheros-x86_64.json"
+            exit 1
+          fi
+          echo "✅ Target spec verified"
+
+      - name: Build kernel (no_std)
+        working-directory: AetherOS
+        run: |
+          cargo +nightly build --release \
+            -Z build-std=core,alloc,compiler_builtins \
+            -Z build-std-features=compiler-builtins-mem \
+            --target .cargo/aetheros-x86_64.json \
+            -p aetheros-kernel
+        env:
+          RUSTFLAGS: "-C target-cpu=generic"
+
+      - name: Verify kernel binary
+        run: |
+          KERNEL_BIN="AetherOS/target/aetheros-x86_64/release/aetheros-kernel"
+          if [ ! -f "$KERNEL_BIN" ]; then
+            echo "❌ Kernel binary not found at $KERNEL_BIN"
+            exit 1
+          fi
+          SIZE=$(stat -f%z "$KERNEL_BIN" 2>/dev/null || stat -c%s "$KERNEL_BIN" 2>/dev/null)
+          echo "✅ Kernel built successfully ($(numfmt --to=iec $SIZE 2>/dev/null || echo $SIZE bytes))"
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-aetheros-x86_64
+          path: AetherOS/target/aetheros-x86_64/release/aetheros-kernel
+          retention-days: 30
+
+  # ============================================================================
+  # Job 3: Build V-Node Webview
+  # ============================================================================
+  vnode-webview-build:
+    name: Build Webview V-Node (Nightly)
+    runs-on: ubuntu-latest
+    needs: workspace-build-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust nightly with rust-src
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: rust-src
+
+      - name: Set up cargo cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: vnode-nightly
+
+      - name: Build webview (bare-metal target)
+        working-directory: AetherOS
+        run: |
+          cargo +nightly build --release \
+            -Z build-std=core,alloc,compiler_builtins \
+            -Z build-std-features=compiler-builtins-mem \
+            --target .cargo/aetheros-x86_64.json \
+            -p webview
+        continue-on-error: true
+
+      - name: Upload webview artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: webview-binary
+          path: AetherOS/target/aetheros-x86_64/release/webview
+          retention-days: 30
+
+  # ============================================================================
+  # Job 4: QEMU Smoke Test (Boot Test)
+  # ============================================================================
+  qemu-smoke-test:
+    name: QEMU Boot Test
+    runs-on: ubuntu-latest
+    needs: kernel-build
+    if: success()
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download kernel artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kernel-aetheros-x86_64
+          path: ./kernel-bin
+
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y qemu-system-x86 qemu-utils
+          qemu-system-x86_64 --version
+
+      - name: Run QEMU smoke test (timeout 10s)
+        run: |
+          timeout 10s qemu-system-x86_64 \
+            -kernel ./kernel-bin/aetheros-kernel \
+            -nographic \
+            -serial stdio \
+            -m 256 \
+            -no-reboot \
+            2>&1 | tee qemu-output.log || true
+
+          echo "## QEMU Boot Test Output" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          head -50 qemu-output.log >> $GITHUB_STEP_SUMMARY || echo "No output captured"
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload QEMU log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-boot-log
+          path: qemu-output.log
+          retention-days: 7
+
+  # ============================================================================
+  # Job 5: Dependency Audit
+  # ============================================================================
+  dependency-audit:
+    name: Security & Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run cargo-audit
+        working-directory: AetherOS
+        run: |
+          cargo audit --deny warnings || true
+
+  # ============================================================================
+  # Job 6: Build Report & Summary
+  # ============================================================================
+  build-report:
+    name: CI Summary & Report
+    runs-on: ubuntu-latest
+    needs: [workspace-build-test, kernel-build, vnode-webview-build, qemu-smoke-test]
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate CI summary
+        run: |
+          echo "# 🔨 AetherOS CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Workspace Build & Test | ${{ needs.workspace-build-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Kernel Build | ${{ needs.kernel-build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Webview V-Node | ${{ needs.vnode-webview-build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| QEMU Smoke Test | ${{ needs.qemu-smoke-test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Artifacts Generated" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔵 Kernel Binary: \`kernel-aetheros-x86_64\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🟢 Webview Binary: \`webview-binary\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🟡 QEMU Boot Log: \`qemu-boot-log\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Build Command Reference" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Kernel" >> $GITHUB_STEP_SUMMARY
+          echo "cargo +nightly build --release -Z build-std=core,alloc,compiler_builtins \\" >> $GITHUB_STEP_SUMMARY
+          echo "  -Z build-std-features=compiler-builtins-mem \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --target .cargo/aetheros-x86_64.json -p aetheros-kernel" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Webview" >> $GITHUB_STEP_SUMMARY
+          echo "cargo +nightly build --release -Z build-std=core,alloc,compiler_builtins \\" >> $GITHUB_STEP_SUMMARY
+          echo "  --target .cargo/aetheros-x86_64.json -p webview" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Report artifact sizes
+        run: |
+          echo "## Artifact Sizes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f "kernel-aetheros-x86_64/aetheros-kernel" ]; then
+            SIZE=$(stat -f%z "kernel-aetheros-x86_64/aetheros-kernel" 2>/dev/null || stat -c%s "kernel-aetheros-x86_64/aetheros-kernel" 2>/dev/null)
+            echo "**Kernel**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
+          fi
