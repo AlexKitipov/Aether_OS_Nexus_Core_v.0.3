@@ -1,53 +1,83 @@
 // kernel/src/arch/x86_64/gdt.rs
 
-#![allow(dead_code)] // Allow dead code for now as not all functions might be used immediately
-
+use x86_64::instructions::segmentation::{Segment, CS, DS, ES, FS, GS, SS};
+use x86_64::instructions::tables::load_tss;
+use x86_64::structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector};
+use x86_64::structures::tss::TaskStateSegment;
 use x86_64::VirtAddr;
-use x86_64::instructions::segmentation::{CS, Segment};
-use x86_64::instructions::tables::lgdt;
-use x86_64::structures::gdt::{Descriptor, SegmentSelector, GlobalDescriptorTable};
+
 use crate::kprintln;
 
-/// Define our Global Descriptor Table
-/// The GDT contains entries for kernel code and data segments.
-static mut GDT: GlobalDescriptorTable = GlobalDescriptorTable::new();
+/// IST slot used by the double-fault handler.
+pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
 
-/// Define our segment selectors
-/// These are used to load the segment registers after the GDT is loaded.
-/// The `CS` selector is special and requires a far jump.
-static mut KERNEL_CODE_SELECTOR: SegmentSelector;
-static mut KERNEL_DATA_SELECTOR: SegmentSelector;
+const DOUBLE_FAULT_STACK_SIZE: usize = 4096 * 5;
 
-/// Initializes the GDT and loads it into the CPU.
-/// Also reloads segment registers with the new selectors.
-pub fn init() {
-    // SAFETY: We are writing to static mut variables, but this is only called once at boot.
-    unsafe {
-        kprintln!("[kernel] gdt: Initializing GDT...");
-
-        // Add kernel code and data segments to the GDT
-        KERNEL_CODE_SELECTOR = GDT.add_entry(Descriptor::kernel_code_segment());
-        KERNEL_DATA_SELECTOR = GDT.add_entry(Descriptor::kernel_data_segment());
-
-        // Load the GDT into the CPU
-        lgdt(&GDT.base_linear_addr(), GDT.len() as u16);
-        kprintln!("[kernel] gdt: GDT loaded. Base: {:#x}, Length: {}.", GDT.base_linear_addr().as_u64(), GDT.len());
-
-        // Reload segment registers
-        // Reloading CS requires a far jump, which is handled by a helper function.
-        CS::set_reg(KERNEL_CODE_SELECTOR);
-        kprintln!("[kernel] gdt: CS reloaded with selector {:#?}.", KERNEL_CODE_SELECTOR);
-        
-        // Reload other segment registers (DS, ES, FS, GS, SS)
-        // For 64-bit mode, these are often zeroed out or set to the data segment selector.
-        // The x86_64 crate's SegmentSelector allows setting them.
-        x86_64::instructions::segmentation::DS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::ES::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::FS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::GS::set_reg(KERNEL_DATA_SELECTOR);
-        x86_64::instructions::segmentation::SS::set_reg(KERNEL_DATA_SELECTOR);
-
-        kprintln!("[kernel] gdt: Segment registers reloaded.");
-    }
+struct Selectors {
+    kernel_code: SegmentSelector,
+    kernel_data: SegmentSelector,
+    user_code: SegmentSelector,
+    user_data: SegmentSelector,
+    tss: SegmentSelector,
 }
 
+struct GdtState {
+    _gdt: GlobalDescriptorTable,
+    selectors: Selectors,
+}
+
+static mut DOUBLE_FAULT_STACK: [u8; DOUBLE_FAULT_STACK_SIZE] = [0; DOUBLE_FAULT_STACK_SIZE];
+static mut TSS: Option<TaskStateSegment> = None;
+static mut GDT_STATE: Option<GdtState> = None;
+
+pub fn init() {
+    // SAFETY: boot-time, single-core initialization path.
+    unsafe {
+        kprintln!("[kernel] gdt: Initializing GDT/TSS...");
+
+        let mut tss = TaskStateSegment::new();
+        let stack_start = VirtAddr::from_ptr(core::ptr::addr_of!(DOUBLE_FAULT_STACK));
+        tss.interrupt_stack_table[DOUBLE_FAULT_IST_INDEX as usize] =
+            stack_start + DOUBLE_FAULT_STACK_SIZE;
+        TSS = Some(tss);
+
+        let mut gdt = GlobalDescriptorTable::new();
+        let kernel_code = gdt.add_entry(Descriptor::kernel_code_segment());
+        let kernel_data = gdt.add_entry(Descriptor::kernel_data_segment());
+        let user_data = gdt.add_entry(Descriptor::user_data_segment());
+        let user_code = gdt.add_entry(Descriptor::user_code_segment());
+        let tss_selector = gdt.add_entry(Descriptor::tss_segment(TSS.as_ref().unwrap()));
+
+        let selectors = Selectors {
+            kernel_code,
+            kernel_data,
+            user_code,
+            user_data,
+            tss: tss_selector,
+        };
+
+        gdt.load();
+
+        CS::set_reg(selectors.kernel_code);
+        DS::set_reg(selectors.kernel_data);
+        ES::set_reg(selectors.kernel_data);
+        FS::set_reg(selectors.kernel_data);
+        GS::set_reg(selectors.kernel_data);
+        SS::set_reg(selectors.kernel_data);
+        load_tss(selectors.tss);
+
+        GDT_STATE = Some(GdtState {
+            _gdt: gdt,
+            selectors,
+        });
+
+        kprintln!(
+            "[kernel] gdt: Loaded (kcode={:?}, kdata={:?}, ucode={:?}, udata={:?}, tss={:?}).",
+            GDT_STATE.as_ref().unwrap().selectors.kernel_code,
+            GDT_STATE.as_ref().unwrap().selectors.kernel_data,
+            GDT_STATE.as_ref().unwrap().selectors.user_code,
+            GDT_STATE.as_ref().unwrap().selectors.user_data,
+            GDT_STATE.as_ref().unwrap().selectors.tss,
+        );
+    }
+}
