@@ -117,7 +117,9 @@ pub fn get_current_task() -> TaskControlBlock {
 }
 
 /// Blocks the current task on an IPC channel.
-pub fn block_current_on_channel(_channel_id: u32) {
+pub fn block_current_on_channel(channel_id: u32) {
+    let current_task_id = scheduler::get_current_task_id();
+    let _ = crate::ipc::mailbox::register_receiver_waiter(channel_id, current_task_id);
     scheduler::block_current_task();
 }
 
