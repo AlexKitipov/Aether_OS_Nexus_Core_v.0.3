@@ -9,9 +9,6 @@ use x86_64::instructions::{hlt, interrupts};
 
 use crate::kprintln;
 
-/// Number of PIT ticks per scheduler time slice (100 Hz PIT -> 10 ticks = 100 ms).
-const SCHEDULER_QUANTUM_TICKS: u64 = 10;
-
 /// PIT base input clock in Hz.
 const PIT_BASE_FREQUENCY_HZ: u32 = 1_193_182;
 /// Desired scheduler/system tick rate.
@@ -49,12 +46,8 @@ pub fn init() {
 /// Called by IRQ0 handler.
 #[inline]
 pub fn tick() {
-    let next = TICKS.fetch_add(1, Ordering::Relaxed) + 1;
-
-    // Request a scheduler decision every fixed time slice.
-    if next % SCHEDULER_QUANTUM_TICKS == 0 {
-        crate::task::scheduler::request_reschedule_from_irq();
-    }
+    TICKS.fetch_add(1, Ordering::Relaxed);
+    crate::task::on_timer_tick();
 }
 
 /// Total number of timer ticks since boot.

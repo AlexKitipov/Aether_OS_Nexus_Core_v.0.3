@@ -83,6 +83,7 @@ pub fn init() {
     );
 
     kernel_task.state = TaskState::Running;
+    kernel_task.switch_count = 1;
 
     {
         let mut tasks = TASKS.lock();
@@ -281,6 +282,8 @@ pub fn schedule() {
         while let Some(next_task_id) = run_queue.pop_front() {
             if let Some(next_task) = tasks.get_mut(&next_task_id) {
                 next_task.state = TaskState::Running;
+                next_task.consumed_ticks = 0;
+                next_task.switch_count = next_task.switch_count.saturating_add(1);
                 *current_id_guard = next_task_id;
                 let next_context = next_task.context;
                 let next_address_space = next_task.address_space_root;
@@ -308,6 +311,27 @@ pub fn schedule() {
     });
 }
 
+/// Accounts one timer tick to the currently running task and requests a
+/// reschedule when its round-robin quantum is exhausted.
+pub fn on_timer_tick() {
+    interrupts::without_interrupts(|| {
+        let current_id = *CURRENT_TASK_ID.lock();
+        let mut tasks = TASKS.lock();
+        let Some(current_task) = tasks.get_mut(&current_id) else {
+            return;
+        };
+
+        if current_task.state != TaskState::Running {
+            return;
+        }
+
+        current_task.consumed_ticks = current_task.consumed_ticks.saturating_add(1);
+        if current_task.consumed_ticks >= current_task.timeslice_ticks.max(1) {
+            request_reschedule_from_irq();
+        }
+    });
+}
+
 /// Saves a hardware trap-frame snapshot into the currently running task.
 pub fn save_current_context(snapshot: Context) {
     let current_id = *CURRENT_TASK_ID.lock();
@@ -319,6 +343,13 @@ pub fn save_current_context(snapshot: Context) {
 /// Returns the context snapshot for a task if present.
 pub fn get_task_context(task_id: u64) -> Option<Context> {
     TASKS.lock().get(&task_id).map(|task| task.context)
+}
+
+/// Returns `(timeslice_ticks, consumed_ticks, switch_count)` for a task.
+pub fn get_task_accounting(task_id: u64) -> Option<(u64, u64, u64)> {
+    TASKS.lock().get(&task_id).map(|task| {
+        (task.timeslice_ticks, task.consumed_ticks, task.switch_count)
+    })
 }
 
 

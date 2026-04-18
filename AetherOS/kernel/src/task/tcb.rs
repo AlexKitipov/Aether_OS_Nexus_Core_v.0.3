@@ -27,7 +27,7 @@ impl Default for TaskState {
 /// Minimal callee-saved register snapshot used for context switching.
 #[derive(Debug, Clone, Copy, Default)]
 #[repr(C)]
-pub struct Registers {
+pub struct TaskContext {
     pub rbx: u64,
     pub rbp: u64,
     pub r12: u64,
@@ -40,14 +40,16 @@ pub struct Registers {
 }
 
 /// Backward-compatible name used across the existing scheduler code.
-pub type Context = Registers;
+pub type Context = TaskContext;
+/// Backward-compatible alias for older call sites.
+pub type Registers = TaskContext;
 
 /// Minimal scheduler-facing task snapshot.
 #[derive(Debug, Clone, Copy)]
 pub struct Task {
     pub id: TaskId,
     pub stack_ptr: *mut u8,
-    pub registers: Registers,
+    pub registers: TaskContext,
     pub state: TaskState,
 }
 
@@ -56,7 +58,7 @@ impl Default for Task {
         Self {
             id: 0,
             stack_ptr: core::ptr::null_mut(),
-            registers: Registers::default(),
+            registers: TaskContext::default(),
             state: TaskState::default(),
         }
     }
@@ -68,7 +70,10 @@ pub struct TaskControlBlock {
     pub id: u64,
     pub name: String,
     pub state: TaskState,
-    pub context: Context,
+    pub context: TaskContext,
+    pub timeslice_ticks: u64,
+    pub consumed_ticks: u64,
+    pub switch_count: u64,
     pub capabilities: Vec<Capability>,
     pub kernel_stack_base: Option<VirtAddr>,
     pub user_stack_base: Option<VirtAddr>,
@@ -77,13 +82,28 @@ pub struct TaskControlBlock {
 }
 
 impl TaskControlBlock {
+    pub const DEFAULT_TIMESLICE_TICKS: u64 = 10;
+
     /// Creates a new TaskControlBlock with the given parameters.
     pub fn new(id: u64, name: String, capabilities: Vec<Capability>) -> Self {
+        Self::new_with_timeslice(id, name, capabilities, Self::DEFAULT_TIMESLICE_TICKS)
+    }
+
+    /// Creates a new TaskControlBlock with the requested round-robin quantum.
+    pub fn new_with_timeslice(
+        id: u64,
+        name: String,
+        capabilities: Vec<Capability>,
+        timeslice_ticks: u64,
+    ) -> Self {
         Self {
             id,
             name,
             state: TaskState::Ready, // New tasks start in the Ready state
-            context: Context::default(),
+            context: TaskContext::default(),
+            timeslice_ticks: timeslice_ticks.max(1),
+            consumed_ticks: 0,
+            switch_count: 0,
             capabilities,
             kernel_stack_base: None,
             user_stack_base: None,
@@ -108,6 +128,9 @@ impl TaskControlBlock {
             name,
             state: TaskState::Ready,
             context,
+            timeslice_ticks: Self::DEFAULT_TIMESLICE_TICKS,
+            consumed_ticks: 0,
+            switch_count: 0,
             capabilities,
             kernel_stack_base,
             user_stack_base,
@@ -138,6 +161,9 @@ impl TaskControlBlock {
             name,
             state: TaskState::Ready,
             context,
+            timeslice_ticks: Self::DEFAULT_TIMESLICE_TICKS,
+            consumed_ticks: 0,
+            switch_count: 0,
             capabilities,
             kernel_stack_base: None,
             user_stack_base: Some(user_stack_base),
