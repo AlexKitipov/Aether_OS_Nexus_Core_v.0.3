@@ -18,14 +18,15 @@ fn log(msg: &str) {
 
 pub struct NexusNetTransport {
     net_client: NetClient,
-    udp_socket_handle: u32, // Re-use a single UDP socket for all fetches
+    udp_socket_handle: u32,
 }
 
 impl NexusNetTransport {
     pub fn new() -> Result<Self, NetError> {
         let mut net_client = NetClient::new();
-        let udp_socket_handle = net_client.open_udp_socket(0)?; // Open an ephemeral UDP socket
+        let udp_socket_handle = net_client.open_udp_socket(0)?;
         log(&format!("NexusNetTransport: Opened UDP socket with handle: {}", udp_socket_handle));
+
         Ok(NexusNetTransport {
             net_client,
             udp_socket_handle,
@@ -36,29 +37,26 @@ impl NexusNetTransport {
 #[cfg(feature = "serde")]
 impl SwarmTransport for NexusNetTransport {
     #[cfg(feature = "serde")]
-    fn fetch_chunk_from_peer(&self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+    fn fetch_chunk_from_peer(&mut self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
         log(&format!(
             "NexusNetTransport: Fetching chunk {:?} from peer {:?}:{}",
             &cid, peer.ip_address, peer.port
         ));
 
-        // Serialize CID for sending
         let request_payload =
             postcard::to_allocvec(&cid).map_err(|_| SwarmError::InvalidRequest)?;
 
-        // Send CID request to the peer over UDP
         self.net_client
             .send_to(
-                peer.ip_address,   // FIXED: removed udp_socket_handle
+                peer.ip_address,
                 peer.port,
-                &request_payload,  // FIXED: correct reference
+                &request_payload,
             )
             .map_err(|e| {
                 log(&format!("NexusNetTransport: Failed to send request: {:?}", e));
                 SwarmError::NetworkError
             })?;
 
-        // Receive the response (chunk data)
         let response_payload = self
             .net_client
             .recv(self.udp_socket_handle)
@@ -79,3 +77,4 @@ impl SwarmTransport for NexusNetTransport {
         Ok(response_payload)
     }
 }
+
