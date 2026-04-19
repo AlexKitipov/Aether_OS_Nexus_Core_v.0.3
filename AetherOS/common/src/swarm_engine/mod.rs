@@ -32,10 +32,11 @@ impl<T: SwarmTransport> SwarmEngine<T> {
         Self { transport }
     }
 
-    pub fn fetch_chunk_from_peer(&self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+    pub fn fetch_chunk_from_peer(&mut self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
         self.transport.fetch_chunk_from_peer(peer, cid)
     }
 }
+
 
 pub mod global_search {
     extern crate alloc;
