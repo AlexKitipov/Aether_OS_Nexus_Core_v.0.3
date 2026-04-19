@@ -36,35 +36,46 @@ impl NexusNetTransport {
 #[cfg(feature = "serde")]
 impl SwarmTransport for NexusNetTransport {
     #[cfg(feature = "serde")]
-    fn fetch_chunk_from_peer(&mut self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
-        log(&format!("NexusNetTransport: Fetching chunk {:?} from peer {:?}:{}",
-            &cid, peer.ip_address, peer.port));
+    fn fetch_chunk_from_peer(&self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+        log(&format!(
+            "NexusNetTransport: Fetching chunk {:?} from peer {:?}:{}",
+            &cid, peer.ip_address, peer.port
+        ));
 
         // Serialize CID for sending
-        let request_payload = postcard::to_allocvec(&cid).map_err(|_| SwarmError::InvalidRequest)?;
+        let request_payload =
+            postcard::to_allocvec(&cid).map_err(|_| SwarmError::InvalidRequest)?;
 
         // Send CID request to the peer over UDP
-        self.net_client.send_to(
-            self.udp_socket_handle,
-            peer.ip_address,
-            peer.port,
-            &request_payload // Corrected: pass as reference
-        ).map_err(|e| {
-            log(&format!("NexusNetTransport: Failed to send request: {:?}", e));
-            SwarmError::NetworkError
-        })?;
+        self.net_client
+            .send_to(
+                peer.ip_address,   // FIXED: removed udp_socket_handle
+                peer.port,
+                &request_payload,  // FIXED: correct reference
+            )
+            .map_err(|e| {
+                log(&format!("NexusNetTransport: Failed to send request: {:?}", e));
+                SwarmError::NetworkError
+            })?;
 
         // Receive the response (chunk data)
-        // This will block until a response is received or a timeout occurs
-        // In a real system, we'd have a more robust async receive with timeouts
-        let response_payload = self.net_client.recv(self.udp_socket_handle).map_err(|e| {
-            log(&format!("NexusNetTransport: Failed to receive response: {:?}", e));
-            SwarmError::NetworkError
-        })?;
+        let response_payload = self
+            .net_client
+            .recv(self.udp_socket_handle)
+            .map_err(|e| {
+                log(&format!(
+                    "NexusNetTransport: Failed to receive response: {:?}",
+                    e
+                ));
+                SwarmError::NetworkError
+            })?;
 
-        // In a real scenario, the response payload would be verified and parsed to extract the chunk data.
-        // For this sketch, we assume the response_payload IS the chunk data.
-        log(&format!("NexusNetTransport: Received {} bytes for chunk {:?}", response_payload.len(), &cid));
+        log(&format!(
+            "NexusNetTransport: Received {} bytes for chunk {:?}",
+            response_payload.len(),
+            &cid
+        ));
+
         Ok(response_payload)
     }
 }
