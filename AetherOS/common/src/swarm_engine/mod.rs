@@ -18,7 +18,7 @@ pub enum SwarmError {
 /// Transport contract used by the Swarm Engine.
 pub trait SwarmTransport {
     /// Fetch a content chunk from a concrete peer.
-    fn fetch_chunk_from_peer(&self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError>;
+    fn fetch_chunk_from_peer(&mut self, peer: &PeerInfo, cid: [u8; 32]) -> Result<Vec<u8>, SwarmError>;
 }
 
 /// Core swarm orchestrator that delegates network I/O to a transport.
