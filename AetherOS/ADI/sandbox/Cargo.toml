@@ -1,0 +1,39 @@
+[package]
+name = "adi-sandbox"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+linked_list_allocator = "0.10.1"
+bootloader_api = { version = "0.11.15", optional = true }
+# alloc = { version = "1.0.0", default-features = false }
+# spin = { version = "0.9.8", default-features = false }
+# x86_64 = { version = "0.14.13", default-features = false }
+
+[features]
+default = []
+integration-tests = ["bootloader_api"]
+
+[lib]
+path = "src/lib.rs"
+
+[[test]]
+name = "runtime_integration_test"
+path = "src/tests/runtime_integration_test.rs"
+harness = true
+required-features = ["integration-tests"]
+
+[profile.dev]
+pipeline = "Rust"
+panic = "abort"
+
+[profile.release]
+pipeline = "Rust"
+panic = "abort"
+
+
+
+[profile.test]
+panic = "abort"
