@@ -1,7 +1,5 @@
 use super::model::DriverModel;
 use super::governor::Governor;
-use alloc::string::String;
-use alloc::vec::Vec;
 
 /// Represents the runtime environment for executing driver operations.
 pub struct Runtime {
