@@ -8,6 +8,14 @@ pub struct Governor {
     // Add more security policies or rules here
 }
 
+impl Default for Governor {
+    fn default() -> Self {
+        Self {
+            allowed_capabilities: Vec::new(),
+        }
+    }
+}
+
 impl Governor {
     /// Creates a new Governor instance with a set of allowed capabilities.
     pub fn new(allowed_capabilities: Vec<Capability>) -> Self {

@@ -5,6 +5,7 @@ extern crate alloc;
 use alloc::collections::BTreeMap;
 use alloc::sync::Arc;
 use alloc::vec::Vec;
+use adi::interface::{ADIInterface, DeviceInfo as ADIDeviceInfo};
 use core::cmp::Ordering;
 use spin::Mutex;
 
@@ -206,13 +207,17 @@ pub fn boot_discover_devices() {
 
     let _ = with_manager(|manager| {
         manager.register_io(Arc::new(crate::drivers::timer::TimerDriver::new()));
+        let _ = probe_device(ADIDeviceInfo::new("timer-driver"));
         manager.register_irq(0, Arc::new(crate::drivers::timer::TimerDriver::new()));
         manager.register_io(Arc::new(crate::drivers::serial::SerialDevice::new()));
+        let _ = probe_device(ADIDeviceInfo::new("serial-driver"));
         manager.register_io(Arc::new(crate::drivers::framebuffer::FramebufferDevice::new()));
+        let _ = probe_device(ADIDeviceInfo::new("framebuffer-driver"));
         manager.register_io(Arc::new(crate::drivers::net::NetworkDeviceIo::new(
             DEVICE_NET0,
             &crate::drivers::net::VIRTIO_NET0,
         )));
+        let _ = probe_device(ADIDeviceInfo::new("network-driver"));
 
         let _ = crate::network::with_stack(|stack| {
             stack.bind_device(&crate::drivers::net::VIRTIO_NET0);
@@ -225,6 +230,10 @@ pub fn boot_discover_devices() {
     });
 
     kprintln!("[kernel] device-discovery: done.");
+}
+
+fn probe_device(device: ADIDeviceInfo) -> bool {
+    ADIInterface::load_driver(device).is_ok()
 }
 
 pub fn vnode_caps_from_task(task_id: u64) -> VNode {
