@@ -6,8 +6,11 @@ extern crate alloc;
 // No global allocator, alloc error handler, or heap initialization in library crate.
 // These are provided by the test binary or final executable.
 
+#[path = "../model.rs"]
 pub mod model;
+#[path = "../runtime.rs"]
 pub mod runtime;
+#[path = "../governor.rs"]
 pub mod governor;
 
 /// Represents the ADI Sandbox environment.
