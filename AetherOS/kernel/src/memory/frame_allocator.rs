@@ -3,9 +3,9 @@
 extern crate alloc;
 
 use bootloader_api::info::{MemoryRegionKind, MemoryRegions};
-use conquer_once::spin::Once;
+use conquer_once::spin::OnceCell;
 use spin::Mutex;
-use x86_64::structures::paging::{FrameAllocator, FrameDeallocator, PhysFrame, Size4KiB};
+use x86_64::structures::paging::{FrameAllocator, FrameDeallocator, PageSize, PhysFrame, Size4KiB};
 use x86_64::PhysAddr;
 
 use crate::kprintln;
@@ -211,11 +211,11 @@ impl FrameDeallocator<Size4KiB> for BootInfoFrameAllocator {
 
 pub struct GlobalFrameAllocator;
 
-static FRAME_ALLOCATOR: Once<Mutex<BootInfoFrameAllocator>> = Once::new();
+static FRAME_ALLOCATOR: OnceCell<Mutex<BootInfoFrameAllocator>> = OnceCell::uninit();
 
 pub fn init_global(memory_regions: &'static MemoryRegions) -> Result<(), FrameAllocatorError> {
     let allocator = unsafe { BootInfoFrameAllocator::init(memory_regions)? };
-    FRAME_ALLOCATOR.call_once(|| Mutex::new(allocator));
+    FRAME_ALLOCATOR.init_once(|| Mutex::new(allocator));
     Ok(())
 }
 

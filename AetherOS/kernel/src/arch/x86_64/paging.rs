@@ -3,7 +3,7 @@
 extern crate alloc;
 
 use alloc::collections::BTreeMap;
-use conquer_once::spin::Once;
+use conquer_once::spin::OnceCell;
 use spin::Mutex;
 use x86_64::registers::control::Cr3;
 use x86_64::structures::paging::{
@@ -182,15 +182,15 @@ fn map_to_err(error: MapToError<Size4KiB>) -> PagingError {
     }
 }
 
-static PHYSICAL_MEMORY_OFFSET: Once<u64> = Once::new();
-static PAGE_TABLE_MANAGER: Once<Mutex<PageTableManager>> = Once::new();
+static PHYSICAL_MEMORY_OFFSET: OnceCell<u64> = OnceCell::uninit();
+static PAGE_TABLE_MANAGER: OnceCell<Mutex<PageTableManager>> = OnceCell::uninit();
 static BOOTSTRAP_TRANSLATIONS: Mutex<BTreeMap<u64, u64>> = Mutex::new(BTreeMap::new());
 
 pub fn init(physical_memory_offset: Option<u64>) -> Result<(), PagingError> {
     let offset = physical_memory_offset.ok_or(PagingError::MissingPhysicalMemoryOffset)?;
     configure_physical_memory_offset(offset);
 
-    PAGE_TABLE_MANAGER.call_once(|| Mutex::new(PageTableManager::new(VirtAddr::new(offset))));
+    PAGE_TABLE_MANAGER.init_once(|| Mutex::new(PageTableManager::new(VirtAddr::new(offset))));
 
     init_bootstrap_mappings(EARLY_IDENTITY_LIMIT);
 
@@ -293,7 +293,7 @@ pub fn map_heap_region(
     validate_canonical_virt(start_addr.as_u64());
 
     let heap_start_page = Page::containing_address(start_addr);
-    let heap_end = start_addr + (size as u64) - 1;
+    let heap_end = start_addr + (size as u64) - 1u64;
     let heap_end_page = Page::containing_address(heap_end);
 
     for page in Page::range_inclusive(heap_start_page, heap_end_page) {
@@ -403,6 +403,25 @@ pub fn try_virt_to_phys(virt_addr: u64) -> Option<u64> {
     mappings.get(&page_base).map(|phys_base| *phys_base + page_offset)
 }
 
+
+
+pub fn alloc_frame_range(size_bytes: usize) -> u64 {
+    let frame_count = ((size_bytes.max(1) as u64) + (FRAME_SIZE - 1)) / FRAME_SIZE;
+    let mut frame_alloc = GlobalFrameAllocator;
+
+    let first = match frame_alloc.allocate_frame() {
+        Some(frame) => frame.start_address().as_u64(),
+        None => return 0,
+    };
+
+    for _ in 1..frame_count {
+        if frame_alloc.allocate_frame().is_none() {
+            break;
+        }
+    }
+
+    first
+}
 pub fn virt_to_phys_with_offset(virt: u64, offset: u64) -> PhysAddr {
     assert!(offset != 0, "physical memory offset must not be zero");
     validate_canonical_virt(offset);
