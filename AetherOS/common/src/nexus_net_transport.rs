@@ -1,11 +1,14 @@
 // common/src/nexus_net_transport.rs
 
 extern crate alloc;
-use alloc::vec::Vec;
 use alloc::format;
 
-use crate::swarm_engine::{SwarmTransport, SwarmError};
+#[cfg(feature = "serde")]
+use alloc::vec::Vec;
+#[cfg(feature = "serde")]
 use crate::arp_dht::PeerInfo;
+#[cfg(feature = "serde")]
+use crate::swarm_engine::{SwarmError, SwarmTransport};
 use libnexus_net::{NetClient, NetError};
 
 // Temporary log function for V-Nodes
@@ -16,6 +19,7 @@ fn log(msg: &str) {
     }
 }
 
+#[cfg_attr(not(feature = "serde"), allow(dead_code))]
 pub struct NexusNetTransport {
     net_client: NetClient,
     udp_socket_handle: u32,
@@ -77,4 +81,3 @@ impl SwarmTransport for NexusNetTransport {
         Ok(response_payload)
     }
 }
-
