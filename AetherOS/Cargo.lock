@@ -3,9 +3,14 @@
 version = 4
 
 [[package]]
+name = "adi"
+version = "0.1.0"
+
+[[package]]
 name = "aetheros-kernel"
 version = "0.1.0"
 dependencies = [
+ "adi",
  "aetheros_common",
  "bootloader",
  "bootloader_api",

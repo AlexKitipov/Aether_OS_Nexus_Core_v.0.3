@@ -18,6 +18,7 @@ pub enum Capability {
 }
 
 /// Represents the model of a driver, detailing its required and provided capabilities.
+#[derive(Default)]
 pub struct DriverModel {
     /// Unique identifier for the driver
     pub id: u64,
