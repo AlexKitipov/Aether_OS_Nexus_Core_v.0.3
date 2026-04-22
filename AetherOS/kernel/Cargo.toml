@@ -25,6 +25,8 @@ adi = { path = "../ADI" }
 [features]
 default = []
 bare_metal = []
+uefi = []
+bios = []
 
 [package.metadata.bootloader]
 target = "aetheros-x86_64"

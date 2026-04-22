@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 fn main() {
     // This build.rs is simplified to be a no-op when `bootimage` is used.
     // The actual bootloader binaries are compiled by `bootimage` itself.
@@ -10,7 +8,7 @@ fn main() {
         // This path is where bootimage will place the final UEFI bootloader image.
         // We are declaring it here for build script satisfaction, not actually building it.
         println!("cargo:rustc-env=UEFI_BOOTLOADER_PATH={}", 
-            PathBuf::from(std::env::var("OUT_DIR").unwrap())
+            std::path::PathBuf::from(std::env::var("OUT_DIR").unwrap())
                 .join("bin")
                 .join("bootloader-x86_64-uefi.efi")
                 .display()
