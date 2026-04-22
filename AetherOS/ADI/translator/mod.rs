@@ -1,0 +1,1 @@
+//! ADI translator module skeleton.

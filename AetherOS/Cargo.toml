@@ -4,6 +4,7 @@ default-members = ["common"]
 members = [
     "kernel",
     "common",
+    "ADI",
     # "vnode/dns-resolver",
     # "vnode/echo",
     # "vnode/file-manager",
