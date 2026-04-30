@@ -1,0 +1,14 @@
+{
+  "task": {
+    "intent": "driver.generate | runtime.diagnose | package.manifest",
+    "host": {},
+    "target": {},
+    "context": {}
+  },
+  "result": {
+    "agent": "ADI | ARX | APM",
+    "status": "ok | error",
+    "artifacts": [],
+    "logs": []
+  }
+}

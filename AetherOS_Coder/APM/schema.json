@@ -1,0 +1,16 @@
+{
+  "agent": "APM",
+  "supports": ["package.manifest"],
+  "input": {
+    "intent": "package.*",
+    "host": {},
+    "target": {},
+    "context": {}
+  },
+  "output": {
+    "agent": "APM",
+    "status": "ok | error",
+    "artifacts": [],
+    "logs": []
+  }
+}
