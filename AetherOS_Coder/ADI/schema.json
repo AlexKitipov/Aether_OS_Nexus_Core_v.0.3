@@ -1,0 +1,16 @@
+{
+  "agent": "ADI",
+  "supports": ["driver.generate"],
+  "input": {
+    "intent": "driver.*",
+    "host": {},
+    "target": {},
+    "context": {}
+  },
+  "output": {
+    "agent": "ADI",
+    "status": "ok | error",
+    "artifacts": [],
+    "logs": []
+  }
+}

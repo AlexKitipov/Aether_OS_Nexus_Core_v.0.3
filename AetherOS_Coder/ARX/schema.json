@@ -1,0 +1,16 @@
+{
+  "agent": "ARX",
+  "supports": ["runtime.diagnose"],
+  "input": {
+    "intent": "runtime.*",
+    "host": {},
+    "target": {},
+    "context": {}
+  },
+  "output": {
+    "agent": "ARX",
+    "status": "ok | error",
+    "artifacts": [],
+    "logs": []
+  }
+}
