@@ -1,30 +1,92 @@
-use std::io::{BufRead, BufReader, Write};
-use std::os::unix::net::UnixStream;
-
+use crate::codec::{decode_message, encode_response};
 use crate::kernel_bridge::KernelBridge;
-use crate::protocol::GatewayMessage;
+use crate::protocol::{GatewayMessage, GatewayResponse};
 
-pub fn run_gateway_loop<B>(bridge: &mut B, ai_socket_path: &str) -> Result<(), Box<dyn std::error::Error>>
+use reqwest::blocking::Client;
+use serde_json::json;
+
+pub fn run_gateway_loop<B>(bridge: &mut B) -> Result<(), Box<dyn std::error::Error>>
 where
     B: KernelBridge,
     B::Error: std::error::Error + 'static,
 {
-    let mut stream = UnixStream::connect(ai_socket_path)?;
-    let mut reader = BufReader::new(stream.try_clone()?);
-
     loop {
         let kernel_message = bridge.recv_kernel_message()?;
-        let payload = serde_json::to_vec(&kernel_message)?;
-        stream.write_all(&payload)?;
-        stream.write_all(b"\n")?;
+        let encoded = serde_json::to_vec(&kernel_message)?;
+        let message = decode_message(&encoded).map_err(std::io::Error::other)?;
+        let response = route_to_agent(message);
+        bridge.send_kernel_message(GatewayMessage::AiAction {
+            action_type: response.status,
+            payload: response.payload,
+        })?;
+    }
+}
 
-        let mut line = String::new();
-        let read = reader.read_line(&mut line)?;
-        if read == 0 {
-            continue;
+fn route_to_agent(msg: GatewayMessage) -> GatewayResponse {
+    let (port, endpoint, event_type, payload) = match msg {
+        GatewayMessage::KernelEvent { event_type, payload } => {
+            if event_type.starts_with("driver.") {
+                (5151, "/process", event_type, payload)
+            } else if event_type.starts_with("runtime.") {
+                (5152, "/analyze", event_type, payload)
+            } else if event_type.starts_with("package.") {
+                (5153, "/generate", event_type, payload)
+            } else {
+                return GatewayResponse {
+                    status: "error".into(),
+                    payload: b"unknown intent".to_vec(),
+                };
+            }
         }
+        _ => {
+            return GatewayResponse {
+                status: "error".into(),
+                payload: b"invalid message".to_vec(),
+            };
+        }
+    };
 
-        let response: GatewayMessage = serde_json::from_str(line.trim())?;
-        bridge.send_kernel_message(response)?;
+    let url = format!("http://127.0.0.1:{port}{endpoint}");
+    let client = Client::new();
+    let request_payload = json!({
+        "event_type": event_type,
+        "payload": payload,
+    });
+
+    match client.post(url).json(&request_payload).send() {
+        Ok(response) => {
+            if !response.status().is_success() {
+                return GatewayResponse {
+                    status: "error".into(),
+                    payload: format!("http status {}", response.status()).into_bytes(),
+                };
+            }
+
+            match response.bytes() {
+                Ok(bytes) => {
+                    let ndjson_payload = bytes.to_vec();
+                    let normalized = encode_response(&GatewayResponse {
+                        status: "ok".into(),
+                        payload: ndjson_payload,
+                    })
+                    .unwrap_or_else(|e| {
+                        format!("{{\"status\":\"error\",\"payload\":\"{}\"}}", e).into_bytes()
+                    });
+
+                    GatewayResponse {
+                        status: "ok".into(),
+                        payload: normalized,
+                    }
+                }
+                Err(e) => GatewayResponse {
+                    status: "error".into(),
+                    payload: e.to_string().into_bytes(),
+                },
+            }
+        }
+        Err(e) => GatewayResponse {
+            status: "error".into(),
+            payload: e.to_string().into_bytes(),
+        },
     }
 }
