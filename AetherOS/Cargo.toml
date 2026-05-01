@@ -4,7 +4,10 @@ default-members = ["common"]
 members = [
     "kernel",
     "common",
+    "libnexus-net",
     "AetherOS_Coder/ADI",
+    "AetherOS_Coder/ARX",
+    "AetherOS_Coder/APM",
     "gateway",
     # "vnode/dns-resolver",
     # "vnode/echo",
