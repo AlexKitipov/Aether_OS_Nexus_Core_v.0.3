@@ -5,6 +5,7 @@ members = [
     "kernel",
     "common",
     "ADI",
+    "gateway",
     # "vnode/dns-resolver",
     # "vnode/echo",
     # "vnode/file-manager",
