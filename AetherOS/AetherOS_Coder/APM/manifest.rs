@@ -1,3 +1,5 @@
+use alloc::string::String;
+
 pub struct AppManifest {
     pub name: String,
     pub version: String,
