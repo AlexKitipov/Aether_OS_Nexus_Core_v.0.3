@@ -11,6 +11,12 @@ use core::arch::global_asm;
 use bootloader_api::{BootInfo, BootloaderConfig};
 #[cfg(target_os = "none")]
 use aetheros_kernel::{init, task};
+#[cfg(target_os = "none")]
+use adi::interface::ADIInterface;
+#[cfg(target_os = "none")]
+use arx::ArxManager;
+#[cfg(target_os = "none")]
+use apm::ApmManager;
 
 #[cfg(target_os = "none")]
 /// Dedicated early-boot kernel stack used before allocator/scheduler startup.
@@ -107,10 +113,16 @@ pub unsafe extern "C" fn kernel_entry(boot_info_ptr: *mut BootInfo) -> ! {
 
     aetheros_kernel::kprintln!("[kernel] Boot sequence complete, entering scheduler loop.");
 
+    let adi = ADIInterface;
+    let mut arx = ArxManager::new(&adi);
+    let mut apm = ApmManager::new(&adi);
+
     // Enter an infinite loop to keep the kernel running.
     // In a real OS, this would be the idle loop, scheduling tasks.
     loop {
         aetheros_kernel::dev_interface::poll_once();
+        arx.tick();
+        apm.tick();
 
         if task::scheduler::take_reschedule_request() {
             task::schedule(); // Perform scheduling only when requested (e.g. from timer IRQ)

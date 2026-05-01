@@ -1,0 +1,11 @@
+[package]
+name = "arx"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "mod.rs"
+
+[dependencies]
+aetheros_common = { path = "../../common", default-features = false, features = ["alloc"] }
+adi = { path = "../ADI" }
