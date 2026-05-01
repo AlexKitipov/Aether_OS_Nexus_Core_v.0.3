@@ -37,4 +37,7 @@ pub enum ArxError {
     ProcessTableFull,
     EventQueueFull,
     MemoryLimitExceeded,
+    InvalidSyscall,
+    InvalidState,
+    QueueEmpty,
 }

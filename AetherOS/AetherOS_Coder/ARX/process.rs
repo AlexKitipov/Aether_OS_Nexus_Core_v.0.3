@@ -15,6 +15,13 @@ pub enum ProcessState {
     Terminated,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ProcessPriority {
+    Low,
+    Normal,
+    High,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProcessMessage {
     pub from: Pid,
@@ -29,6 +36,12 @@ pub struct Process {
     pub context: AppContext,
     pub capabilities: CapabilitySet,
     pub memory_limit: usize,
+    pub priority: ProcessPriority,
+    pub time_slice: u32,
+    pub remaining_slice: u32,
+    pub cpu_time_ticks: u64,
+    pub panic_flag: bool,
+    pub restart_on_fault: bool,
     inbox: VecDeque<ProcessMessage>,
 }
 
@@ -40,6 +53,12 @@ impl Process {
             context,
             capabilities,
             memory_limit,
+            priority: ProcessPriority::Normal,
+            time_slice: 3,
+            remaining_slice: 3,
+            cpu_time_ticks: 0,
+            panic_flag: false,
+            restart_on_fault: false,
             inbox: VecDeque::new(),
         }
     }
@@ -50,6 +69,10 @@ impl Process {
 
     pub fn pop_message(&mut self) -> Option<ProcessMessage> {
         self.inbox.pop_front()
+    }
+
+    pub fn inbox_len(&self) -> usize {
+        self.inbox.len()
     }
 }
 
@@ -104,8 +127,26 @@ impl ProcessTable {
     pub fn next_ready_pid(&self) -> Option<Pid> {
         self.entries
             .iter()
-            .find(|p| p.state == ProcessState::Ready)
+            .filter(|p| p.state == ProcessState::Ready && !p.panic_flag)
+            .max_by_key(|p| p.priority)
             .map(|p| p.pid)
+    }
+
+    pub fn next_ready_pid_after(&self, after_pid: Pid, priority: ProcessPriority) -> Option<Pid> {
+        let mut found_anchor = false;
+        for p in self.entries.iter().filter(|p| p.priority == priority && p.state == ProcessState::Ready) {
+            if found_anchor {
+                return Some(p.pid);
+            }
+            if p.pid == after_pid {
+                found_anchor = true;
+            }
+        }
+        self.entries
+            .iter()
+            .filter(|p| p.priority == priority && p.state == ProcessState::Ready)
+            .map(|p| p.pid)
+            .next()
     }
 
     pub fn list(&self) -> &[Process] {
