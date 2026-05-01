@@ -4,7 +4,7 @@ default-members = ["common"]
 members = [
     "kernel",
     "common",
-    "ADI",
+    "AetherOS_Coder/ADI",
     "gateway",
     # "vnode/dns-resolver",
     # "vnode/echo",
