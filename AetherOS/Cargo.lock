@@ -221,6 +221,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "display-compositor"
+version = "0.1.0"
+dependencies = [
+ "aetheros_common",
+ "linked_list_allocator",
+ "postcard",
+ "serde",
+]
+
+[[package]]
 name = "displaydoc"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -648,6 +658,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "init-service"
+version = "0.1.0"
+dependencies = [
+ "aetheros_common",
+ "linked_list_allocator",
+ "postcard",
+ "serde",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -891,6 +911,16 @@ name = "r-efi"
 version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf"
+
+[[package]]
+name = "registry"
+version = "0.1.0"
+dependencies = [
+ "aetheros_common",
+ "linked_list_allocator",
+ "postcard",
+ "serde",
+]
 
 [[package]]
 name = "reqwest"
@@ -1583,6 +1613,16 @@ name = "webpki-roots"
 version = "0.25.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f20c57d8d7db6d3b86154206ae5d8fba62dd39573114de97c2cb0578251f8e1"
+
+[[package]]
+name = "webview"
+version = "0.1.0"
+dependencies = [
+ "aetheros_common",
+ "linked_list_allocator",
+ "postcard",
+ "serde",
+]
 
 [[package]]
 name = "windows-link"
