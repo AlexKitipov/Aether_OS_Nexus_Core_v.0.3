@@ -38,9 +38,7 @@ target/aetheros-x86_64/release/aetheros-kernel
 
 ## 4) Стартирай в QEMU
 
-```bash
-qemu-system-x86_64 -kernel target/aetheros-x86_64/release/aetheros-kernel
-```
+This kernel is a bare-metal ELF image and is not directly bootable with `qemu-system-x86_64 -kernel` unless wrapped by a compatible bootloader or UEFI image.
 
 ## Бърз автоматичен вариант
 

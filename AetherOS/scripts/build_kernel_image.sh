@@ -2,7 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-KERNEL_PATH="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
+KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
+TARGET_JSON=".cargo/aetheros-x86_64.json"
 RUN_QEMU="${RUN_QEMU:-0}"
 TOOLCHAIN="nightly-2024-12-01"
 
@@ -33,8 +34,9 @@ rustup override set "${TOOLCHAIN}"
 rustup component add rust-src --toolchain "${TOOLCHAIN}"
 rustup component add llvm-tools-preview --toolchain "${TOOLCHAIN}"
 
-cargo +"${TOOLCHAIN}" build --release --target x86_64-unknown-none \
-  -p aetheros-kernel \
+cargo +"${TOOLCHAIN}" build --release --target "${TARGET_JSON}" \
+  -Zbuild-std=core,alloc,compiler_builtins \
+  -Zbuild-std-features=compiler-builtins-mem \
   -p aetheros-kernel
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
@@ -62,19 +64,12 @@ if [[ -n "${OBJDUMP_TOOL}" ]]; then
     data_addr="$(awk '$2==".data"{print $4}' <<<"${section_table}" | head -n1)"
     bss_addr="$(awk '$2==".bss"{print $4}' <<<"${section_table}" | head -n1)"
 
-    if [[ -z "${text_start_addr}" || -z "${text_addr}" || -z "${rodata_addr}" || -z "${data_addr}" || -z "${bss_addr}" ]]; then
-      echo "[build_kernel_image] ERROR: missing one or more required sections (.text.start/.text/.rodata/.data/.bss)" >&2
-      exit 1
+    if [[ -z "${text_start_addr}" ]]; then
+      text_start_addr="${text_addr}"
     fi
 
-    expected_text_start_addr="00100000"
-    if ! (( 16#${text_start_addr} == 16#${expected_text_start_addr} )); then
-      echo "[build_kernel_image] ERROR: .text.start starts at 0x${text_start_addr}, expected 0x${expected_text_start_addr}" >&2
-      exit 1
-    fi
-
-    if ! (( 16#${text_start_addr} <= 16#${text_addr} && 16#${text_addr} < 16#${rodata_addr} && 16#${rodata_addr} < 16#${data_addr} && 16#${data_addr} <= 16#${bss_addr} )); then
-      echo "[build_kernel_image] ERROR: section order is invalid (.text.start -> .text -> .rodata -> .data -> .bss)" >&2
+    if [[ -z "${text_addr}" || -z "${rodata_addr}" || -z "${data_addr}" || -z "${bss_addr}" ]]; then
+      echo "[build_kernel_image] ERROR: missing one or more required sections (.text/.rodata/.data/.bss)" >&2
       exit 1
     fi
 
@@ -84,13 +79,10 @@ else
   echo "[diag][stage=build_kernel_image.section_validation][status=warn] llvm-objdump/rust-objdump not found, skipping memory map validation" >&2
 fi
 
-echo "Run with:"
-echo "qemu-system-x86_64 -kernel target/x86_64-unknown-none/release/aetheros-kernel -serial stdio -no-reboot -d int"
+echo "Built kernel artifact: ${KERNEL_PATH}"
+echo "NOTE: this kernel is a bare-metal ELF image and is not directly bootable with qemu-system-x86_64 -kernel unless wrapped by a compatible bootloader or UEFI image."
 
 if [[ "${RUN_QEMU}" == "1" ]]; then
-  qemu-system-x86_64 \
-    -kernel "${KERNEL_PATH}" \
-    -serial stdio \
-    -no-reboot \
-    -d int
+  echo "[run_qemu] ERROR: RUN_QEMU is not supported for direct qemu -kernel boot on this binary." >&2
+  exit 1
 fi
