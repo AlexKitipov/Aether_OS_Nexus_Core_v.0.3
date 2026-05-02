@@ -17,8 +17,10 @@ pub mod examples;
 pub mod channel;
 pub mod message;
 pub mod nexus_msg;
+pub mod vnode_heap;
 
 pub mod ui;
 
 pub use ipc::*;
 pub use ui::*;
+pub use vnode_heap::*;

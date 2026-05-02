@@ -7,26 +7,106 @@ extern crate alloc;
 
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
+use spin::Mutex;
 use alloc::vec::Vec;
 use alloc::format;
 
 use common::ipc::vnode::VNodeChannel;
-use common::IpcSend;
-use common::syscall::{syscall3, SYS_LOG, SYS_IRQ_REGISTER, SYS_NET_RX_POLL, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_NET_TX, SYS_IRQ_ACK, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_IPC_RECV_NONBLOCKING};
 use common::ipc::net_ipc::NetPacketMsg;
+use common::ipc::IpcSend;
+use common::syscall::{
+    syscall3,
+    SYS_LOG,
+    SYS_IRQ_REGISTER,
+    SYS_NET_RX_POLL,
+    SUCCESS,
+    E_ERROR,
+    SYS_NET_ALLOC_BUF,
+    SYS_NET_FREE_BUF,
+    SYS_NET_TX,
+    SYS_IRQ_ACK,
+    SYS_GET_DMA_BUF_PTR,
+    SYS_SET_DMA_BUF_LEN,
+    SYS_IPC_RECV_NONBLOCKING,
+};
+use common::vnode_heap::VNodeHeap;
 
 // Temporary log function for V-Nodes
 
 const VNODE_HEAP_SIZE: usize = 64 * 1024;
 static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
 
+const RX_BUFFER_SIZE: usize = 2048;
+const RX_POOL_SIZE: usize = 64;
+
+struct RxDmaHandlePool {
+    handles: [u64; RX_POOL_SIZE],
+    len: usize,
+}
+
+impl RxDmaHandlePool {
+    const fn new() -> Self {
+        Self {
+            handles: [0; RX_POOL_SIZE],
+            len: 0,
+        }
+    }
+
+    fn push(&mut self, handle: u64) {
+        if self.len < RX_POOL_SIZE {
+            self.handles[self.len] = handle;
+            self.len += 1;
+        } else {
+            let _ = net_free_buf(handle);
+        }
+    }
+
+    fn pop(&mut self) -> Option<u64> {
+        if self.len == 0 {
+            None
+        } else {
+            self.len -= 1;
+            Some(self.handles[self.len])
+        }
+    }
+}
+
+static RX_DMA_POOL: Mutex<RxDmaHandlePool> = Mutex::new(RxDmaHandlePool::new());
+
 #[global_allocator]
-static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
+static GLOBAL_ALLOCATOR: VNodeHeap = VNodeHeap::new();
 
 fn init_allocator() {
     unsafe {
-        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+        GLOBAL_ALLOCATOR.init_buffer(&mut VNODE_HEAP);
     }
+}
+
+fn init_rx_pool() {
+    let mut pool = RX_DMA_POOL.lock();
+    for _ in 0..RX_POOL_SIZE {
+        match net_alloc_buf(RX_BUFFER_SIZE) {
+            Ok(handle) => {
+                pool.push(handle);
+            }
+            Err(e) => {
+                log(&alloc::format!("Net-Bridge: init_rx_pool failed to allocate DMA buffer: {}", e));
+                break;
+            }
+        }
+    }
+}
+
+fn get_rx_dma_handle() -> Result<u64, u64> {
+    if let Some(handle) = RX_DMA_POOL.lock().pop() {
+        Ok(handle)
+    } else {
+        net_alloc_buf(RX_BUFFER_SIZE)
+    }
+}
+
+fn return_rx_dma_handle(handle: u64) {
+    RX_DMA_POOL.lock().push(handle);
 }
 
 fn log(msg: &str) {
@@ -95,17 +175,16 @@ pub extern "C" fn _start() -> ! {
 
     log("Net-Bridge V-Node starting up...");
 
-    // Dynamically allocate a DMA buffer for receiving network packets.
-    // Max Ethernet frame size + some headroom.
-    const RX_BUFFER_SIZE: usize = 1536;
-    let rx_dma_handle = match net_alloc_buf(RX_BUFFER_SIZE) {
+    init_rx_pool();
+
+    let mut rx_dma_handle = match get_rx_dma_handle() {
         Ok(handle) => {
-            log(&alloc::format!("Net-Bridge: Allocated RX DMA buffer with handle {}.", handle));
+            log(&alloc::format!("Net-Bridge: Acquired RX DMA handle {} from pool.", handle));
             handle
-        },
+        }
         Err(e) => {
-            log(&alloc::format!("Net-Bridge: Failed to allocate RX DMA buffer: {}. Panicking.", e));
-            panic!("Failed to allocate RX DMA buffer");
+            log(&alloc::format!("Net-Bridge: Failed to acquire RX DMA handle: {}. Panicking.", e));
+            panic!("Failed to acquire RX DMA handle");
         }
     };
 
@@ -181,29 +260,32 @@ pub extern "C" fn _start() -> ! {
             if len > SUCCESS {
                 log(&alloc::format!("Net-Bridge: Received packet of {} bytes into DMA handle {}.", len, rx_dma_handle));
 
-                // Set the actual length of data received in the DMA buffer.
                 if let Err(e) = set_dma_buffer_len(rx_dma_handle, len as usize) {
-                    log(&alloc::format!("Net-Bridge: Failed to set RX DMA buffer length: {}.", e));
-                    // Handle error, maybe free buffer or retry
+                    log(&alloc::format!("Net-Bridge: Failed to set RX DMA buffer length: {}. Replacing RX buffer handle.", e));
+                    rx_dma_handle = get_rx_dma_handle().unwrap_or_else(|e| {
+                        log(&alloc::format!("Net-Bridge: Failed to replace RX DMA handle: {}. Panicking.", e));
+                        panic!("Failed to replace RX DMA handle");
+                    });
                 } else {
-                    // Send the received packet's DMA handle and length to the AetherNet service.
                     let rx_msg = NetPacketMsg::RxPacket { dma_handle: rx_dma_handle, len };
                     match net_stack_chan.send(&rx_msg) {
-                        Ok(_) => log(&alloc::format!("Net-Bridge: Sent RxPacket to net-stack for handle {}.", rx_dma_handle)),
-                        Err(_) => log(&alloc::format!("Net-Bridge: Failed to send RxPacket to net-stack for handle {}.", rx_dma_handle)),
+                        Ok(_) => {
+                            log(&alloc::format!("Net-Bridge: Sent RxPacket to net-stack for handle {}.", rx_dma_handle));
+                            rx_dma_handle = get_rx_dma_handle().unwrap_or_else(|e| {
+                                log(&alloc::format!("Net-Bridge: Failed to acquire next RX DMA handle: {}. Panicking.", e));
+                                panic!("Failed to acquire next RX DMA handle");
+                            });
+                        }
+                        Err(_) => {
+                            log(&alloc::format!("Net-Bridge: Failed to send RxPacket to net-stack for handle {}. Returning handle to pool.", rx_dma_handle));
+                            return_rx_dma_handle(rx_dma_handle);
+                            rx_dma_handle = get_rx_dma_handle().unwrap_or_else(|e| {
+                                log(&alloc::format!("Net-Bridge: Failed to reacquire RX DMA handle after send failure: {}. Panicking.", e));
+                                panic!("Failed to reacquire RX DMA handle");
+                            });
+                        }
                     }
-                    // The AetherNet service is now responsible for processing and eventually freeing this buffer.
-                    // We don't free rx_dma_handle here, as it's passed with ownership semantics to net-stack.
-                    // A new RX DMA buffer should be allocated for the next reception, or this V-Node could manage a pool.
-                    // For simplicity, we assume net-stack frees it and we'll re-use the conceptual handle (which is problematic for real system).
-
-                    // For this simple example, since we 'transfer ownership' of the buffer to net-stack,
-                    // we conceptually need a new one for the next RX_POLL. Reallocating for simplicity.
-                    // NOTE: This re-allocation approach is inefficient. A ring buffer or pool of DMA buffers is preferred.
-                    // For now, we'll keep it simple to match the current stub nature.
-
                 }
-
             } else if len == SUCCESS {
                 log("Net-Bridge: SYS_NET_RX_POLL returned no packets (expected if IRQ was spurious or handled).");
             } else if len == E_ERROR {

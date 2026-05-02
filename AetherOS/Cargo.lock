@@ -40,6 +40,7 @@ version = "0.1.0"
 dependencies = [
  "examples",
  "libnexus-net",
+ "linked_list_allocator",
  "postcard",
  "serde",
  "smoltcp",
