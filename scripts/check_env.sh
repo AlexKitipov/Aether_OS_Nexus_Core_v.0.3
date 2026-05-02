@@ -30,7 +30,7 @@ UEFI_FIRMWARE_PATHS=(
   /usr/share/qemu/OVMF.fd
 )
 
-RUST_TOOLCHAIN="nightly-2024-12-01"
+RUST_TOOLCHAIN="nightly-2025-03-01"
 RUST_COMPONENTS=(
   rust-src
   llvm-tools-preview

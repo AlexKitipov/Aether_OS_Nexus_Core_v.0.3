@@ -16,7 +16,7 @@ From the project docs and scripts, the environment requires:
 
 ### Rust/runtime components
 - `rustup` available.
-- Rust toolchain pinned to `nightly-2024-12-01`.
+- Rust toolchain pinned to `nightly-2025-03-01`.
 - Rust components: `rust-src`, `llvm-tools-preview`.
 - Rust targets: `x86_64-unknown-uefi`, `x86_64-unknown-none`.
 
@@ -38,7 +38,7 @@ Used by `AetherOS/Nexus/UI/tools/*.py` scripts:
 ### Present
 - `rustup`: present.
 - `cargo`: present.
-- Rust toolchain `nightly-2024-12-01`: installed and active in `AetherOS`.
+- Rust toolchain `nightly-2025-03-01`: installed and active in `AetherOS`.
 - `llvm-ar`, `ld.lld`: present in PATH.
 - `timeout`: present.
 - `binutils`: installed via dpkg.

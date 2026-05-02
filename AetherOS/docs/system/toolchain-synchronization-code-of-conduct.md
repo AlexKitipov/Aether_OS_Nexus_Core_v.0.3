@@ -11,7 +11,7 @@ This code of conduct establishes a **single source of truth** for toolchain stat
 
 Canonical reference:
 
-- **Rustup toolchain:** `nightly-2024-12-01-x86_64-unknown-linux-gnu`
+- **Rustup toolchain:** `nightly-2025-03-01-x86_64-unknown-linux-gnu`
 - **rustc:** `1.85.0-nightly (7442931d4 2024-11-30)`
 
 The goal is to eliminate drift between local and generated instructions, improving build determinism and runtime stability.
@@ -20,7 +20,7 @@ The goal is to eliminate drift between local and generated instructions, improvi
 
 All automation and contributors must align to the canonical Rustup state:
 
-- `toolchain = nightly-2024-12-01-x86_64-unknown-linux-gnu`
+- `toolchain = nightly-2025-03-01-x86_64-unknown-linux-gnu`
 - `rustc = 1.85.0-nightly (7442931d4 2024-11-30)`
 - Required components:
   - `cargo`
@@ -40,7 +40,7 @@ Every validating agent must produce/consume the same normalized snapshot format:
 
 ```json
 {
-  "toolchain": "nightly-2024-12-01-x86_64-unknown-linux-gnu",
+  "toolchain": "nightly-2025-03-01-x86_64-unknown-linux-gnu",
   "rustc": "1.85.0-nightly (7442931d4 2024-11-30)",
   "components": {
     "cargo": "installed",
@@ -75,7 +75,7 @@ To preserve reproducibility:
 
 ### Rustup-managed state
 
-- `~/.rustup/toolchains/nightly-2024-12-01-x86_64-unknown-linux-gnu/`
+- `~/.rustup/toolchains/nightly-2025-03-01-x86_64-unknown-linux-gnu/`
 - `~/.rustup/settings.toml`
 - `~/.rustup/update-hashes/`
 - `~/.rustup/tmp/`
@@ -115,6 +115,6 @@ To preserve reproducibility:
 
 This policy is considered successful when:
 
-- all tracked files declare `nightly-2024-12-01-x86_64-unknown-linux-gnu`
+- all tracked files declare `nightly-2025-03-01-x86_64-unknown-linux-gnu`
 - agent snapshots resolve to identical canonical values
 - build pipelines become deterministic across local and automated environments

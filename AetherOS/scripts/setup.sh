@@ -9,7 +9,7 @@ if ! command -v rustup >/dev/null 2>&1; then
   exit 1
 fi
 
-TOOLCHAIN="nightly-2024-12-01"
+TOOLCHAIN="nightly-2025-03-01"
 
 rustup toolchain install "${TOOLCHAIN}"
 rustup override set "${TOOLCHAIN}"

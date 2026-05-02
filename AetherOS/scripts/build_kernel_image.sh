@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
 TARGET_JSON=".cargo/aetheros-x86_64.json"
 RUN_QEMU="${RUN_QEMU:-0}"
-TOOLCHAIN="nightly-2024-12-01"
+TOOLCHAIN="nightly-2025-03-01"
 
 cd "${ROOT_DIR}"
 

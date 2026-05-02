@@ -13,11 +13,11 @@ Use this checklist when validating a new machine for AetherOS development.
 
 ## 2) Rust toolchain + target installation
 
-- [ ] `rustup toolchain list | grep nightly-2024-12-01`
-- [ ] `rustup component list --toolchain nightly-2024-12-01 | grep rust-src`
-- [ ] `rustup component list --toolchain nightly-2024-12-01 | grep llvm-tools-preview`
-- [ ] `rustup target list --installed --toolchain nightly-2024-12-01 | grep x86_64-unknown-uefi`
-- [ ] `rustup target list --installed --toolchain nightly-2024-12-01 | grep x86_64-unknown-none`
+- [ ] `rustup toolchain list | grep nightly-2025-03-01`
+- [ ] `rustup component list --toolchain nightly-2025-03-01 | grep rust-src`
+- [ ] `rustup component list --toolchain nightly-2025-03-01 | grep llvm-tools-preview`
+- [ ] `rustup target list --installed --toolchain nightly-2025-03-01 | grep x86_64-unknown-uefi`
+- [ ] `rustup target list --installed --toolchain nightly-2025-03-01 | grep x86_64-unknown-none`
 
 ## 3) Python runtime integrity
 

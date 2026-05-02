@@ -1,6 +1,6 @@
 {
-  "toolchain": "nightly-2024-12-01-x86_64-unknown-linux-gnu",
-  "rustc": "1.85.0-nightly (7442931d4 2024-11-30)",
+  "toolchain": "nightly-2025-03-01-x86_64-unknown-linux-gnu",
+  "rustc": "1.87.0-nightly (287487624 2025-02-28)",
   "validation": {
     "source": "rustup",
     "mode": "strict",

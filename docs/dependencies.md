@@ -35,7 +35,7 @@ This document centralizes the host/runtime dependencies required to build and ru
 
 Pinned toolchain/config used by this repository:
 
-- Toolchain: `nightly-2024-12-01`
+- Toolchain: `nightly-2025-03-01`
 - Components:
   - `rust-src`
   - `llvm-tools-preview`
@@ -46,10 +46,10 @@ Pinned toolchain/config used by this repository:
 Install example:
 
 ```bash
-rustup toolchain install nightly-2024-12-01
-rustup component add --toolchain nightly-2024-12-01 rust-src llvm-tools-preview
-rustup target add --toolchain nightly-2024-12-01 x86_64-unknown-uefi x86_64-unknown-none
-rustup target list --installed --toolchain nightly-2024-12-01
+rustup toolchain install nightly-2025-03-01
+rustup component add --toolchain nightly-2025-03-01 rust-src llvm-tools-preview
+rustup target add --toolchain nightly-2025-03-01 x86_64-unknown-uefi x86_64-unknown-none
+rustup target list --installed --toolchain nightly-2025-03-01
 ```
 
 ## Python runtime and modules

@@ -87,8 +87,8 @@ This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `
 - QEMU (`qemu-system-x86_64`)
 
 ```bash
-rustup toolchain install nightly-2024-12-01
-rustup override set nightly-2024-12-01
+rustup toolchain install nightly-2025-03-01
+rustup override set nightly-2025-03-01
 rustup component add rust-src
 rustup component add llvm-tools-preview
 ```
@@ -119,7 +119,7 @@ From repository root, run:
 
 ```bash
 cd AetherOS
-cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
+cargo +nightly-2025-03-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
 ```
 
 Or use the helper:
@@ -160,7 +160,7 @@ error: unknown `-Z` flag specified: json-target-spec
 ```
 
 you are likely using stale build instructions, outside `AetherOS/`, on an unpinned nightly, or mixing toolchains so `cargo`
-and `rustc` resolve to different nightlies. This workspace pins `nightly-2024-12-01`; use `./scripts/build_kernel_image.sh`
+and `rustc` resolve to different nightlies. This workspace pins `nightly-2025-03-01`; use `./scripts/build_kernel_image.sh`
 (from `AetherOS/`) or the full command above (without `-Zjson-target-spec`).
 
 If you see:
@@ -179,7 +179,7 @@ Recommended fix:
 1. Remove or rename the global alias from `~/.cargo/config` or `~/.cargo/config.toml`.
 2. Use the pinned build flow from this repo:
    - `./scripts/build_kernel_image.sh`
-   - or `cargo +nightly-2024-12-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem`
+   - or `cargo +nightly-2025-03-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem`
 
 To inspect active alias configuration:
 
