@@ -21,8 +21,10 @@ pub trait IpcSend {
 
     #[cfg(feature = "serde")]
     fn send<T: serde::Serialize>(&mut self, msg: &T) -> Result<(), ()> {
-        let serialized = postcard::to_allocvec(msg).map_err(|_| ())?;
-        self.send_raw(&serialized)
+        const MAX_IPC_SERIALIZED_SIZE: usize = 4096;
+        let mut buffer = [0u8; MAX_IPC_SERIALIZED_SIZE];
+        let serialized = postcard::to_slice(msg, &mut buffer).map_err(|_| ())?;
+        self.send_raw(serialized)
     }
 }
 
