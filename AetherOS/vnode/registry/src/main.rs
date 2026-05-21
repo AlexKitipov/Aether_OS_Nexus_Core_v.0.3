@@ -1,6 +1,6 @@
-#![no_std]
-#![no_main]
-#![feature(alloc_error_handler)]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
+#![cfg_attr(target_os = "none", feature(alloc_error_handler))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -11,6 +11,7 @@ extern crate serde;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
@@ -99,12 +100,14 @@ fn main() -> ! {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
     main()
 }
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
