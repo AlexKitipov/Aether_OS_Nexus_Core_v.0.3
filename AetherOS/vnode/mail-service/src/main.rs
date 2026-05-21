@@ -9,7 +9,6 @@ use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
 use common::ipc::dns_ipc::{DnsRequest, DnsResponse};
@@ -267,6 +266,11 @@ pub extern "C" fn _start() -> ! {
     mail_service.run_loop();
 }
 
+
+#[cfg(not(feature = "std"))]
+use core::panic::PanicInfo;
+
+#[cfg(not(feature = "std"))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&format!("Mail V-Node panicked! Info: {:?}.", info));
