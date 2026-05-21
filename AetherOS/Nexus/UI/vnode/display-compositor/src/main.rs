@@ -1,6 +1,6 @@
-#![no_std]
-#![no_main]
-#![feature(alloc_error_handler)]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
+#![cfg_attr(target_os = "none", feature(alloc_error_handler))]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -12,8 +12,9 @@ use alloc::format;
 use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
+#[cfg(target_os = "none")]
+use core::panic::PanicInfo;
 
 use aetheros_common::ipc::vnode::VNodeChannel;
 use aetheros_common::arp_dht::PeerInfo;
@@ -27,6 +28,7 @@ static mut VNODE_HEAP: [u8; VNODE_HEAP_SIZE] = [0; VNODE_HEAP_SIZE];
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
+#[cfg(target_os = "none")]
 #[alloc_error_handler]
 fn alloc_error_handler(_layout: core::alloc::Layout) -> ! {
     loop {}
@@ -45,12 +47,12 @@ fn log(msg: &str) {
 struct NoopTransport;
 
 impl SwarmTransport for NoopTransport {
-    fn fetch_chunk_from_peer(&self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+    fn fetch_chunk_from_peer(&mut self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
         Err(SwarmError::RoutingNotFound)
     }
 }
 
-fn main() -> ! {
+fn vnode_main() -> ! {
     let _channel = VNodeChannel::new(11);
     let _trust_store = TrustStore::new();
     let _aid = Aid([0; 32]);
@@ -59,7 +61,7 @@ fn main() -> ! {
         port: 7777,
         vnode_id: 11,
     };
-    let swarm_engine = SwarmEngine::new(NoopTransport);
+    let mut swarm_engine = SwarmEngine::new(NoopTransport);
     let _ = swarm_engine.fetch_chunk_from_peer(&local_peer, [0; 32]);
 
     let _buffer: Vec<u8> = vec![0, 1, 2, 3];
@@ -72,10 +74,17 @@ fn main() -> ! {
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
-    main()
+    vnode_main()
 }
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
+}
+
+#[cfg(not(target_os = "none"))]
+fn main() {
+    init_allocator();
+    vnode_main()
 }
