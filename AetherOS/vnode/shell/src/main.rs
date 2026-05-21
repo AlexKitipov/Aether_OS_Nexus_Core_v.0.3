@@ -160,13 +160,13 @@ impl ShellService {
                 }
             },
             "logger" => { // This will now be handled by RunLoggerCommand variant directly
-                return ShellResponse::Error("logger: Please use 'log' command with specific options (e.g., 'log info "message"')".to_string());
+                return ShellResponse::Error("logger: Please use 'log' command with specific options (e.g., 'log info \"message\"')".to_string());
             },
             "echo" => { // This will now be handled by RunEchoCommand variant directly
-                return ShellResponse::Error("echo: Please use 'echo' command (e.g., 'echo "hello"')".to_string());
+                return ShellResponse::Error("echo: Please use 'echo' command (e.g., 'echo \"hello\"')".to_string());
             },
             "test" => { // This will now be handled by RunTestCommand variant directly
-                return ShellResponse::Error("test: Please use 'test' command with specific options (e.g., 'test echo "message"')".to_string());
+                return ShellResponse::Error("test: Please use 'test' command with specific options (e.g., 'test echo \"message\"')".to_string());
             },
             _ => ShellResponse::CommandOutput { stdout: format!("Command '{}' not found.
 ", command), stderr: String::new(), exit_code: 127 },
@@ -311,6 +311,7 @@ pub extern "C" fn _start() -> ! {
     shell_service.run_loop();
 }
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     log("Shell V-Node panicked!");
