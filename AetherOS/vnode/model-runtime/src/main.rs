@@ -5,7 +5,6 @@
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec;
 use alloc::vec::Vec;
@@ -268,7 +267,10 @@ pub extern "C" fn _start() -> ! {
     model_runtime_service.run_loop();
 }
 
-#[cfg(not(feature = "std"))]
+#[cfg(target_os = "none")]
+use core::panic::PanicInfo;
+
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("Model Runtime V-Node panicked! Info: {:?}.", info));
