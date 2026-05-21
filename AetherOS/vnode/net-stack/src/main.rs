@@ -1,22 +1,15 @@
-#![no_std]
-#![no_main]
-
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
-use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
-use alloc::format;
 
-use smoltcp::iface::{Config, Interface, SocketSet};
-use smoltcp::phy::Checksum;
+use smoltcp::iface::{Config, Interface, SocketHandle, SocketSet};
 use smoltcp::socket::{TcpSocket, UdpSocket};
-use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr, Ipv4Address, ETHERNET_MTU};
+use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr};
 use smoltcp::time::Instant;
 
 use common::ipc::vnode::VNodeChannel;
-use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_TIME};
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ipc::net_ipc::{NetPacketMsg, NetStackRequest, NetStackResponse};
 
 mod aethernet_device;
@@ -85,7 +78,7 @@ pub extern "C" fn _start() -> ! {
 
     // 4. Socket Management
     let mut next_socket_handle: u32 = 1;
-    let mut smoltcp_sockets_map: BTreeMap<u32, smoltcp::socket::SocketHandle> = BTreeMap::new(); // Maps our handle to smoltcp's
+    let mut smoltcp_sockets_map: BTreeMap<u32, SocketHandle> = BTreeMap::new(); // Maps our handle to smoltcp's
 
     // Main event loop for the network stack
     loop {
@@ -288,10 +281,4 @@ pub extern "C" fn _start() -> ! {
         // Yield to other V-Nodes to prevent busy-waiting
         unsafe { syscall3(SYS_TIME, 0, 0, 0); } // Assuming 1 tick = 10ms
     }
-}
-
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    log(&alloc::format!("AetherNet Service V-Node panicked! Info: {:?}", info));
-    loop {}
 }
