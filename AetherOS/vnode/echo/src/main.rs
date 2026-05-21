@@ -1,8 +1,9 @@
 #![no_std]
-#![no_main]
+#![cfg_attr(not(target_os = "linux"), no_main)]
 
 extern crate alloc;
 
+#[cfg(not(target_os = "linux"))]
 use core::panic::PanicInfo;
 
 use linked_list_allocator::LockedHeap;
@@ -21,12 +22,19 @@ fn init_allocator() {
 }
 
 
+#[cfg(not(target_os = "linux"))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
     loop { }
 }
 
+#[cfg(target_os = "linux")]
+fn main() {
+    init_allocator();
+}
+
+#[cfg(not(target_os = "linux"))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop { }
