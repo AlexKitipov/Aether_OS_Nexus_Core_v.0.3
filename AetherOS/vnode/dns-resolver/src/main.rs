@@ -168,7 +168,7 @@ impl DnsResolver {
             },
             _ => {
                 log("DNS Resolver: Unexpected response during DNS response receive.");
-                DnsResponse::Error { message: "Unexpected response during DNS response receive".to_string() };
+                DnsResponse::Error { message: "Unexpected response during DNS response receive".to_string() }
             }
         }
     }
