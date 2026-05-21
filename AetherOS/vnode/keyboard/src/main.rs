@@ -238,8 +238,7 @@ fn ack_keyboard_irq() {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn vnode_main() -> ! {
     init_allocator();
     let irq_chan = VNodeChannel::new(KEYBOARD_IRQ_CHANNEL_ID);
     let mut input_chan = VNodeChannel::new(SYSTEM_INPUT_CHANNEL_ID);
@@ -382,7 +381,13 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
+#[cfg(target_os = "none")]
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    vnode_main()
+}
+
 #[cfg(not(target_os = "none"))]
 fn main() {
-    _start()
+    vnode_main()
 }
