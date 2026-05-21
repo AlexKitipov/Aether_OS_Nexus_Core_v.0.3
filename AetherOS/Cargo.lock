@@ -747,6 +747,7 @@ version = "0.1.0"
 dependencies = [
  "aetheros_common",
  "linked_list_allocator",
+ "postcard",
 ]
 
 [[package]]
