@@ -1,15 +1,13 @@
 // vnode/net-bridge/src/main.rs
 
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
-use linked_list_allocator::LockedHeap;
 use spin::Mutex;
-use alloc::vec::Vec;
-use alloc::format;
 
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::net_ipc::NetPacketMsg;
@@ -27,7 +25,6 @@ use common::syscall::{
     SYS_IRQ_ACK,
     SYS_GET_DMA_BUF_PTR,
     SYS_SET_DMA_BUF_LEN,
-    SYS_IPC_RECV_NONBLOCKING,
 };
 use common::vnode_heap::VNodeHeap;
 
@@ -161,6 +158,7 @@ fn net_tx(iface_id: u64, buf_handle: u64, len: u64) -> Result<(), u64> {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -301,8 +299,15 @@ pub extern "C" fn _start() -> ! {
     }
 }
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("Net-Bridge V-Node panicked! Info: {:?}.", info));
     loop {}
+}
+
+
+#[cfg(not(target_os = "none"))]
+fn main() {
+    println!("net-bridge host stub: target_os != none");
 }
