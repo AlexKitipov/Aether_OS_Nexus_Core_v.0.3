@@ -1,13 +1,11 @@
 // vnode/net-stack/src/aethernet_device.rs
 
-#![no_std]
-
 extern crate alloc;
 
 use alloc::collections::VecDeque; // Added for VecDeque
-use smoltcp::phy::{Device, RxToken, TxToken, Checksum, DeviceCapabilities};
+use smoltcp::phy::{ChecksumCapabilities, Device, DeviceCapabilities, RxToken, TxToken};
 use smoltcp::time::Instant;
-use smoltcp::wire::{EthernetAddress, HardwareAddress};
+use common::ipc::IpcSend;
 
 use common::ipc::vnode::VNodeChannel;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_NET_TX};
@@ -95,9 +93,9 @@ pub struct PacketRxToken<'a> {
 }
 
 impl<'a> RxToken for PacketRxToken<'a> {
-    fn consume<R, F>(self, _timestamp: Instant, f: F) -> R
+    fn consume<R, F>(self, _timestamp: Instant, f: F) -> smoltcp::Result<R>
     where
-        F: FnOnce(&mut [u8]) -> R,
+        F: FnOnce(&mut [u8]) -> smoltcp::Result<R>,
     {
         // The smoltcp stack consumes the packet data
         let result = f(self.buffer);
@@ -119,11 +117,11 @@ pub struct PacketTxToken<'a> {
 }
 
 impl<'a> TxToken for PacketTxToken<'a> {
-    fn consume<R, F>(mut self, _timestamp: Instant, f: F) -> R
+    fn consume<R, F>(mut self, _timestamp: Instant, len: usize, f: F) -> smoltcp::Result<R>
     where
-        F: FnOnce(&mut [u8]) -> R,
+        F: FnOnce(&mut [u8]) -> smoltcp::Result<R>,
     {
-        let result = f(self.buffer); // smoltcp fills the buffer
+        let result = f(&mut self.buffer[..len]); // smoltcp fills the buffer
 
         // Update the actual length of data written by smoltcp
         self.len = self.buffer.len();
@@ -174,12 +172,12 @@ impl<'a> Device<'a> for AetherNetDevice {
         let mut caps = DeviceCapabilities::default();
         caps.max_transmission_unit = 1500;
         caps.max_burst_size = Some(1);
-        caps.checksum = Checksum::None; // Checksum offloading not simulated
+        caps.checksum = ChecksumCapabilities::ignored(); // Checksum offloading not simulated
         caps.medium = smoltcp::phy::Medium::Ethernet;
         caps
     }
 
-    fn receive(&'a mut self, _timestamp: Instant) -> Option<(Self::RxToken, Self::TxToken)> {
+    fn receive(&'a mut self) -> Option<(Self::RxToken, Self::TxToken)> {
         // Consume from the queue of packets pushed by net-bridge
         if let Some((dma_handle, len)) = self.rx_packet_queue.pop_front() {
             if let Ok(buf_ptr) = get_dma_buffer_ptr(dma_handle) {
@@ -226,7 +224,7 @@ impl<'a> Device<'a> for AetherNetDevice {
         }
     }
 
-    fn transmit(&'a mut self, _timestamp: Instant) -> Option<Self::TxToken> {
+    fn transmit(&'a mut self) -> Option<Self::TxToken> {
         // Allocate a DMA buffer for outgoing packet
         // The size is typically the MTU + Ethernet header size
         let dma_handle = match net_alloc_buf(TX_BUFFER_SIZE) {
