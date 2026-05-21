@@ -887,6 +887,7 @@ dependencies = [
  "linked_list_allocator",
  "postcard",
  "serde",
+ "smoltcp",
 ]
 
 [[package]]

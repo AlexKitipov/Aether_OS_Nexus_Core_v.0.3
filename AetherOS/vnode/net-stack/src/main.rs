@@ -9,15 +9,15 @@ use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
 
-use smoltcp::iface::{Config, Interface, SocketSet, QueryInterface};
+use smoltcp::iface::{Config, Interface, SocketSet};
 use smoltcp::phy::Checksum;
 use smoltcp::socket::{TcpSocket, UdpSocket};
 use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr, Ipv4Address, ETHERNET_MTU};
 use smoltcp::time::Instant;
 
-use crate::ipc::vnode::VNodeChannel;
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_TIME};
-use crate::ipc::net_ipc::{NetPacketMsg, NetStackRequest, NetStackResponse};
+use common::ipc::vnode::VNodeChannel;
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_TIME};
+use common::ipc::net_ipc::{NetPacketMsg, NetStackRequest, NetStackResponse};
 
 mod aethernet_device;
 use aethernet_device::AetherNetDevice;

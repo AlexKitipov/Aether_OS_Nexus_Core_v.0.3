@@ -9,9 +9,9 @@ use smoltcp::phy::{Device, RxToken, TxToken, Checksum, DeviceCapabilities};
 use smoltcp::time::Instant;
 use smoltcp::wire::{EthernetAddress, HardwareAddress};
 
-use crate::ipc::vnode::VNodeChannel;
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_NET_TX};
-use crate::ipc::net_ipc::NetPacketMsg;
+use common::ipc::vnode::VNodeChannel;
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_NET_TX};
+use common::ipc::net_ipc::NetPacketMsg;
 
 const TX_BUFFER_SIZE: usize = 1536;
 const MAX_DMA_VIEW_LEN: usize = TX_BUFFER_SIZE;
