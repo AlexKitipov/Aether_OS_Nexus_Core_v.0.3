@@ -59,7 +59,7 @@ impl RegistryVNode {
 struct NoopTransport;
 
 impl SwarmTransport for NoopTransport {
-    fn fetch_chunk_from_peer(&self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
+    fn fetch_chunk_from_peer(&mut self, _peer: &PeerInfo, _cid: [u8; 32]) -> Result<Vec<u8>, SwarmError> {
         Err(SwarmError::RoutingNotFound)
     }
 }
@@ -79,7 +79,7 @@ fn main() -> ! {
         vnode_id: 1,
     };
 
-    let swarm_engine = SwarmEngine::new(NoopTransport);
+    let mut swarm_engine = SwarmEngine::new(NoopTransport);
     let _ = swarm_engine.fetch_chunk_from_peer(&local_peer, manifest.root_cid);
 
     let search_service = GlobalSearchService::new();
