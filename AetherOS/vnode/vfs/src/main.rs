@@ -1,9 +1,8 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
@@ -221,6 +220,7 @@ impl VfsService {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -230,10 +230,17 @@ pub extern "C" fn _start() -> ! {
     vfs_service.run_loop();
 }
 
+#[cfg(not(target_os = "none"))]
+fn main() {
+    // Host-build stub for tooling/checks.
+}
+
+#[cfg(target_os = "none")]
+use core::panic::PanicInfo;
+
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("VFS V-Node panicked! Info: {:?}.", info));
-    // In a production system, this might trigger a system-wide error handler or reboot.
-    // For now, it enters an infinite loop to prevent further execution.
     loop {}
 }
