@@ -47,10 +47,7 @@ fn get_current_time_ms() -> u64 {
     syscall3(SYS_TIME, 0, 0, 0) * 10
 }
 
-fn main() { _start() }
-
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn main() -> ! {
     init_allocator();
     // Channel for requests from other V-Nodes (Socket API)
     let mut own_chan = VNodeChannel::new(3);
@@ -198,6 +195,6 @@ pub extern "C" fn _start() -> ! {
         }
 
         // Yield to other V-Nodes to prevent busy-waiting
-        unsafe { syscall3(SYS_TIME, 0, 0, 0); } // Assuming 1 tick = 10ms
+        let _ = syscall3(SYS_TIME, 0, 0, 0); // Assuming 1 tick = 10ms
     }
 }
