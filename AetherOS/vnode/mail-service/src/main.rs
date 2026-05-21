@@ -267,10 +267,8 @@ pub extern "C" fn _start() -> ! {
 }
 
 
-#[cfg(not(feature = "std"))]
 use core::panic::PanicInfo;
 
-#[cfg(not(feature = "std"))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&format!("Mail V-Node panicked! Info: {:?}.", info));
