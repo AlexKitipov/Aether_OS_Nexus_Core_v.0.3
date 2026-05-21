@@ -334,7 +334,7 @@ pub extern "C" fn _start() -> ! {
                 log("keyboard: failed to forward key event to webview.");
             }
             let command_to_dispatch = if ch == b'\n' {
-                let completed = prompt.trim().to_string();
+                let completed = String::from(prompt.trim());
                 update_prompt(&mut prompt, ch);
                 if completed.is_empty() {
                     None
