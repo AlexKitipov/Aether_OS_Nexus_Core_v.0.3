@@ -16,11 +16,10 @@ use alloc::string::{String, ToString};
 use common::ipc::vnode::VNodeChannel;
 use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
-use common::ipc::IpcSend;
 use common::ipc::model_runtime_ipc::{InferRequest, InferResponse};
 use common::ipc::ai_governor_ipc::{AiGovernorRequest, AiGovernorResponse, AiPriority};
 use common::ipc::ui_protocol::UiResponse;
-use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata}; // For loading models
+use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd}; // For loading models
 
 // Temporary log function for V-Nodes
 
@@ -149,7 +148,7 @@ impl ModelRuntimeService {
             },
             _ => {
                 let _ = self.vfs_chan.send_and_recv::<VfsRequest, VfsResponse>(&VfsRequest::Close { fd });
-                return Err(String::from("Unexpected VFS response during model read.")),
+                return Err(String::from("Unexpected VFS response during model read."));
             },
         };
 
@@ -269,6 +268,7 @@ pub extern "C" fn _start() -> ! {
     model_runtime_service.run_loop();
 }
 
+#[cfg(not(feature = "std"))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("Model Runtime V-Node panicked! Info: {:?}.", info));
