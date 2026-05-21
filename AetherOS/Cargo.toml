@@ -41,7 +41,7 @@ x86_64 = { version = "=0.14.13", default-features = false, features = ["instruct
 spin = { version = "=0.9.8", default-features = false, features = ["mutex", "spin_mutex", "rwlock", "once", "lazy", "barrier"] }
 conquer-once = { version = "=0.4.0", default-features = false }
 sha2 = { version = "=0.10.9", default-features = false }
-smoltcp = { version = "=0.8.2", default-features = false, features = ["alloc", "proto-ipv4"] }
+smoltcp = { version = "=0.8.2", default-features = false, features = ["alloc", "proto-ipv4", "socket", "socket-tcp", "socket-udp", "medium-ethernet"] }
 serde = { version = "1.0.193", default-features = false, features = ["alloc", "derive"] }
 getrandom = { version = "=0.4.2", default-features = false, features = ["rdrand"] }
 
