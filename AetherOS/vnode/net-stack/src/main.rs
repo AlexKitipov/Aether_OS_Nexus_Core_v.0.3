@@ -3,12 +3,13 @@ extern crate alloc;
 use linked_list_allocator::LockedHeap;
 use alloc::collections::BTreeMap;
 
-use smoltcp::iface::{Config, Interface, SocketHandle, SocketSet};
-use smoltcp::socket::{TcpSocket, UdpSocket};
+use smoltcp::iface::{InterfaceBuilder, SocketHandle};
+use smoltcp::socket::TcpSocket;
 use smoltcp::wire::{EthernetAddress, HardwareAddress, IpAddress, IpCidr};
 use smoltcp::time::Instant;
 
 use common::ipc::vnode::VNodeChannel;
+use common::ipc::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ipc::net_ipc::{NetPacketMsg, NetStackRequest, NetStackResponse};
 
@@ -43,8 +44,10 @@ fn log(msg: &str) {
 
 // Get current time from kernel (assuming 1 tick = 10 ms for demo)
 fn get_current_time_ms() -> u64 {
-    unsafe { syscall3(SYS_TIME, 0, 0, 0) * 10 }
+    syscall3(SYS_TIME, 0, 0, 0) * 10
 }
+
+fn main() { _start() }
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -62,19 +65,16 @@ pub extern "C" fn _start() -> ! {
 
     // 2. Configure smoltcp interface
     let ethernet_addr = EthernetAddress([0x02, 0x00, 0x00, 0x00, 0x00, 0x01]);
-    let config = Config::new(HardwareAddress::Ethernet(ethernet_addr));
-    let mut iface = Interface::new(config, &mut device, Instant::from_millis(get_current_time_ms()));
+    let mut socket_entries = alloc::vec![];
+    let mut iface = InterfaceBuilder::new(device, socket_entries)
+        .hardware_addr(HardwareAddress::Ethernet(ethernet_addr))
+        .ip_addrs([IpCidr::new(IpAddress::v4(10, 0, 2, 15), 24)])
+        .finalize();
 
     // Assign a static IP address
-    iface.update_ip_addrs(|addrs| {
-        addrs.push(IpCidr::new(IpAddress::v4(10, 0, 2, 15), 24)).unwrap();
-    });
     log(&alloc::format!("AetherNet: IP Address set to {}", IpAddress::v4(10,0,2,15)));
 
     // 3. Initialize smoltcp SocketSet
-    let mut sockets_storage_tcp = [None; 8]; // Example: 8 TCP sockets
-    let mut sockets_storage_udp = [None; 8]; // Example: 8 UDP sockets
-    let mut sockets = SocketSet::new(sockets_storage_tcp.iter_mut().chain(sockets_storage_udp.iter_mut()));
 
     // 4. Socket Management
     let mut next_socket_handle: u32 = 1;
@@ -82,7 +82,7 @@ pub extern "C" fn _start() -> ! {
 
     // Main event loop for the network stack
     loop {
-        let timestamp = Instant::from_millis(get_current_time_ms());
+        let timestamp = Instant::from_millis(get_current_time_ms() as i64);
 
         // --- Handle Incoming Messages from net-bridge V-Node via IPC --- (from net-bridge to aethernet_device)
         if let Ok(Some(net_msg_data)) = bridge_data_chan.recv_non_blocking() {
@@ -91,7 +91,7 @@ pub extern "C" fn _start() -> ! {
                     NetPacketMsg::RxPacket { dma_handle, len } => {
                         log(&alloc::format!("AetherNet: Received RxPacket from net-bridge for handle: {}, len: {}", dma_handle, len));
                         // Enqueue the received packet handle into the device for smoltcp to consume
-                        device.enqueue_rx_packet(dma_handle, len);
+                        iface.device_mut().enqueue_rx_packet(dma_handle, len);
                     },
                     NetPacketMsg::TxPacketAck => {
                         log("AetherNet: Received TxPacketAck from net-bridge.");
@@ -106,7 +106,7 @@ pub extern "C" fn _start() -> ! {
 
         // 1. Poll smoltcp interface for network events (e.g., ARP, ICMP, TCP/UDP activity)
         // This call will trigger device.receive() and device.transmit() internally
-        iface.poll(timestamp, &mut device, &mut sockets);
+        let _ = iface.poll(timestamp);
 
         // 2. Process incoming requests from other V-Nodes (Socket API) -- on own_chan
         if let Ok(Some(req_data)) = own_chan.recv_non_blocking() {
@@ -117,46 +117,27 @@ pub extern "C" fn _start() -> ! {
                         let handle = next_socket_handle;
                         next_socket_handle += 1;
 
-                        let socket_to_add = match sock_type {
+                        match sock_type {
                             0 => { // TCP
                                 log(&alloc::format!("AetherNet: Opening TCP socket on port {}", local_port));
-                                let mut socket = TcpSocket::new(
-                                    smoltcp::socket::TcpSocketBuffer::new(alloc::vec![0; 1024]), // Rx buffer
-                                    smoltcp::socket::TcpSocketBuffer::new(alloc::vec![0; 1024]), // Tx buffer
-                                );
+                                let mut socket = TcpSocket::new(smoltcp::socket::TcpSocketBuffer::new(vec![0; 1024]), smoltcp::socket::TcpSocketBuffer::new(vec![0; 1024]));
                                 if local_port != 0 { socket.listen(local_port).unwrap(); }
-                                socket
+                                let smoltcp_socket_handle = iface.add_socket(socket);
+                                smoltcp_sockets_map.insert(handle, smoltcp_socket_handle);
+                                NetStackResponse::SocketOpened(handle)
                             },
-                            1 => { // UDP
-                                log(&alloc::format!("AetherNet: Opening UDP socket on port {}", local_port));
-                                let mut socket = UdpSocket::new(
-                                    smoltcp::socket::UdpSocketBuffer::new(alloc::vec![0; 1024]), // Rx buffer
-                                    smoltcp::socket::UdpSocketBuffer::new(alloc::vec![0; 1024]), // Tx buffer
-                                );
-                                if local_port != 0 { socket.bind(local_port).unwrap(); }
-                                socket
-                            },
+                            1 => NetStackResponse::Error(105),
                             _ => {
                                 log(&alloc::format!("AetherNet: Invalid socket type {}", sock_type));
                                 NetStackResponse::Error(100) // Invalid socket type, cannot create socket
                             }
-                        };
-
-                        if let NetStackResponse::Error(_) = socket_to_add {
-                            socket_to_add // Propagate error if socket creation failed
-                        } else {
-                            // Add socket to management
-                            let smoltcp_socket_handle = sockets.add(socket_to_add.unwrap()); // Unwrap because we know it's not an Error
-                            smoltcp_sockets_map.insert(handle, smoltcp_socket_handle);
-                            NetStackResponse::SocketOpened(handle)
                         }
                     },
                     NetStackRequest::Send(handle, data) => {
                         log(&alloc::format!("AetherNet: Sending {} bytes on socket {}", data.len(), handle));
                         if let Some(smoltcp_handle) = smoltcp_sockets_map.get(&handle) {
-                            if let Some(socket) = sockets.get_mut(*smoltcp_handle) {
-                                match socket {
-                                    smoltcp::socket::Socket::Tcp(s) => {
+                            {
+                                let s = iface.get_socket::<TcpSocket>(*smoltcp_handle);
                                         if s.can_send() {
                                             s.send_slice(&data).unwrap_or(0); // Send data, ignoring partial sends for now
                                             NetStackResponse::Success
@@ -164,15 +145,6 @@ pub extern "C" fn _start() -> ! {
                                             log(&alloc::format!("AetherNet: TCP socket {} cannot send (buffer full or not connected)", handle));
                                             NetStackResponse::Error(104) // Cannot send
                                         }
-                                    },
-                                    _ => {
-                                        log(&alloc::format!("AetherNet: Socket {} is not a TCP socket for Send request.", handle));
-                                        NetStackResponse::Error(102) // Not a TCP/UDP socket
-                                    },
-                                }
-                            } else {
-                                log(&alloc::format!("AetherNet: Smoltcp Socket not found for handle {}.", handle));
-                                NetStackResponse::Error(103)
                             }
                         } else {
                             log(&alloc::format!("AetherNet: Our handle {} not found in map.", handle));
@@ -180,43 +152,14 @@ pub extern "C" fn _start() -> ! {
                         }
                     },
                     NetStackRequest::SendTo(handle, remote_ip, remote_port, data) => {
-                        log(&alloc::format!("AetherNet: Sending {} bytes to {}.{}.{}:{}{} on UDP socket {}", data.len(), remote_ip[0], remote_ip[1], remote_ip[2], remote_ip[3], remote_port, handle));
-                        if let Some(smoltcp_handle) = smoltcp_sockets_map.get(&handle) {
-                            if let Some(socket) = sockets.get_mut(*smoltcp_handle) {
-                                match socket {
-                                    smoltcp::socket::Socket::Udp(s) => {
-                                        let remote_endpoint = smoltcp::wire::IpEndpoint::new(
-                                            IpAddress::v4(remote_ip[0], remote_ip[1], remote_ip[2], remote_ip[3]),
-                                            remote_port
-                                        );
-                                        if s.can_send() {
-                                            s.send_slice(data.as_slice(), remote_endpoint).unwrap_or(0);
-                                            NetStackResponse::Success
-                                        } else {
-                                            log(&alloc::format!("AetherNet: UDP socket {} cannot send (buffer full)", handle));
-                                            NetStackResponse::Error(104) // Cannot send
-                                        }
-                                    },
-                                    _ => {
-                                        log(&alloc::format!("AetherNet: Socket {} is not a UDP socket for SendTo request.", handle));
-                                        NetStackResponse::Error(102) // Not a UDP socket
-                                    },
-                                }
-                            } else {
-                                log(&alloc::format!("AetherNet: Smoltcp Socket not found for handle {}.", handle));
-                                NetStackResponse::Error(103)
-                            }
-                        } else {
-                            log(&alloc::format!("AetherNet: Our handle {} not found in map.", handle));
-                            NetStackResponse::Error(103)
-                        }
+                        let _ = (remote_ip, remote_port, data);
+                        NetStackResponse::Error(105)
                     },
                     NetStackRequest::Recv(handle) => {
                         log(&alloc::format!("AetherNet: Receiving on socket {}", handle));
                         if let Some(smoltcp_handle) = smoltcp_sockets_map.get(&handle) {
-                             if let Some(socket) = sockets.get_mut(*smoltcp_handle) {
-                                match socket {
-                                    smoltcp::socket::Socket::Tcp(s) => {
+                             {
+                                let s = iface.get_socket::<TcpSocket>(*smoltcp_handle);
                                         if s.can_recv() {
                                             let mut buffer = alloc::vec![0; s.recv_capacity()];
                                             if let Ok(size) = s.recv_slice(&mut buffer) {
@@ -230,30 +173,6 @@ pub extern "C" fn _start() -> ! {
                                             log(&alloc::format!("AetherNet: TCP socket {} cannot recv (buffer empty or not connected)", handle));
                                             NetStackResponse::Data(alloc::vec![]) // No data
                                         }
-                                    },
-                                    smoltcp::socket::Socket::Udp(s) => {
-                                        if s.can_recv() {
-                                            let mut buffer = alloc::vec![0; s.recv_capacity()];
-                                            if let Ok((size, _endpoint)) = s.recv_slice(&mut buffer) {
-                                                buffer.truncate(size);
-                                                NetStackResponse::Data(buffer)
-                                            } else {
-                                                log(&alloc::format!("AetherNet: Failed to recv from UDP socket {} (no data or error)", handle));
-                                                NetStackResponse::Data(alloc::vec![])
-                                            }
-                                        } else {
-                                            log(&alloc::format!("AetherNet: UDP socket {} cannot recv (buffer empty)", handle));
-                                            NetStackResponse::Data(alloc::vec![])
-                                        }
-                                    },
-                                    _ => {
-                                        log(&alloc::format!("AetherNet: Socket {} is not a TCP/UDP socket for Recv request.", handle));
-                                        NetStackResponse::Error(102) // Not a TCP/UDP socket
-                                    },
-                                }
-                            } else {
-                                log(&alloc::format!("AetherNet: Smoltcp Socket not found for handle {}.", handle));
-                                NetStackResponse::Error(103)
                             }
                         } else {
                             log(&alloc::format!("AetherNet: Our handle {} not found in map.", handle));
@@ -263,7 +182,7 @@ pub extern "C" fn _start() -> ! {
                     NetStackRequest::CloseSocket(handle) => {
                         log(&alloc::format!("AetherNet: Closing socket {}", handle));
                         if let Some(smoltcp_handle) = smoltcp_sockets_map.remove(&handle) {
-                            sockets.remove(*smoltcp_handle);
+                            iface.remove_socket(smoltcp_handle);
                             NetStackResponse::Success
                         }
                         else {
