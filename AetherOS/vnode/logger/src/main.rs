@@ -1,9 +1,10 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
 use alloc::format;
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 
 use common::ipc::logger_ipc::{LogLevel, LoggerRequest, LoggerResponse};
@@ -21,10 +22,9 @@ const LOGGER_CLIENT_CHANNEL_ID: u32 = 9;
 #[global_allocator]
 static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
+#[cfg(target_os = "none")]
 #[alloc_error_handler]
-fn alloc_error_handler(_layout: core::alloc::Layout) -> ! {
-    loop {}
-}
+fn alloc_error_handler(_layout: core::alloc::Layout) -> ! { loop {} }
 
 fn init_allocator() {
     unsafe {
@@ -74,12 +74,20 @@ fn run_loop() -> ! {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
     run_loop();
 }
 
+#[cfg(not(target_os = "none"))]
+fn main() {
+    // Host stub for workspace builds; real vnode entrypoint is `_start` on bare-metal targets.
+    init_allocator();
+}
+
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     let _ = syscall_log("Logger V-Node panicked");
