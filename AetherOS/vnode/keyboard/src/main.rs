@@ -1,10 +1,11 @@
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
 use alloc::format;
 use alloc::string::String;
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 
@@ -374,8 +375,14 @@ pub extern "C" fn _start() -> ! {
     }
 }
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&format!("Keyboard V-Node panic: {:?}", info));
     loop {}
+}
+
+#[cfg(not(target_os = "none"))]
+fn main() {
+    _start()
 }
