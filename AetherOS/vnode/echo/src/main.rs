@@ -3,7 +3,6 @@
 
 extern crate alloc;
 
-#[cfg(not(target_os = "linux"))]
 use core::panic::PanicInfo;
 
 use linked_list_allocator::LockedHeap;
@@ -34,7 +33,6 @@ fn main() {
     init_allocator();
 }
 
-#[cfg(not(target_os = "linux"))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop { }
