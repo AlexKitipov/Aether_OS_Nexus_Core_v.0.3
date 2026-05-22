@@ -1,19 +1,15 @@
-#![no_std]
-#![no_main]
-
 extern crate alloc;
 
-use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
 use alloc::format;
 use alloc::string::{String, ToString};
 
-use crate::ipc::vnode::VNodeChannel;
-use crate::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
-use crate::ipc::net_ipc::{NetStackRequest, NetStackResponse};
-use crate::ipc::socket_ipc::{SocketRequest, SocketResponse, SocketFd};
+use common::ipc::vnode::VNodeChannel;
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
+use common::ipc::net_ipc::{NetStackRequest, NetStackResponse};
+use common::ipc::socket_ipc::{SocketRequest, SocketResponse, SocketFd};
 
 // Temporary log function for V-Nodes
 
@@ -50,8 +46,7 @@ struct SocketInfo {
     // Add more state as needed, e.g., remote address for connected sockets
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn main() -> ! {
     init_allocator();
     // Channel for requests from client V-Nodes to this socket-api V-Node
     let mut client_chan = VNodeChannel::new(4); // Assuming channel ID 4 for socket-api
@@ -288,10 +283,4 @@ pub extern "C" fn _start() -> ! {
 
         unsafe { syscall3(SYS_TIME, 0, 0, 0); } // Yield to other V-Nodes
     }
-}
-
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-    log(&alloc::format!("Socket API V-Node panicked! Info: {:?}", info));
-    loop {}
 }
