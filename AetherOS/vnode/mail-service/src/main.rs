@@ -1,7 +1,7 @@
 // vnode/mail-service/src/main.rs
 
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
@@ -259,6 +259,7 @@ impl MailService {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -267,10 +268,20 @@ pub extern "C" fn _start() -> ! {
 }
 
 
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&format!("Mail V-Node panicked! Info: {:?}.", info));
     loop {}
+}
+
+
+#[cfg(not(target_os = "none"))]
+fn main() {
+    init_allocator();
+    let mut mail_service = MailService::new(10, 7, 4, 5);
+    mail_service.run_loop();
 }

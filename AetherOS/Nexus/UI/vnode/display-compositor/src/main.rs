@@ -71,6 +71,7 @@ fn vnode_main() -> ! {
     loop {}
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
