@@ -198,7 +198,7 @@ impl ShellService {
                                 args2.insert(0, stdout.trim().to_string()); // Prepend stdout as first argument
                             }
                             return self.execute_internal_command(cmd2, args2);
-                        } else if let ShellResponse::Error { message } = first_response {
+                        } else if let ShellResponse::Error(message) = first_response {
                             return ShellResponse::Error(format!("Pipe error (cmd1): {}", message));
                         } else {
                             return ShellResponse::Error("Pipe error: unexpected response from first command.".to_string());
