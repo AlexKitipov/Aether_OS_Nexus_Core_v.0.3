@@ -1,7 +1,7 @@
 // vnode/model-runtime/src/main.rs
 
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
@@ -258,6 +258,7 @@ impl ModelRuntimeService {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -268,6 +269,11 @@ pub extern "C" fn _start() -> ! {
     // 3 for UI service endpoint
     let mut model_runtime_service = ModelRuntimeService::new(11, 7, 12, 3);
     model_runtime_service.run_loop();
+}
+
+#[cfg(not(target_os = "none"))]
+fn main() {
+    // Host build stub for CI/check tooling.
 }
 
 #[cfg(target_os = "none")]
