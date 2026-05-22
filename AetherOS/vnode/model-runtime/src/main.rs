@@ -122,9 +122,12 @@ impl ModelRuntimeService {
 
     // Conceptual: Load a model from VFS
     fn load_model(&mut self, model_id: &str, path: &str) -> Result<&LoadedModel, String> {
-        if let Some(model) = self.loaded_models.get(model_id) {
+        if self.loaded_models.contains_key(model_id) {
             log(&alloc::format!("Model Runtime: Model '{}' already loaded.", model_id));
-            return Ok(model);
+            return self
+                .loaded_models
+                .get(model_id)
+                .ok_or_else(|| String::from("Model cache lookup failed."));
         }
 
         log(&alloc::format!("Model Runtime: Loading model '{}' from VFS path '{}'.", model_id, path));
@@ -206,7 +209,7 @@ impl ModelRuntimeService {
                 // Attempt to load the model (or retrieve from cache)
                 let model = match self.load_model(&model_id, &alloc::format!("/models/{}/image_classifier.bin", model_id)) {
                     Ok(m) => m,
-                    Err(e) => return InferResponse::Error(alloc::format!("Failed to load model: {}.", e)),
+                    Err(e) => return InferResponse::Error { message: alloc::format!("Failed to load model: {}.", e) },
                 };
 
                 // Simulate inference
@@ -222,7 +225,7 @@ impl ModelRuntimeService {
                 // Attempt to load the model (or retrieve from cache)
                 let model = match self.load_model(&model_id, &alloc::format!("/models/{}/text_generator.bin", model_id)) {
                     Ok(m) => m,
-                    Err(e) => return InferResponse::Error(alloc::format!("Failed to load model: {}.", e)),
+                    Err(e) => return InferResponse::Error { message: alloc::format!("Failed to load model: {}.", e) },
                 };
 
                 // Simulate inference
