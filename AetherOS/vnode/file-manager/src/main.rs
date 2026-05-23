@@ -228,7 +228,7 @@ impl FileManagerService {
             }
 
             // Yield to other V-Nodes to prevent busy-waiting
-            unsafe { syscall3(SYS_TIME, 0, 0, 0); } // This will cause a context switch
+            unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // This will cause a context switch
         }
     }
 }

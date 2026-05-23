@@ -253,7 +253,7 @@ impl MailService {
             }
 
             unsafe {
-                syscall3(SYS_TIME, 0, 0, 0);
+                let _ = syscall3(SYS_TIME, 0, 0, 0);
             }
         }
     }
