@@ -74,7 +74,8 @@ static GLOBAL_ALLOCATOR: VNodeHeap = VNodeHeap::new();
 
 fn init_allocator() {
     unsafe {
-        GLOBAL_ALLOCATOR.init_buffer(&raw mut VNODE_HEAP);
+        let heap_ptr = core::ptr::addr_of_mut!(VNODE_HEAP);
+        GLOBAL_ALLOCATOR.init_buffer(&mut (*heap_ptr)[..]);
     }
 }
 
