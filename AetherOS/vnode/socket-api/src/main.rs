@@ -77,7 +77,9 @@ fn main() -> ! {
                             2 => 1, // SOCK_DGRAM -> UDP
                             _ => {
                                 log(&alloc::format!("SocketAPI: Unsupported socket type: {}", ty));
-                                SocketResponse::Error(100, "Unsupported socket type".to_string())
+                                client_chan.send(&SocketResponse::Error(100, "Unsupported socket type".to_string()))
+                                    .unwrap_or_else(|_| log("SocketAPI: Failed to send response to client."));
+                                continue;
                             }
                         };
 
@@ -109,7 +111,9 @@ fn main() -> ! {
                                 2 => 1, // SOCK_DGRAM -> UDP
                                 _ => {
                                     log(&alloc::format!("SocketAPI: Cannot bind unsupported socket type: {}", socket_info.socket_type));
-                                    SocketResponse::Error(100, "Unsupported socket type for bind".to_string())
+                                    client_chan.send(&SocketResponse::Error(100, "Unsupported socket type for bind".to_string()))
+                                        .unwrap_or_else(|_| log("SocketAPI: Failed to send response to client."));
+                                    continue;
                                 }
                             };
                             match net_chan.send_and_recv::<NetStackRequest, NetStackResponse>(&NetStackRequest::OpenSocket(net_sock_type, port)) {
@@ -197,14 +201,16 @@ fn main() -> ! {
                     SocketRequest::Send { fd, data } => {
                         if let Some(socket_info) = sockets.get(&fd) {
                             let net_req = if socket_info.socket_type == 1 { // TCP
-                                NetStackRequest::Send(socket_info.net_socket_handle, data)
+                                NetStackRequest::Send(socket_info.net_socket_handle, data.clone())
                             } else if socket_info.socket_type == 2 { // UDP (assuming connect has set a default peer)
                                 // AetherNet's `Send` is generic enough to handle UDP send to default peer
-                                NetStackRequest::Send(socket_info.net_socket_handle, data)
+                                NetStackRequest::Send(socket_info.net_socket_handle, data.clone())
                             } else {
                                 log(&alloc::format!("SocketAPI: Unsupported socket type {} for send on fd {}.
 ", socket_info.socket_type, fd));
-                                SocketResponse::Error(100, "Unsupported socket type for send".to_string())
+                                client_chan.send(&SocketResponse::Error(100, "Unsupported socket type for send".to_string()))
+                                    .unwrap_or_else(|_| log("SocketAPI: Failed to send response to client."));
+                                continue;
                             };
 
                             match net_chan.send_and_recv::<NetStackRequest, NetStackResponse>(&net_req) {
