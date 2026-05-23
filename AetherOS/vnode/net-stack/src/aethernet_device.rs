@@ -8,7 +8,7 @@ use smoltcp::time::Instant;
 use common::ipc::IpcSend;
 
 use common::ipc::vnode::VNodeChannel;
-use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN, SYS_NET_TX};
+use common::syscall::{syscall3, SYS_LOG, SUCCESS, E_ERROR, SYS_NET_ALLOC_BUF, SYS_NET_FREE_BUF, SYS_GET_DMA_BUF_PTR, SYS_SET_DMA_BUF_LEN};
 use common::ipc::net_ipc::NetPacketMsg;
 
 const TX_BUFFER_SIZE: usize = 1536;
@@ -43,47 +43,37 @@ fn dma_view_mut<'a>(ptr: *mut u8, len_u64: u64) -> Result<&'a mut [u8], &'static
 
 // Temporary log function for V-Nodes
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Syscall wrapper for SYS_NET_ALLOC_BUF
 pub fn net_alloc_buf(size: usize) -> Result<u64, u64> {
-    unsafe {
-        let handle = syscall3(SYS_NET_ALLOC_BUF, size as u64, 0, 0);
-        if handle == E_ERROR { Err(E_ERROR) } else { Ok(handle) }
-    }
+    let handle = syscall3(SYS_NET_ALLOC_BUF, size as u64, 0, 0);
+    if handle == E_ERROR { Err(E_ERROR) } else { Ok(handle) }
 }
 
 // Syscall wrapper for SYS_NET_FREE_BUF
 pub fn net_free_buf(handle: u64) -> Result<(), u64> {
-    unsafe {
-        let res = syscall3(SYS_NET_FREE_BUF, handle, 0, 0);
-        if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
-    }
+    let res = syscall3(SYS_NET_FREE_BUF, handle, 0, 0);
+    if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
 }
 
 // Syscall wrapper for SYS_GET_DMA_BUF_PTR
 pub fn get_dma_buffer_ptr(handle: u64) -> Result<*mut u8, u64> {
-    unsafe {
-        let ptr = syscall3(SYS_GET_DMA_BUF_PTR, handle, 0, 0);
-        if ptr == E_ERROR { Err(E_ERROR) } else { Ok(ptr as *mut u8) }
-    }
+    let ptr = syscall3(SYS_GET_DMA_BUF_PTR, handle, 0, 0);
+    if ptr == E_ERROR { Err(E_ERROR) } else { Ok(ptr as *mut u8) }
 }
 
 // Syscall wrapper for SYS_SET_DMA_BUF_LEN
 pub fn set_dma_buffer_len(handle: u64, len: usize) -> Result<(), u64> {
-    unsafe {
-        let res = syscall3(SYS_SET_DMA_BUF_LEN, handle, len as u64, 0);
-        if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
-    }
+    let res = syscall3(SYS_SET_DMA_BUF_LEN, handle, len as u64, 0);
+    if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
 }
 
 /// Represents a single received packet buffer for smoltcp.
@@ -112,7 +102,6 @@ pub struct PacketTxToken<'a> {
     buffer: &'a mut [u8],
     dma_handle: u64,
     len: usize,
-    iface_id: u64,
     net_bridge_chan_id: u32, // Channel ID to net-bridge V-Node
 }
 
@@ -145,15 +134,13 @@ impl<'a> TxToken for PacketTxToken<'a> {
 
 /// AetherNetDevice implements smoltcp::phy::Device for communication with net-bridge V-Node.
 pub struct AetherNetDevice {
-    iface_id: u64, // Interface ID, typically 0 for the first NIC
     net_bridge_chan_id: u32, // Channel ID to net-bridge V-Node for TxPacket and RxPacket
     rx_packet_queue: VecDeque<(u64, u64)>, // Queue of (dma_handle, len) for received packets
 }
 
 impl AetherNetDevice {
-    pub fn new(iface_id: u64, net_bridge_channel_id: u32) -> Self {
+    pub fn new(net_bridge_channel_id: u32) -> Self {
         AetherNetDevice {
-            iface_id,
             net_bridge_chan_id: net_bridge_channel_id,
             rx_packet_queue: VecDeque::new(),
         }
@@ -206,7 +193,6 @@ impl<'a> Device<'a> for AetherNetDevice {
                         buffer: &mut [],
                         dma_handle: 0,
                         len: 0,
-                        iface_id: self.iface_id,
                         net_bridge_chan_id: self.net_bridge_chan_id,
                     }
                 ))
@@ -251,7 +237,7 @@ impl<'a> Device<'a> for AetherNetDevice {
                     return None;
                 }
             };
-            Some(PacketTxToken { buffer, dma_handle, len: 0, iface_id: self.iface_id, net_bridge_chan_id: self.net_bridge_chan_id })
+            Some(PacketTxToken { buffer, dma_handle, len: 0, net_bridge_chan_id: self.net_bridge_chan_id })
         } else {
             log(&alloc::format!("AetherNetDevice: Failed to get buffer pointer for TX DMA handle {}. Freeing it.", dma_handle));
             // If we can't get a pointer, the buffer is unusable, so free it.

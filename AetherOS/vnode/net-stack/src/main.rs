@@ -31,15 +31,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Get current time from kernel (assuming 1 tick = 10 ms for demo)
@@ -58,11 +56,11 @@ fn main() -> ! {
 
     // 1. Initialize AetherNetDevice to interact with the net-bridge driver
     // Pass the channel ID for net-bridge communication
-    let mut device = AetherNetDevice::new(0, bridge_data_chan.id);
+    let device = AetherNetDevice::new(bridge_data_chan.id);
 
     // 2. Configure smoltcp interface
     let ethernet_addr = EthernetAddress([0x02, 0x00, 0x00, 0x00, 0x00, 0x01]);
-    let mut socket_entries = alloc::vec![];
+    let socket_entries = alloc::vec![];
     let mut iface = InterfaceBuilder::new(device, socket_entries)
         .hardware_addr(HardwareAddress::Ethernet(ethernet_addr))
         .ip_addrs([IpCidr::new(IpAddress::v4(10, 0, 2, 15), 24)])
@@ -148,7 +146,7 @@ fn main() -> ! {
                             NetStackResponse::Error(103)
                         }
                     },
-                    NetStackRequest::SendTo(handle, remote_ip, remote_port, data) => {
+                    NetStackRequest::SendTo(_handle, remote_ip, remote_port, data) => {
                         let _ = (remote_ip, remote_port, data);
                         NetStackResponse::Error(105)
                     },
