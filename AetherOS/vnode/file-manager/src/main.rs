@@ -1,10 +1,11 @@
 // vnode/file-manager/src/main.rs
 
-#![no_std]
-#![no_main]
+#![cfg_attr(target_os = "none", no_std)]
+#![cfg_attr(target_os = "none", no_main)]
 
 extern crate alloc;
 
+#[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
@@ -232,6 +233,7 @@ impl FileManagerService {
     }
 }
 
+#[cfg(target_os = "none")]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
     init_allocator();
@@ -242,6 +244,10 @@ pub extern "C" fn _start() -> ! {
     file_manager_service.run_loop();
 }
 
+#[cfg(not(target_os = "none"))]
+fn main() {}
+
+#[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     log(&alloc::format!("File Manager V-Node panicked! Info: {:?}.", info));
