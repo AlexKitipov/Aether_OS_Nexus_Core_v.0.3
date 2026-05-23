@@ -75,7 +75,7 @@ static GLOBAL_ALLOCATOR: VNodeHeap = VNodeHeap::new();
 
 fn init_allocator() {
     unsafe {
-        GLOBAL_ALLOCATOR.init_buffer(&mut VNODE_HEAP);
+        GLOBAL_ALLOCATOR.init_buffer(&raw mut VNODE_HEAP);
     }
 }
 
