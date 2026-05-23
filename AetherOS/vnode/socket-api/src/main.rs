@@ -288,6 +288,6 @@ fn main() -> ! {
         // the 'net_chan' for incoming unsolicited messages from aethernet-service (e.g.,
         // for accepted connections, or asynchronous incoming data for non-blocking sockets).
 
-        unsafe { syscall3(SYS_TIME, 0, 0, 0); } // Yield to other V-Nodes
+        unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // Yield to other V-Nodes
     }
 }
