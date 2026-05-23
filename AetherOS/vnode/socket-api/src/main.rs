@@ -7,6 +7,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
+use common::ipc::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ipc::net_ipc::{NetStackRequest, NetStackResponse};
 use common::ipc::socket_ipc::{SocketRequest, SocketResponse, SocketFd};
@@ -76,7 +77,7 @@ fn main() -> ! {
                             2 => 1, // SOCK_DGRAM -> UDP
                             _ => {
                                 log(&alloc::format!("SocketAPI: Unsupported socket type: {}", ty));
-                                return SocketResponse::Error(100, "Unsupported socket type".to_string());
+                                SocketResponse::Error(100, "Unsupported socket type".to_string())
                             }
                         };
 
@@ -108,7 +109,7 @@ fn main() -> ! {
                                 2 => 1, // SOCK_DGRAM -> UDP
                                 _ => {
                                     log(&alloc::format!("SocketAPI: Cannot bind unsupported socket type: {}", socket_info.socket_type));
-                                    return SocketResponse::Error(100, "Unsupported socket type for bind".to_string());
+                                    SocketResponse::Error(100, "Unsupported socket type for bind".to_string())
                                 }
                             };
                             match net_chan.send_and_recv::<NetStackRequest, NetStackResponse>(&NetStackRequest::OpenSocket(net_sock_type, port)) {
@@ -203,7 +204,7 @@ fn main() -> ! {
                             } else {
                                 log(&alloc::format!("SocketAPI: Unsupported socket type {} for send on fd {}.
 ", socket_info.socket_type, fd));
-                                return SocketResponse::Error(100, "Unsupported socket type for send".to_string());
+                                SocketResponse::Error(100, "Unsupported socket type for send".to_string())
                             };
 
                             match net_chan.send_and_recv::<NetStackRequest, NetStackResponse>(&net_req) {
