@@ -9,9 +9,8 @@ extern crate alloc;
 use core::panic::PanicInfo;
 use spin::Mutex;
 
-use common::ipc::vnode::VNodeChannel;
 use common::ipc::net_ipc::NetPacketMsg;
-use common::ipc::IpcSend;
+use common::ipc::vnode::VNodeChannel;
 use common::syscall::{
     syscall3,
     SYS_LOG,
@@ -75,7 +74,7 @@ static GLOBAL_ALLOCATOR: VNodeHeap = VNodeHeap::new();
 
 fn init_allocator() {
     unsafe {
-        GLOBAL_ALLOCATOR.init_buffer(&mut VNODE_HEAP);
+        GLOBAL_ALLOCATOR.init_buffer(&raw mut VNODE_HEAP);
     }
 }
 
@@ -107,55 +106,43 @@ fn return_rx_dma_handle(handle: u64) {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Syscall wrapper for SYS_NET_ALLOC_BUF
 fn net_alloc_buf(size: usize) -> Result<u64, u64> {
-    unsafe {
-        let handle = syscall3(SYS_NET_ALLOC_BUF, size as u64, 0, 0);
-        if handle == E_ERROR { Err(E_ERROR) } else { Ok(handle) }
-    }
+    let handle = syscall3(SYS_NET_ALLOC_BUF, size as u64, 0, 0);
+    if handle == E_ERROR { Err(E_ERROR) } else { Ok(handle) }
 }
 
 // Syscall wrapper for SYS_NET_FREE_BUF
 fn net_free_buf(handle: u64) -> Result<(), u64> {
-    unsafe {
-        let res = syscall3(SYS_NET_FREE_BUF, handle, 0, 0);
-        if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
-    }
+    let res = syscall3(SYS_NET_FREE_BUF, handle, 0, 0);
+    if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
 }
 
 // Syscall wrapper for SYS_GET_DMA_BUF_PTR
 fn get_dma_buffer_ptr(handle: u64) -> Result<*mut u8, u64> {
-    unsafe {
-        let ptr = syscall3(SYS_GET_DMA_BUF_PTR, handle, 0, 0);
-        if ptr == E_ERROR { Err(E_ERROR) } else { Ok(ptr as *mut u8) }
-    }
+    let ptr = syscall3(SYS_GET_DMA_BUF_PTR, handle, 0, 0);
+    if ptr == E_ERROR { Err(E_ERROR) } else { Ok(ptr as *mut u8) }
 }
 
 // Syscall wrapper for SYS_SET_DMA_BUF_LEN
 fn set_dma_buffer_len(handle: u64, len: usize) -> Result<(), u64> {
-    unsafe {
-        let res = syscall3(SYS_SET_DMA_BUF_LEN, handle, len as u64, 0);
-        if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
-    }
+    let res = syscall3(SYS_SET_DMA_BUF_LEN, handle, len as u64, 0);
+    if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
 }
 
 // Syscall wrapper for SYS_NET_TX
 fn net_tx(iface_id: u64, buf_handle: u64, len: u64) -> Result<(), u64> {
-    unsafe {
-        let res = syscall3(SYS_NET_TX, iface_id, buf_handle, len);
-        if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
-    }
+    let res = syscall3(SYS_NET_TX, iface_id, buf_handle, len);
+    if res != SUCCESS { Err(E_ERROR) } else { Ok(()) }
 }
 
 #[cfg(target_os = "none")]
