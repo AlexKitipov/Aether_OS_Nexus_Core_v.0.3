@@ -230,11 +230,9 @@ fn decode_scancode(raw: &[u8], recv_len: u64) -> Option<u8> {
 }
 
 fn ack_keyboard_irq() {
-    unsafe {
-        let ack_res = syscall3(SYS_IRQ_ACK, KEYBOARD_IRQ, 0, 0);
-        if ack_res != SUCCESS {
-            log(&format!("Keyboard V-Node failed to ACK IRQ1: {}", ack_res));
-        }
+    let ack_res = syscall3(SYS_IRQ_ACK, KEYBOARD_IRQ, 0, 0);
+    if ack_res != SUCCESS {
+        log(&format!("Keyboard V-Node failed to ACK IRQ1: {}", ack_res));
     }
 }
 
@@ -252,12 +250,10 @@ fn vnode_main() -> ! {
         pid: None,
     });
 
-    unsafe {
-        let res = syscall3(SYS_IRQ_REGISTER, KEYBOARD_IRQ, irq_chan.id as u64, 0);
-        if res != SUCCESS {
-            log(&format!("Keyboard V-Node failed to register IRQ1: {}", res));
-            panic!("IRQ1 registration failed");
-        }
+    let res = syscall3(SYS_IRQ_REGISTER, KEYBOARD_IRQ, irq_chan.id as u64, 0);
+    if res != SUCCESS {
+        log(&format!("Keyboard V-Node failed to register IRQ1: {}", res));
+        panic!("IRQ1 registration failed");
     }
 
     log("Keyboard V-Node started and IRQ1 registered.");
@@ -267,14 +263,12 @@ fn vnode_main() -> ! {
     let mut shift_active = false;
     let mut caps_lock_active = false;
     loop {
-        let recv_len = unsafe {
-            syscall3(
-                SYS_IPC_RECV,
-                irq_chan.id as u64,
-                raw.as_mut_ptr() as u64,
-                raw.len() as u64,
-            )
-        };
+        let recv_len = syscall3(
+            SYS_IPC_RECV,
+            irq_chan.id as u64,
+            raw.as_mut_ptr() as u64,
+            raw.len() as u64,
+        );
 
         if recv_len == 0 || recv_len == E_ERROR {
             continue;
