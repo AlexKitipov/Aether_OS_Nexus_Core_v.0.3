@@ -8,16 +8,14 @@ extern crate alloc;
 #[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
-use alloc::vec::Vec;
-use alloc::collections::BTreeMap;
 use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 
 use common::ipc::vnode::VNodeChannel;
 use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::ipc::file_manager_ipc::{FileManagerRequest, FileManagerResponse};
-use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};
+use common::ipc::vfs_ipc::{VfsRequest, VfsResponse, Fd};
 
 // Temporary log function for V-Nodes
 
@@ -228,7 +226,7 @@ impl FileManagerService {
             }
 
             // Yield to other V-Nodes to prevent busy-waiting
-            unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // This will cause a context switch
+            let _ = syscall3(SYS_TIME, 0, 0, 0); // This will cause a context switch
         }
     }
 }
