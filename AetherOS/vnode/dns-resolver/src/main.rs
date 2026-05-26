@@ -10,7 +10,6 @@ use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
-use alloc::format;
 use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
@@ -34,15 +33,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Placeholder for DNS cache entry
@@ -176,7 +173,7 @@ impl DnsResolver {
     fn run_loop(&mut self) -> ! {
         log("DNS Resolver: Entering main event loop.");
         loop {
-            let current_time_ms = unsafe { syscall3(SYS_TIME, 0, 0, 0) * 10 }; // Assuming 1 tick = 10 ms
+            let current_time_ms = syscall3(SYS_TIME, 0, 0, 0) * 10; // Assuming 1 tick = 10 ms
 
             // 1. Process incoming DNS queries from client V-Nodes
             if let Ok(Some(req_data)) = self.client_chan.recv_non_blocking() {
@@ -209,7 +206,7 @@ impl DnsResolver {
             }
 
             // Yield to other V-Nodes to prevent busy-waiting
-            unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // This will cause a context switch
+            let _ = syscall3(SYS_TIME, 0, 0, 0); // This will cause a context switch
         }
     }
 }
