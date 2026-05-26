@@ -3,8 +3,7 @@ extern crate alloc;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
 use alloc::collections::BTreeMap;
-use alloc::format;
-use alloc::string::{String, ToString};
+use alloc::string::ToString;
 
 use common::ipc::vnode::VNodeChannel;
 use common::ipc::IpcSend;
@@ -27,15 +26,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Placeholder for socket state (simulated file descriptor management)
@@ -69,7 +66,7 @@ fn main() -> ! {
                 log(&alloc::format!("SocketAPI: Received request from client: {:?}", request));
 
                 let response = match request {
-                    SocketRequest::Socket { domain, ty, protocol } => {
+                    SocketRequest::Socket { domain: _, ty, protocol: _ } => {
                         // For now, only AF_INET (domain 2), SOCK_STREAM (type 1), SOCK_DGRAM (type 2) are conceptual
                         // Map our type to aethernet-service's type (0=TCP, 1=UDP)
                         let net_sock_type = match ty {
@@ -288,6 +285,6 @@ fn main() -> ! {
         // the 'net_chan' for incoming unsolicited messages from aethernet-service (e.g.,
         // for accepted connections, or asynchronous incoming data for non-blocking sockets).
 
-        unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // Yield to other V-Nodes
+        let _ = syscall3(SYS_TIME, 0, 0, 0); // Yield to other V-Nodes
     }
 }
