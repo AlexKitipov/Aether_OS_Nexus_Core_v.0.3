@@ -34,11 +34,9 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
-        if res != SUCCESS {
-            // Ignore transient logging failures inside service loop.
-        }
+    let res = syscall3(SYS_LOG, msg.as_ptr() as u64, msg.len() as u64, 0);
+    if res != SUCCESS {
+        // Ignore transient logging failures inside service loop.
     }
 }
 
@@ -252,9 +250,7 @@ impl MailService {
                 }
             }
 
-            unsafe {
-                let _ = syscall3(SYS_TIME, 0, 0, 0);
-            }
+            let _ = syscall3(SYS_TIME, 0, 0, 0);
         }
     }
 }
