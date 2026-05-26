@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 
 // vnode/shell/src/main.rs
 

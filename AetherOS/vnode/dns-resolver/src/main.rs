@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // vnode/dns-resolver/src/main.rs
 
 #![cfg_attr(target_os = "none", no_std)]
