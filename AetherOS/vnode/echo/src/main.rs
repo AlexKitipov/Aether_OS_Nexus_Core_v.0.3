@@ -1,5 +1,6 @@
 #![cfg_attr(not(target_os = "linux"), no_std)]
 #![cfg_attr(not(target_os = "linux"), no_main)]
+#![allow(dead_code, unused_imports, unused_unsafe, unused_variables, static_mut_refs)]
 
 extern crate alloc;
 
