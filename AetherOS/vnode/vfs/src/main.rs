@@ -29,15 +29,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0 // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Placeholder for an open file handle in the VFS
@@ -215,7 +213,7 @@ impl VfsService {
             }
 
             // Yield to other V-Nodes to prevent busy-waiting
-            unsafe { let _ = syscall3(SYS_TIME, 0, 0, 0); } // This will cause a context switch
+            let _ = syscall3(SYS_TIME, 0, 0, 0); // This will cause a context switch
         }
     }
 }
