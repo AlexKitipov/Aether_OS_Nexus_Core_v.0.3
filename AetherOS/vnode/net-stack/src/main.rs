@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports, unused_unsafe, unused_variables, static_mut_refs)]
 extern crate alloc;
 
 use linked_list_allocator::LockedHeap;

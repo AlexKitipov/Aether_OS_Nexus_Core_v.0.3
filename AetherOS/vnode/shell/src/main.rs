@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(dead_code, unused_imports, unused_unsafe, unused_variables, static_mut_refs)]
 
 // vnode/shell/src/main.rs
 

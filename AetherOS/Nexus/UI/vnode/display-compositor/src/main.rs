@@ -1,6 +1,7 @@
 #![cfg_attr(target_os = "none", no_std)]
 #![cfg_attr(target_os = "none", no_main)]
 #![cfg_attr(target_os = "none", feature(alloc_error_handler))]
+#![allow(dead_code, unused_imports, unused_unsafe, unused_variables, static_mut_refs)]
 
 #[cfg(feature = "alloc")]
 extern crate alloc;

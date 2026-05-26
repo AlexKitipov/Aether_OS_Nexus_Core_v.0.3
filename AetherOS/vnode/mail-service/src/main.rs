@@ -1,3 +1,4 @@
+#![allow(dead_code, unused_imports, unused_unsafe, unused_variables, static_mut_refs)]
 // vnode/mail-service/src/main.rs
 
 #![cfg_attr(target_os = "none", no_std)]
