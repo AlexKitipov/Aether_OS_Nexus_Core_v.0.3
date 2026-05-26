@@ -10,15 +10,13 @@ extern crate alloc;
 use core::panic::PanicInfo;
 use linked_list_allocator::LockedHeap;
 use alloc::vec::Vec;
-use alloc::collections::BTreeMap;
-use alloc::format;
 use alloc::string::{String, ToString};
 
 use common::ipc::vnode::VNodeChannel;
 use common::IpcSend;
 use common::syscall::{syscall3, SYS_LOG, SUCCESS, SYS_TIME};
 use common::shell_ipc::{ShellRequest, ShellResponse, LogLevel};
-use common::vfs_ipc::{VfsRequest, VfsResponse, Fd, VfsMetadata};
+use common::vfs_ipc::{VfsRequest, VfsResponse};
 use common::init_ipc::{InitRequest, InitResponse};
 use common::dns_ipc::{DnsRequest, DnsResponse};
 use common::logger_ipc::{LoggerRequest, LoggerResponse};
@@ -41,15 +39,13 @@ fn init_allocator() {
 }
 
 fn log(msg: &str) {
-    unsafe {
-        let res = syscall3(
-            SYS_LOG,
-            msg.as_ptr() as u64,
-            msg.len() as u64,
-            0 // arg3 is unused for SYS_LOG
-        );
-        if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
-    }
+    let res = syscall3(
+        SYS_LOG,
+        msg.as_ptr() as u64,
+        msg.len() as u64,
+        0, // arg3 is unused for SYS_LOG
+    );
+    if res != SUCCESS { /* Handle log error, maybe panic or fall back */ }
 }
 
 // Placeholder for shell state
