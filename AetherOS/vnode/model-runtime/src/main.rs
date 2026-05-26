@@ -31,7 +31,7 @@ static GLOBAL_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 fn init_allocator() {
     unsafe {
-        GLOBAL_ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+        GLOBAL_ALLOCATOR.lock().init(core::ptr::addr_of_mut!(VNODE_HEAP).cast::<u8>(), VNODE_HEAP_SIZE);
     }
 }
 

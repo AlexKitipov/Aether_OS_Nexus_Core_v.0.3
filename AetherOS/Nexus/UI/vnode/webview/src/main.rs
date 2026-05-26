@@ -41,7 +41,7 @@ fn alloc_error_handler(_layout: core::alloc::Layout) -> ! {
 
 fn init_allocator() {
     unsafe {
-        ALLOCATOR.lock().init(VNODE_HEAP.as_mut_ptr(), VNODE_HEAP_SIZE);
+        ALLOCATOR.lock().init(core::ptr::addr_of_mut!(VNODE_HEAP).cast::<u8>(), VNODE_HEAP_SIZE);
     }
 }
 
