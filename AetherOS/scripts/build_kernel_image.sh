@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
 TARGET_JSON=".cargo/aetheros-x86_64.json"
+BOOT_MODE="${BOOT_MODE:-bios}"
+BIOS_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-bios.img"
+UEFI_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-uefi.img"
 RUN_QEMU="${RUN_QEMU:-0}"
 TOOLCHAIN="nightly-2025-03-01"
 
@@ -15,6 +18,11 @@ cd "${ROOT_DIR}"
 unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
 unset CARGO_BUILD_RUSTFLAGS
+
+if [[ "${BOOT_MODE}" != "bios" && "${BOOT_MODE}" != "uefi" && "${BOOT_MODE}" != "both" ]]; then
+  echo "[build_kernel_image] ERROR: BOOT_MODE must be one of: bios, uefi, both" >&2
+  exit 1
+fi
 
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
@@ -63,6 +71,7 @@ if [[ -n "${OBJDUMP_TOOL}" ]]; then
     rodata_addr="$(awk '$2==".rodata"{print $4}' <<<"${section_table}" | head -n1)"
     data_addr="$(awk '$2==".data"{print $4}' <<<"${section_table}" | head -n1)"
     bss_addr="$(awk '$2==".bss"{print $4}' <<<"${section_table}" | head -n1)"
+    boot_config_addr="$(awk '$2==".bootloader-config"{print $4}' <<<"${section_table}" | head -n1)"
 
     if [[ -z "${text_start_addr}" ]]; then
       text_start_addr="${text_addr}"
@@ -73,16 +82,39 @@ if [[ -n "${OBJDUMP_TOOL}" ]]; then
       exit 1
     fi
 
-    echo "[diag][stage=build_kernel_image.section_validation][status=ok] memory layout OK: .text.start=0x${text_start_addr}, .text=0x${text_addr}, .rodata=0x${rodata_addr}, .data=0x${data_addr}, .bss=0x${bss_addr}"
+    if [[ -z "${boot_config_addr}" ]]; then
+      echo "[build_kernel_image] ERROR: missing .bootloader-config section required by bootloader_api 0.11" >&2
+      exit 1
+    fi
+
+    echo "[diag][stage=build_kernel_image.section_validation][status=ok] memory layout OK: .text.start=0x${text_start_addr}, .text=0x${text_addr}, .rodata=0x${rodata_addr}, .data=0x${data_addr}, .bss=0x${bss_addr}, .bootloader-config=0x${boot_config_addr}"
   fi
 else
   echo "[diag][stage=build_kernel_image.section_validation][status=warn] llvm-objdump/rust-objdump not found, skipping memory map validation" >&2
 fi
 
-echo "Built kernel artifact: ${KERNEL_PATH}"
-echo "NOTE: this kernel is a bare-metal ELF image and is not directly bootable with qemu-system-x86_64 -kernel unless wrapped by a compatible bootloader or UEFI image."
+create_image() {
+  local mode="$1"
+  local image_path="$2"
+
+  cargo +"${TOOLCHAIN}" run --release -p aetheros-image-builder -- \
+    "${mode}" "${KERNEL_PATH}" "${image_path}"
+  echo "Built ${mode} boot image: ${image_path}"
+}
+
+case "${BOOT_MODE}" in
+  bios)
+    create_image bios "${BIOS_IMAGE}"
+    ;;
+  uefi)
+    create_image uefi "${UEFI_IMAGE}"
+    ;;
+  both)
+    create_image bios "${BIOS_IMAGE}"
+    create_image uefi "${UEFI_IMAGE}"
+    ;;
+esac
 
 if [[ "${RUN_QEMU}" == "1" ]]; then
-  echo "[run_qemu] ERROR: RUN_QEMU is not supported for direct qemu -kernel boot on this binary." >&2
-  exit 1
+  BOOT_MODE="${BOOT_MODE}" exec "${ROOT_DIR}/scripts/run_qemu.sh"
 fi
