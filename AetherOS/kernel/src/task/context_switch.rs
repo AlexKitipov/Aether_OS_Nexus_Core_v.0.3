@@ -2,41 +2,26 @@
 
 use crate::task::tcb::Registers;
 
+const _: () = {
+    use core::mem::{offset_of, size_of};
+
+    assert!(size_of::<Registers>() == 0x48);
+    assert!(offset_of!(Registers, rbx) == 0x00);
+    assert!(offset_of!(Registers, rbp) == 0x08);
+    assert!(offset_of!(Registers, r12) == 0x10);
+    assert!(offset_of!(Registers, r13) == 0x18);
+    assert!(offset_of!(Registers, r14) == 0x20);
+    assert!(offset_of!(Registers, r15) == 0x28);
+    assert!(offset_of!(Registers, rsp) == 0x30);
+    assert!(offset_of!(Registers, rip) == 0x38);
+    assert!(offset_of!(Registers, rflags) == 0x40);
+};
+
 #[cfg(all(target_arch = "x86_64", target_os = "none"))]
-core::arch::global_asm!(
-    r#"
-.global context_switch
-context_switch:
-    // rdi = old, rsi = new
-    mov [rdi + 0x00], rbx
-    mov [rdi + 0x08], rbp
-    mov [rdi + 0x10], r12
-    mov [rdi + 0x18], r13
-    mov [rdi + 0x20], r14
-    mov [rdi + 0x28], r15
-    mov [rdi + 0x30], rsp
-
-    lea rax, [rip + .Lresume]
-    mov [rdi + 0x38], rax
-    pushfq
-    pop qword ptr [rdi + 0x40]
-
-    mov rbx, [rsi + 0x00]
-    mov rbp, [rsi + 0x08]
-    mov r12, [rsi + 0x10]
-    mov r13, [rsi + 0x18]
-    mov r14, [rsi + 0x20]
-    mov r15, [rsi + 0x28]
-    mov rsp, [rsi + 0x30]
-
-    push qword ptr [rsi + 0x40]
-    popfq
-    jmp [rsi + 0x38]
-
-.Lresume:
-    ret
-"#
-);
+core::arch::global_asm!(include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/arch/x86_64/context_switch.s"
+)));
 
 #[cfg(all(target_arch = "x86_64", target_os = "none"))]
 unsafe extern "C" {

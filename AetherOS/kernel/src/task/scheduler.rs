@@ -6,10 +6,11 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Mutex;
 use x86_64::instructions::interrupts;
 
+use crate::caps::Capability;
 use crate::kprintln;
 use crate::memory::page_allocator::PageAllocator;
+use crate::task::context_switch;
 use crate::task::tcb::{Context, TaskControlBlock, TaskState};
-use crate::caps::Capability;
 
 const MILLICORES_PER_CORE: u32 = 1000;
 
@@ -260,54 +261,94 @@ pub fn unblock_task(task_id: u64) {
     });
 }
 
-/// Simulates a context switch to the next ready task (round-robin).
+/// Dispatches the next ready task with a round-robin policy.
 pub fn schedule() {
     interrupts::without_interrupts(|| {
-        let mut run_queue = RUN_QUEUE.lock();
-        let mut current_id_guard = CURRENT_TASK_ID.lock();
-        let mut tasks = TASKS.lock();
+        let pending_switch = {
+            let mut run_queue = RUN_QUEUE.lock();
+            let mut current_id_guard = CURRENT_TASK_ID.lock();
+            let mut tasks = TASKS.lock();
 
-        let old_task_id = *current_id_guard;
+            let old_task_id = *current_id_guard;
 
-        // If the old task is still running, set its state to Ready and put it back in the queue.
-        // (Unless it explicitly blocked itself)
-        if let Some(old_task) = tasks.get_mut(&old_task_id) {
-            if old_task.state == TaskState::Running {
-                old_task.state = TaskState::Ready;
-                run_queue.push_back(old_task_id);
+            // If the old task is still running, set its state to Ready and put it back in the queue.
+            // (Unless it explicitly blocked itself.)
+            if let Some(old_task) = tasks.get_mut(&old_task_id) {
+                if old_task.state == TaskState::Running {
+                    old_task.state = TaskState::Ready;
+                    run_queue.push_back(old_task_id);
+                }
             }
-        }
 
-        // Get the next task from the run queue.
-        while let Some(next_task_id) = run_queue.pop_front() {
-            if let Some(next_task) = tasks.get_mut(&next_task_id) {
+            let mut pending_switch = None;
+
+            // Get the next task from the run queue.
+            while let Some(next_task_id) = run_queue.pop_front() {
+                let Some(next_task) = tasks.get_mut(&next_task_id) else {
+                    kprintln!(
+                        "[kernel] scheduler: ERROR: Next task ID {} not found in TASKS. Skipping.",
+                        next_task_id
+                    );
+                    continue;
+                };
+
                 next_task.state = TaskState::Running;
                 next_task.consumed_ticks = 0;
                 next_task.switch_count = next_task.switch_count.saturating_add(1);
-                *current_id_guard = next_task_id;
-                let next_context = next_task.context;
+                let next_context = &next_task.context as *const Context;
                 let next_address_space = next_task.address_space_root;
+                *current_id_guard = next_task_id;
+
                 kprintln!(
                     "[kernel] scheduler: Context switch: from {} to {}.",
                     old_task_id,
                     next_task_id
                 );
-                restore_task_context(next_context, next_address_space);
-                return;
+
+                if old_task_id == next_task_id {
+                    // Round-robin selected the current task again. Its state/accounting
+                    // have been refreshed, but no CPU context transfer is necessary.
+                    return;
+                }
+
+                if let Some(old_task) = tasks.get_mut(&old_task_id) {
+                    pending_switch = Some(PendingContextSwitch {
+                        old_task_id,
+                        next_task_id,
+                        old_context: &mut old_task.context as *mut Context,
+                        next_context,
+                        next_address_space,
+                    });
+                } else {
+                    kprintln!(
+                        "[kernel] scheduler: No saved context for previous task {}; low-level switch deferred.",
+                        old_task_id
+                    );
+                }
+
+                break;
             }
 
-            kprintln!(
-                "[kernel] scheduler: ERROR: Next task ID {} not found in TASKS. Skipping.",
-                next_task_id
-            );
-        }
+            if pending_switch.is_none() && *current_id_guard == old_task_id {
+                // No task was runnable; keep current task active as idle fallback.
+                if let Some(old_task) = tasks.get_mut(&old_task_id) {
+                    old_task.state = TaskState::Running;
+                }
+                kprintln!(
+                    "[kernel] scheduler: Run queue empty. Continuing task {}.",
+                    old_task_id
+                );
+            }
 
-        // No task was runnable; keep current task active as idle fallback.
-        if let Some(old_task) = tasks.get_mut(&old_task_id) {
-            old_task.state = TaskState::Running;
+            pending_switch
+        };
+
+        if let Some(pending_switch) = pending_switch {
+            // All scheduler locks were dropped with the block above. Interrupts remain
+            // disabled for the CPU-local handoff so the raw task-context pointers cannot
+            // be invalidated by scheduler mutation before the assembly runs.
+            unsafe { dispatch_context_switch(pending_switch) };
         }
-        *current_id_guard = old_task_id;
-        kprintln!("[kernel] scheduler: Run queue empty. Continuing task {}.", old_task_id);
     });
 }
 
@@ -457,16 +498,38 @@ pub fn inherit_capabilities(from_task_id: u64, to_task_id: u64) -> bool {
     false
 }
 
-fn restore_task_context(context: Context, address_space_root: u64) {
-    // CR3 reload / low-level register restore lives in architecture assembly glue.
-    // For now we expose deterministic observability for scheduler decisions.
+struct PendingContextSwitch {
+    old_task_id: u64,
+    next_task_id: u64,
+    old_context: *mut Context,
+    next_context: *const Context,
+    next_address_space: u64,
+}
+
+unsafe fn dispatch_context_switch(pending: PendingContextSwitch) {
+    // SAFETY: `schedule` creates both pointers from entries in the global task
+    // table while interrupts are disabled, drops scheduler locks before this
+    // function runs, and keeps interrupts disabled until the assembly handoff has
+    // consumed the snapshots.
+    let old_context = unsafe { &mut *pending.old_context };
+    let next_context = unsafe { &*pending.next_context };
+
     kprintln!(
         "[kernel] scheduler: restore rip={:#x}, rsp={:#x}, rflags={:#x}, as_root={:#x}.",
-        context.rip,
-        context.rsp,
-        context.rflags,
-        address_space_root
+        next_context.rip,
+        next_context.rsp,
+        next_context.rflags,
+        pending.next_address_space
     );
+    kprintln!(
+        "[kernel] scheduler: low-level switch: from {} to {}.",
+        pending.old_task_id,
+        pending.next_task_id
+    );
+
+    // SAFETY: The scheduler selected distinct old/new task contexts and released
+    // its locks before dispatching into the architecture switch primitive.
+    unsafe { context_switch::switch(old_context, next_context) };
 }
 
 /// Returns a cloned `TaskControlBlock` for the currently executing task.
