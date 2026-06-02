@@ -1,7 +1,8 @@
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process;
 
+#[cfg(any(feature = "bios", feature = "uefi"))]
 use bootloader::DiskImageBuilder;
 
 fn main() {
@@ -34,15 +35,9 @@ fn run() -> Result<(), String> {
         })?;
     }
 
-    let builder = DiskImageBuilder::new(kernel.clone());
-
     match mode.as_str() {
-        "bios" => builder
-            .create_bios_image(&output)
-            .map_err(|err| format!("failed to create BIOS image: {err}"))?,
-        "uefi" => builder
-            .create_uefi_image(&output)
-            .map_err(|err| format!("failed to create UEFI image: {err}"))?,
+        "bios" => create_bios_image(&kernel, &output)?,
+        "uefi" => create_uefi_image(&kernel, &output)?,
         _ => return Err(usage()),
     }
 
@@ -53,6 +48,36 @@ fn run() -> Result<(), String> {
     );
 
     Ok(())
+}
+
+#[cfg(feature = "bios")]
+fn create_bios_image(kernel: &Path, output: &Path) -> Result<(), String> {
+    DiskImageBuilder::new(kernel.to_path_buf())
+        .create_bios_image(output)
+        .map_err(|err| format!("failed to create BIOS image: {err}"))
+}
+
+#[cfg(not(feature = "bios"))]
+fn create_bios_image(_kernel: &Path, _output: &Path) -> Result<(), String> {
+    Err(
+        "BIOS image support is disabled; rebuild aetheros-image-builder with --features bios"
+            .to_owned(),
+    )
+}
+
+#[cfg(feature = "uefi")]
+fn create_uefi_image(kernel: &Path, output: &Path) -> Result<(), String> {
+    DiskImageBuilder::new(kernel.to_path_buf())
+        .create_uefi_image(output)
+        .map_err(|err| format!("failed to create UEFI image: {err}"))
+}
+
+#[cfg(not(feature = "uefi"))]
+fn create_uefi_image(_kernel: &Path, _output: &Path) -> Result<(), String> {
+    Err(
+        "UEFI image support is disabled; rebuild aetheros-image-builder with --features uefi"
+            .to_owned(),
+    )
 }
 
 fn usage() -> String {
