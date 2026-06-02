@@ -13,7 +13,7 @@ const fn irq_vector(irq: u8) -> u8 {
     pic::PIC_1_OFFSET + irq
 }
 
-unsafe fn unmask_irq(irq: u8) {
+pub(crate) unsafe fn unmask_irq(irq: u8) {
     use x86_64::instructions::port::Port;
 
     let (port, bit) = if irq < 8 {
