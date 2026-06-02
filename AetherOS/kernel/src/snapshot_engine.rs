@@ -41,6 +41,7 @@ pub enum SnapshotError {
     InvalidHash,
     InvalidWireFormat,
     RestoreFailure,
+    StorageFailure,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -64,6 +65,30 @@ pub struct InMemorySnapshotStorage {
 impl InMemorySnapshotStorage {
     pub fn new() -> Self {
         Self { inner: BTreeMap::new() }
+    }
+}
+
+pub struct AetherFsSnapshotStorage;
+
+impl AetherFsSnapshotStorage {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl SnapshotStorage for AetherFsSnapshotStorage {
+    fn load_latest(&self) -> Option<Vec<u8>> {
+        crate::aetherfs::load_latest_snapshot_blob()
+    }
+
+    fn load_by_id(&self, id: u64) -> Option<Vec<u8>> {
+        crate::aetherfs::load_snapshot_blob_by_id(id)
+    }
+
+    fn store(&mut self, id: u64, data: &[u8]) -> Result<(), SnapshotError> {
+        crate::aetherfs::store_snapshot_blob(id, data)
+            .map(|_| ())
+            .map_err(|_| SnapshotError::StorageFailure)
     }
 }
 
@@ -294,5 +319,21 @@ mod tests {
 
         let decoded_wire = decode_wire(&encoded).unwrap();
         assert!(matches!(verify_and_decode_wire(&decoded_wire), Err(SnapshotError::InvalidHash)));
+    }
+
+    #[test]
+    fn aetherfs_storage_uses_persistent_latest_pointer() {
+        let mut storage = AetherFsSnapshotStorage::new();
+        let first = sample_snapshot(10_001, None);
+        let second = sample_snapshot(10_000, Some(10_001));
+
+        store_snapshot(&mut storage, &first).unwrap();
+        store_snapshot(&mut storage, &second).unwrap();
+
+        let loaded_first = load_snapshot_by_id(&storage, first.header.id).unwrap().unwrap();
+        let loaded_latest = load_latest_snapshot(&storage).unwrap().unwrap();
+
+        assert_eq!(loaded_first.header.id, first.header.id);
+        assert_eq!(loaded_latest.header.id, second.header.id);
     }
 }
