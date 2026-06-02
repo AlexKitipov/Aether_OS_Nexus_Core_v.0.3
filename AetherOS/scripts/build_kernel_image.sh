@@ -97,7 +97,8 @@ create_image() {
   local mode="$1"
   local image_path="$2"
 
-  cargo +"${TOOLCHAIN}" run --release -p aetheros-image-builder -- \
+  cargo +"${TOOLCHAIN}" run --release -p aetheros-image-builder \
+    --no-default-features --features "${mode}" -- \
     "${mode}" "${KERNEL_PATH}" "${image_path}"
   echo "Built ${mode} boot image: ${image_path}"
 }

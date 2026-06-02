@@ -58,3 +58,8 @@ opt-level = "z"
 lto = true
 panic = "abort"
 codegen-units = 1
+
+[patch.crates-io]
+# Local bootloader 0.11.15 patch: remove obsolete `-Zjson-target-spec`
+# from the BIOS build helper for the pinned nightly toolchain.
+bootloader = { path = "vendor/bootloader-0.11.15" }
