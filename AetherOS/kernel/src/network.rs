@@ -288,6 +288,149 @@ impl NetworkStack {
         self.caps.entry(task_id).or_default().push(cap);
     }
 
+    pub fn poll_device(&mut self) {
+        let Some(device) = self.device else {
+            return;
+        };
+
+        let mut frame_buf = [0u8; 1518];
+        loop {
+            let len = device.receive(&mut frame_buf);
+            if len == 0 {
+                break;
+            }
+            self.ingest_ethernet_frame(&frame_buf[..len]);
+        }
+    }
+
+    pub fn transmit_frame(&mut self, dst: [u8; 6], ethertype: u16, payload: &[u8]) -> Result<usize, ()> {
+        let Some(device) = self.device else {
+            return Err(());
+        };
+        let frame = EthernetFrame {
+            dst,
+            src: self.local_mac,
+            ethertype,
+            payload,
+        };
+        let mut out = [0u8; 1518];
+        let len = frame.encode(&mut out).ok_or(())?;
+        device.send(&out[..len]);
+        Ok(len)
+    }
+
+    fn ingest_ethernet_frame(&mut self, buf: &[u8]) {
+        let Some(frame) = EthernetFrame::parse(buf) else {
+            return;
+        };
+        if frame.dst != self.local_mac && frame.dst != [0xff; 6] {
+            return;
+        }
+
+        match frame.ethertype {
+            ETHERTYPE_ARP => self.ingest_arp(frame.payload, frame.src),
+            ETHERTYPE_IPV4 => self.ingest_ipv4(frame.payload, frame.src),
+            _ => {}
+        }
+    }
+
+    fn ingest_arp(&mut self, payload: &[u8], ethernet_src: [u8; 6]) {
+        if payload.len() < 28 {
+            return;
+        }
+        let hardware_type = u16::from_be_bytes([payload[0], payload[1]]);
+        let protocol_type = u16::from_be_bytes([payload[2], payload[3]]);
+        let hardware_len = payload[4];
+        let protocol_len = payload[5];
+        if hardware_type != 1 || protocol_type != ETHERTYPE_IPV4 || hardware_len != 6 || protocol_len != 4 {
+            return;
+        }
+
+        let op = u16::from_be_bytes([payload[6], payload[7]]);
+        let sender_mac = [payload[8], payload[9], payload[10], payload[11], payload[12], payload[13]];
+        let sender_ip = Ipv4Addr::new(payload[14], payload[15], payload[16], payload[17]);
+        let target_ip = Ipv4Addr::new(payload[24], payload[25], payload[26], payload[27]);
+        self.arp.upsert(sender_ip, sender_mac, 0);
+
+        if op == 1 && target_ip == self.local_ip {
+            let mut reply = [0u8; 28];
+            reply[0..2].copy_from_slice(&1u16.to_be_bytes());
+            reply[2..4].copy_from_slice(&ETHERTYPE_IPV4.to_be_bytes());
+            reply[4] = 6;
+            reply[5] = 4;
+            reply[6..8].copy_from_slice(&2u16.to_be_bytes());
+            reply[8..14].copy_from_slice(&self.local_mac);
+            reply[14..18].copy_from_slice(&self.local_ip.octets());
+            reply[18..24].copy_from_slice(&sender_mac);
+            reply[24..28].copy_from_slice(&sender_ip.octets());
+            let _ = self.transmit_frame(ethernet_src, ETHERTYPE_ARP, &reply);
+        }
+    }
+
+    fn ingest_ipv4(&mut self, payload: &[u8], ethernet_src: [u8; 6]) {
+        let Some(packet) = Ipv4Packet::parse(payload) else {
+            return;
+        };
+        self.arp.upsert(packet.src, ethernet_src, 0);
+        if packet.dst != self.local_ip {
+            return;
+        }
+        if packet.protocol == IPV4_PROTO_UDP {
+            if let Some(udp) = UdpPacket::parse(packet.payload) {
+                self.udp.enqueue(UdpDatagram {
+                    src: packet.src,
+                    dst: packet.dst,
+                    src_port: udp.src_port,
+                    dst_port: udp.dst_port,
+                    payload: udp.payload.to_vec(),
+                });
+            }
+        }
+    }
+
+    fn send_arp_request(&mut self, target_ip: Ipv4Addr) {
+        let mut arp = [0u8; 28];
+        arp[0..2].copy_from_slice(&1u16.to_be_bytes());
+        arp[2..4].copy_from_slice(&ETHERTYPE_IPV4.to_be_bytes());
+        arp[4] = 6;
+        arp[5] = 4;
+        arp[6..8].copy_from_slice(&1u16.to_be_bytes());
+        arp[8..14].copy_from_slice(&self.local_mac);
+        arp[14..18].copy_from_slice(&self.local_ip.octets());
+        arp[18..24].copy_from_slice(&[0; 6]);
+        arp[24..28].copy_from_slice(&target_ip.octets());
+        let _ = self.transmit_frame([0xff; 6], ETHERTYPE_ARP, &arp);
+    }
+
+    fn send_udp_frame(&mut self, src_port: u16, dst_ip: Ipv4Addr, dst_port: u16, payload: &[u8]) -> Result<usize, ()> {
+        let dst_mac = match self.arp.lookup(dst_ip) {
+            Some(mac) => mac,
+            None => {
+                self.send_arp_request(dst_ip);
+                return Err(());
+            }
+        };
+
+        let udp_len = 8 + payload.len();
+        let ipv4_len = 20 + udp_len;
+        let mut packet = Vec::with_capacity(ipv4_len);
+        packet.resize(ipv4_len, 0);
+        packet[0] = 0x45;
+        packet[2..4].copy_from_slice(&(ipv4_len as u16).to_be_bytes());
+        packet[8] = 64;
+        packet[9] = IPV4_PROTO_UDP;
+        packet[12..16].copy_from_slice(&self.local_ip.octets());
+        packet[16..20].copy_from_slice(&dst_ip.octets());
+        let checksum = ipv4_checksum(&packet[..20]);
+        packet[10..12].copy_from_slice(&checksum.to_be_bytes());
+        packet[20..22].copy_from_slice(&src_port.to_be_bytes());
+        packet[22..24].copy_from_slice(&dst_port.to_be_bytes());
+        packet[24..26].copy_from_slice(&(udp_len as u16).to_be_bytes());
+        packet[28..].copy_from_slice(payload);
+        self.transmit_frame(dst_mac, ETHERTYPE_IPV4, &packet)?;
+        Ok(payload.len())
+    }
+
     pub fn udp_send(
         &mut self,
         task_id: u64,
@@ -300,7 +443,10 @@ impl NetworkStack {
             return Err(());
         }
 
-        // Local loopback delivery keeps the stack useful before NIC TX queue wiring.
+        if self.device.is_some() && dst_ip != self.local_ip {
+            return self.send_udp_frame(src_port, dst_ip, dst_port, payload);
+        }
+
         self.udp.enqueue(UdpDatagram {
             src: self.local_ip,
             dst: dst_ip,
