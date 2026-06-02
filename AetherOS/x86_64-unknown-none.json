@@ -24,6 +24,7 @@
   "stack-probes": { "kind": "none" },
   "pre-link-args": {
     "ld.lld": [
+      "-Tkernel/linker.ld",
       "--gc-sections",
       "-nostdlib",
       "-static"
