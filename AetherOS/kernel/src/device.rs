@@ -213,15 +213,12 @@ pub fn boot_discover_devices() {
         let _ = probe_device(ADIDeviceInfo::new("serial-driver"));
         manager.register_io(Arc::new(crate::drivers::framebuffer::FramebufferDevice::new()));
         let _ = probe_device(ADIDeviceInfo::new("framebuffer-driver"));
-        manager.register_io(Arc::new(crate::drivers::net::NetworkDeviceIo::new(
-            DEVICE_NET0,
-            &crate::drivers::net::VIRTIO_NET0,
-        )));
-        let _ = probe_device(ADIDeviceInfo::new("network-driver"));
 
-        let _ = crate::network::with_stack(|stack| {
-            stack.bind_device(&crate::drivers::net::VIRTIO_NET0);
-        });
+        if crate::drivers::net::register_detected_device(manager).is_some() {
+            let _ = probe_device(ADIDeviceInfo::new("e1000-network-driver"));
+        } else {
+            kprintln!("[kernel] device-discovery: no supported network device registered.");
+        }
 
         let list = manager.discovered_devices();
         for id in list {
