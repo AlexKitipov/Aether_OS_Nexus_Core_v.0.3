@@ -1,8 +1,5 @@
 //! Keyboard IRQ handler.
 
-extern crate alloc;
-
-use alloc::vec::Vec;
 use core::sync::atomic::{AtomicU32, Ordering};
 
 use aetheros_common::ipc::keyboard_ipc::KeyEvent;
@@ -48,24 +45,9 @@ pub extern "x86-interrupt" fn handler(_stack_frame: InterruptStackFrame) {
         return;
     }
 
-    let _key_event = KeyEvent::new(scancode, None);
-    let payload = Vec::new(); // TODO: postcard::to_allocvec(&key_event)
-    // let payload = match postcard::to_allocvec(&key_event) {
-    //     Ok(payload) => payload,
-    //     Err(err) => {
-    //         kprintln!(
-    //             "[kernel] keyboard: failed to serialize KeyEvent for scancode 0x{:02x}: {:?}",
-    //             scancode,
-    //             err
-    //         );
-    //         unsafe {
-    //             // SAFETY: Event encoding failed, so no userspace ACK will follow.
-    //             pic::end_of_interrupt(IRQ_KEYBOARD);
-    //         }
-    //         return;
-    //     }
-    // };
-    if let Err(err) = ipc::mailbox::inject_hardware_event(channel_id, 1, &payload) {
+    let key_event = KeyEvent::new(scancode, None);
+    let (payload, payload_len) = key_event.to_fixed_payload();
+    if let Err(err) = ipc::mailbox::inject_hardware_event(channel_id, 1, &payload[..payload_len]) {
         kprintln!(
             "[kernel] keyboard: failed to route scancode 0x{:02x} to channel {}: {}",
             scancode,
