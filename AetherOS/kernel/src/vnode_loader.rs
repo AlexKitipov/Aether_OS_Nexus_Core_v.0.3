@@ -117,16 +117,17 @@ pub fn spawn_vnode_task(
     )
     .map_err(String::from)?;
 
+    let address_space_root = layout.root_pml4();
     let mut tcb = crate::task::TaskControlBlock::new_user_task(
         vnode.id,
         vnode.name.clone(),
         capabilities,
         entry_point,
         layout.user_stack_top,
-        layout.root_pml4(),
+        address_space_root,
     );
     tcb.user_stack_base = Some(layout.user_stack_base);
-    tcb.set_address_space_layout(layout.mapped_pages, layout.owned_frames, layout.root_pml4());
+    tcb.set_address_space_layout(layout.mapped_pages, layout.owned_frames, address_space_root);
     crate::task::scheduler::add_task(tcb);
 
     kprintln!(
