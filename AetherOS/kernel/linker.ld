@@ -49,9 +49,16 @@ SECTIONS
     .rodata : ALIGN(4K)
     {
         PROVIDE(__rodata_start = .);
-        KEEP(*(.bootloader-config))
         *(.rodata .rodata.*)
         PROVIDE(__rodata_end = .);
+    } > RAM
+
+    /* bootloader_api 0.11 image metadata consumed by the bootloader crate. */
+    .bootloader-config : ALIGN(16)
+    {
+        PROVIDE(__bootloader_config_start = .);
+        KEEP(*(.bootloader-config))
+        PROVIDE(__bootloader_config_end = .);
     } > RAM
 
     /* Writable initialized data. */
@@ -116,6 +123,8 @@ SECTIONS
     PROVIDE(text_end = __text_end);
     PROVIDE(rodata_start = __rodata_start);
     PROVIDE(rodata_end = __rodata_end);
+    PROVIDE(bootloader_config_start = __bootloader_config_start);
+    PROVIDE(bootloader_config_end = __bootloader_config_end);
     PROVIDE(data_start = __data_start);
     PROVIDE(data_end = __data_end);
     PROVIDE(bss_start = __bss_start);
@@ -143,7 +152,8 @@ ASSERT(__kernel_end <= ORIGIN(RAM) + LENGTH(RAM), "Kernel image exceeds RAM regi
 ASSERT(__entry_start == __kernel_start, "Entry section is not at image start");
 ASSERT(__entry_end <= __text_end, "Entry section is not within executable text");
 ASSERT(__text_end <= __rodata_start, ".text overlaps .rodata");
-ASSERT(__rodata_end <= __data_start, ".rodata overlaps .data");
+ASSERT(__rodata_end <= __bootloader_config_start, ".rodata overlaps .bootloader-config");
+ASSERT(__bootloader_config_end <= __data_start, ".bootloader-config overlaps .data");
 ASSERT(__data_end <= __bss_start, ".data overlaps .bss");
 ASSERT(__bss_end <= __page_tables_start, ".bss overlaps .page_tables");
 ASSERT(__page_tables_end <= __heap_start, ".page_tables overlaps .heap");
