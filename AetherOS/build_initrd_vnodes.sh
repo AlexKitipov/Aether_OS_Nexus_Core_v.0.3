@@ -8,7 +8,7 @@ cd "${REPO_ROOT}"
 
 echo "Building all V-Nodes..."
 # Compile all V-Node projects within the workspace in release mode
-cargo build --release --workspace --target x86_64-unknown-none
+cargo build --release --workspace --target x86_64-unknown-none.json
 
 echo "Creating initrd staging directory..."
 # Create a staging directory for initrd contents

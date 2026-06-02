@@ -3,8 +3,8 @@ set -euo pipefail
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BOOT_MODE="${BOOT_MODE:-bios}"
-BIOS_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-bios.img"
-UEFI_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-uefi.img"
+BIOS_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-bios.img"
+UEFI_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-uefi.img"
 
 if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "[run_qemu] ERROR: qemu-system-x86_64 is not installed" >&2

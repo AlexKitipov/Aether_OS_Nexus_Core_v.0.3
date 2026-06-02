@@ -27,13 +27,13 @@ rustup component add llvm-tools-preview --toolchain nightly
 
 ```bash
 cd AetherOS
-cargo +nightly build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
+cargo +nightly build --release --target x86_64-unknown-none.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -Zjson-target-spec
 ```
 
 Очакван файл:
 
 ```text
-target/aetheros-x86_64/release/aetheros-kernel
+target/x86_64-unknown-none/release/aetheros-kernel
 ```
 
 ## 4) Стартирай в QEMU

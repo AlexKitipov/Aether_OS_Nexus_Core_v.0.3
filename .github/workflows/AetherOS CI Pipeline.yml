@@ -79,8 +79,8 @@ jobs:
 
       - name: Verify target spec exists
         run: |
-          if [ ! -f "AetherOS/.cargo/aetheros-x86_64.json" ]; then
-            echo "❌ Target spec not found at AetherOS/.cargo/aetheros-x86_64.json"
+          if [ ! -f "AetherOS/x86_64-unknown-none.json" ]; then
+            echo "❌ Target spec not found at AetherOS/x86_64-unknown-none.json"
             exit 1
           fi
           echo "✅ Target spec verified"
@@ -91,14 +91,14 @@ jobs:
           cargo +nightly build --release \
             -Z build-std=core,alloc,compiler_builtins \
             -Z build-std-features=compiler-builtins-mem \
-            --target .cargo/aetheros-x86_64.json \
+            --target x86_64-unknown-none.json \
             -p aetheros-kernel
         env:
           RUSTFLAGS: "-C target-cpu=generic"
 
       - name: Verify kernel binary
         run: |
-          KERNEL_BIN="AetherOS/target/aetheros-x86_64/release/aetheros-kernel"
+          KERNEL_BIN="AetherOS/target/x86_64-unknown-none/release/aetheros-kernel"
           if [ ! -f "$KERNEL_BIN" ]; then
             echo "❌ Kernel binary not found at $KERNEL_BIN"
             exit 1
@@ -109,8 +109,8 @@ jobs:
       - name: Upload kernel artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-aetheros-x86_64
-          path: AetherOS/target/aetheros-x86_64/release/aetheros-kernel
+          name: kernel-x86_64-unknown-none
+          path: AetherOS/target/x86_64-unknown-none/release/aetheros-kernel
           retention-days: 30
 
   # ============================================================================
@@ -141,7 +141,7 @@ jobs:
           cargo +nightly build --release \
             -Z build-std=core,alloc,compiler_builtins \
             -Z build-std-features=compiler-builtins-mem \
-            --target .cargo/aetheros-x86_64.json \
+            --target x86_64-unknown-none.json \
             -p webview
         continue-on-error: true
 
@@ -150,7 +150,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: webview-binary
-          path: AetherOS/target/aetheros-x86_64/release/webview
+          path: AetherOS/target/x86_64-unknown-none/release/webview
           retention-days: 30
 
   # ============================================================================
@@ -169,7 +169,7 @@ jobs:
       - name: Download kernel artifact
         uses: actions/download-artifact@v4
         with:
-          name: kernel-aetheros-x86_64
+          name: kernel-x86_64-unknown-none
           path: ./kernel-bin
 
       - name: Install QEMU
@@ -249,7 +249,7 @@ jobs:
           echo "| QEMU Smoke Test | ${{ needs.qemu-smoke-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Artifacts Generated" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔵 Kernel Binary: \`kernel-aetheros-x86_64\`" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔵 Kernel Binary: \`kernel-x86_64-unknown-none\`" >> $GITHUB_STEP_SUMMARY
           echo "- 🟢 Webview Binary: \`webview-binary\`" >> $GITHUB_STEP_SUMMARY
           echo "- 🟡 QEMU Boot Log: \`qemu-boot-log\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -258,18 +258,18 @@ jobs:
           echo "# Kernel" >> $GITHUB_STEP_SUMMARY
           echo "cargo +nightly build --release -Z build-std=core,alloc,compiler_builtins \\" >> $GITHUB_STEP_SUMMARY
           echo "  -Z build-std-features=compiler-builtins-mem \\" >> $GITHUB_STEP_SUMMARY
-          echo "  --target .cargo/aetheros-x86_64.json -p aetheros-kernel" >> $GITHUB_STEP_SUMMARY
+          echo "  --target x86_64-unknown-none.json -p aetheros-kernel" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "# Webview" >> $GITHUB_STEP_SUMMARY
           echo "cargo +nightly build --release -Z build-std=core,alloc,compiler_builtins \\" >> $GITHUB_STEP_SUMMARY
-          echo "  --target .cargo/aetheros-x86_64.json -p webview" >> $GITHUB_STEP_SUMMARY
+          echo "  --target x86_64-unknown-none.json -p webview" >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Report artifact sizes
         run: |
           echo "## Artifact Sizes" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [ -f "kernel-aetheros-x86_64/aetheros-kernel" ]; then
-            SIZE=$(stat -f%z "kernel-aetheros-x86_64/aetheros-kernel" 2>/dev/null || stat -c%s "kernel-aetheros-x86_64/aetheros-kernel" 2>/dev/null)
+          if [ -f "kernel-x86_64-unknown-none/aetheros-kernel" ]; then
+            SIZE=$(stat -f%z "kernel-x86_64-unknown-none/aetheros-kernel" 2>/dev/null || stat -c%s "kernel-x86_64-unknown-none/aetheros-kernel" 2>/dev/null)
             echo "**Kernel**: $SIZE bytes" >> $GITHUB_STEP_SUMMARY
           fi
