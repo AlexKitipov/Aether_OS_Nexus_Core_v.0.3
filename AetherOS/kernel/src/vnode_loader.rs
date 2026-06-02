@@ -13,8 +13,7 @@ use crate::aetherfs::{self, FsCapability, FsRights, Hash};
 use crate::caps::Capability;
 use crate::elf;
 use crate::kprintln;
-use crate::memory::page_allocator::PageAllocator;
-use crate::task;
+use crate::memory::address_space::{self, UserSegment, UserSegmentFlags};
 
 pub type VNodeId = u64;
 
@@ -94,19 +93,29 @@ pub fn check_fs_cap(vnode: &VNode, path: &str, right: FsRights) -> bool {
 
 pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<(), String> {
     let managed_capabilities = capabilities.clone();
-    let stack_base = PageAllocator::allocate_page()
-        .ok_or_else(|| format!("Failed to allocate user stack for V-Node '{}'.", vnode.name))?;
-    let stack_top = stack_base + 4096u64;
-    let address_space_root = crate::arch::x86_64::paging::get_kernel_pml4();
+    let entry_point = x86_64::VirtAddr::new(vnode.entry);
+    let empty_executable_segment = UserSegment {
+        virtual_start: entry_point,
+        bytes: &[0x90],
+        flags: UserSegmentFlags::EXECUTABLE,
+    };
+    let layout = address_space::create_vnode_address_space(
+        &[empty_executable_segment],
+        address_space::DEFAULT_USER_STACK_PAGES,
+    )
+    .map_err(String::from)?;
 
-    task::create_user_task(
+    let mut tcb = crate::task::TaskControlBlock::new_user_task(
         vnode.id,
-        &vnode.name,
+        vnode.name.clone(),
         capabilities,
-        x86_64::VirtAddr::new(vnode.entry),
-        stack_top,
-        address_space_root,
+        entry_point,
+        layout.user_stack_top,
+        layout.root_pml4(),
     );
+    tcb.user_stack_base = Some(layout.user_stack_base);
+    tcb.set_address_space_layout(layout.mapped_pages, layout.owned_frames, layout.root_pml4());
+    crate::task::scheduler::add_task(tcb);
 
     kprintln!(
         "[kernel] vnode_loader: spawned V-Node '{}' as task {} (entry={:#x}, image={:02x?}).",

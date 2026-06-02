@@ -5,9 +5,12 @@ use alloc::collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicBool, Ordering};
 use spin::Mutex;
 use x86_64::instructions::interrupts;
+use x86_64::structures::paging::{FrameDeallocator, PhysFrame, Size4KiB};
+use x86_64::PhysAddr;
 
 use crate::caps::Capability;
 use crate::kprintln;
+use crate::memory::frame_allocator::GlobalFrameAllocator;
 use crate::memory::page_allocator::PageAllocator;
 use crate::task::context_switch;
 use crate::task::tcb::{Context, TaskControlBlock, TaskState};
@@ -213,12 +216,24 @@ fn release_task_resources(task: &TaskControlBlock) {
         PageAllocator::deallocate_page(kernel_stack);
     }
 
-    if let Some(user_stack) = task.user_stack_base {
-        PageAllocator::deallocate_page(user_stack);
+    if task.address_space_owned_frames.is_empty() {
+        if let Some(user_stack) = task.user_stack_base {
+            PageAllocator::deallocate_page(user_stack);
+        }
+
+        for page in &task.address_space_pages {
+            PageAllocator::deallocate_page(*page);
+        }
+        return;
     }
 
-    for page in &task.address_space_pages {
-        PageAllocator::deallocate_page(*page);
+    let mut allocator = GlobalFrameAllocator;
+    for frame_addr in &task.address_space_owned_frames {
+        unsafe {
+            allocator.deallocate_frame(PhysFrame::<Size4KiB>::containing_address(PhysAddr::new(
+                frame_addr.as_u64(),
+            )));
+        }
     }
 }
 
@@ -526,6 +541,8 @@ unsafe fn dispatch_context_switch(pending: PendingContextSwitch) {
         pending.old_task_id,
         pending.next_task_id
     );
+
+    crate::arch::x86_64::paging::switch_to_address_space(pending.next_address_space);
 
     // SAFETY: The scheduler selected distinct old/new task contexts and released
     // its locks before dispatching into the architecture switch primitive.
