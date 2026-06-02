@@ -3,9 +3,12 @@
 extern crate alloc;
 
 use alloc::collections::BTreeMap;
+use alloc::vec::Vec;
 use conquer_once::spin::OnceCell;
 use spin::Mutex;
 use x86_64::registers::control::Cr3;
+#[cfg(all(target_arch = "x86_64", target_os = "none"))]
+use x86_64::registers::control::Cr3Flags;
 use x86_64::structures::paging::{
     mapper::MapToError, FrameAllocator, Mapper, OffsetPageTable, Page, PageTable, PageTableFlags,
     PhysFrame, Size4KiB,
@@ -100,6 +103,7 @@ impl PageTableManager {
         mut flags: PageTableFlags,
     ) -> Result<(), PagingError> {
         flags |= PageTableFlags::GLOBAL;
+        flags.remove(PageTableFlags::USER_ACCESSIBLE);
         let mut frame_alloc = GlobalFrameAllocator;
         let flush = unsafe {
             self.kernel_mapper()
@@ -115,17 +119,32 @@ impl PageTableManager {
         space: AddressSpace,
         page: Page,
         frame: PhysFrame,
-        mut flags: PageTableFlags,
+        flags: PageTableFlags,
     ) -> Result<(), PagingError> {
+        self.map_in_user_tracked(space, page, frame, flags)
+            .map(|_| ())
+    }
+
+    pub fn map_in_user_tracked(
+        &mut self,
+        space: AddressSpace,
+        page: Page,
+        frame: PhysFrame,
+        mut flags: PageTableFlags,
+    ) -> Result<Vec<PhysAddr>, PagingError> {
         flags |= PageTableFlags::USER_ACCESSIBLE;
-        let mut frame_alloc = GlobalFrameAllocator;
+        flags.remove(PageTableFlags::GLOBAL);
+        let mut allocated_table_frames = Vec::new();
+        let mut frame_alloc = TrackingFrameAllocator {
+            allocated: &mut allocated_table_frames,
+        };
         let flush = unsafe {
             self.mapper_for_root(space.root_frame)
                 .map_to(page, frame, flags, &mut frame_alloc)
                 .map_err(map_to_err)?
         };
         flush.flush();
-        Ok(())
+        Ok(allocated_table_frames)
     }
 
     pub fn unmap_kernel(&mut self, page: Page) -> Result<PhysFrame, PagingError> {
@@ -172,6 +191,20 @@ impl PageTableManager {
         } else {
             Err(PagingError::AddressSpaceLimitReached)
         }
+    }
+}
+
+
+struct TrackingFrameAllocator<'a> {
+    allocated: &'a mut Vec<PhysAddr>,
+}
+
+unsafe impl FrameAllocator<Size4KiB> for TrackingFrameAllocator<'_> {
+    fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
+        let mut allocator = GlobalFrameAllocator;
+        let frame = allocator.allocate_frame()?;
+        self.allocated.push(frame.start_address());
+        Some(frame)
     }
 }
 
@@ -239,8 +272,17 @@ pub fn map_user_page(
     physical_address: PhysAddr,
     flags: PageTableFlags,
 ) -> Result<(), PagingError> {
+    map_user_page_tracked(space, virtual_address, physical_address, flags).map(|_| ())
+}
+
+pub fn map_user_page_tracked(
+    space: AddressSpace,
+    virtual_address: VirtAddr,
+    physical_address: PhysAddr,
+    flags: PageTableFlags,
+) -> Result<Vec<PhysAddr>, PagingError> {
     with_manager(|mgr| {
-        mgr.map_in_user(
+        mgr.map_in_user_tracked(
             space,
             Page::containing_address(virtual_address),
             PhysFrame::containing_address(physical_address),
@@ -269,6 +311,26 @@ pub fn physical_memory_offset() -> Option<u64> {
 
 pub fn get_kernel_pml4() -> u64 {
     Cr3::read().0.start_address().as_u64()
+}
+
+
+/// Switches the active PML4 to `root_pml4` when running on bare metal.
+///
+/// Host builds use a no-op so scheduler unit tests can model address-space
+/// changes without executing privileged instructions.
+pub fn switch_to_address_space(root_pml4: u64) {
+    #[cfg(all(target_arch = "x86_64", target_os = "none"))]
+    unsafe {
+        Cr3::write(
+            PhysFrame::containing_address(PhysAddr::new(root_pml4)),
+            Cr3Flags::empty(),
+        );
+    }
+
+    #[cfg(not(all(target_arch = "x86_64", target_os = "none")))]
+    {
+        let _ = root_pml4;
+    }
 }
 
 pub unsafe fn init_active_paging(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {

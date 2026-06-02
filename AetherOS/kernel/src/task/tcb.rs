@@ -3,7 +3,7 @@
 extern crate alloc;
 use alloc::string::String;
 use alloc::vec::Vec;
-use x86_64::VirtAddr;
+use x86_64::{PhysAddr, VirtAddr};
 
 use crate::caps::Capability;
 
@@ -78,6 +78,7 @@ pub struct TaskControlBlock {
     pub kernel_stack_base: Option<VirtAddr>,
     pub user_stack_base: Option<VirtAddr>,
     pub address_space_pages: Vec<VirtAddr>,
+    pub address_space_owned_frames: Vec<PhysAddr>,
     pub address_space_root: u64,
 }
 
@@ -108,6 +109,7 @@ impl TaskControlBlock {
             kernel_stack_base: None,
             user_stack_base: None,
             address_space_pages: Vec::new(),
+            address_space_owned_frames: Vec::new(),
             address_space_root: crate::arch::x86_64::paging::get_kernel_pml4(),
         }
     }
@@ -121,6 +123,7 @@ impl TaskControlBlock {
         kernel_stack_base: Option<VirtAddr>,
         user_stack_base: Option<VirtAddr>,
         address_space_pages: Vec<VirtAddr>,
+        address_space_owned_frames: Vec<PhysAddr>,
         address_space_root: u64,
     ) -> Self {
         Self {
@@ -135,6 +138,7 @@ impl TaskControlBlock {
             kernel_stack_base,
             user_stack_base,
             address_space_pages,
+            address_space_owned_frames,
             address_space_root,
         }
     }
@@ -168,7 +172,21 @@ impl TaskControlBlock {
             kernel_stack_base: None,
             user_stack_base: Some(user_stack_base),
             address_space_pages: Vec::new(),
+            address_space_owned_frames: Vec::new(),
             address_space_root,
         }
+    }
+
+
+    /// Replaces the task's tracked user address-space ownership metadata.
+    pub fn set_address_space_layout(
+        &mut self,
+        mapped_pages: Vec<VirtAddr>,
+        owned_frames: Vec<PhysAddr>,
+        address_space_root: u64,
+    ) {
+        self.address_space_pages = mapped_pages;
+        self.address_space_owned_frames = owned_frames;
+        self.address_space_root = address_space_root;
     }
 }

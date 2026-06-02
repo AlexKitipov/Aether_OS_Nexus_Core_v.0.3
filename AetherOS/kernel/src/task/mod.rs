@@ -7,7 +7,7 @@ use alloc::vec::Vec;
 use x86_64::VirtAddr;
 
 use crate::caps::Capability;
-use crate::memory::page_allocator::PageAllocator;
+use crate::memory::address_space::{self, UserSegment, UserSegmentFlags};
 
 pub mod context_switch;
 pub mod scheduler;
@@ -86,21 +86,29 @@ pub fn spawn_from_file(path: &str, id: u64, name: &str, capabilities: Vec<Capabi
         return Err(String::from("Refusing to spawn empty binary"));
     }
 
-    // Conceptual fixed user mapping layout until ELF segment mapping lands.
-    let entry_point = VirtAddr::new(0x0000_0000_4000_0000);
-    let stack_base = PageAllocator::allocate_page()
-        .ok_or_else(|| String::from("Failed to allocate user stack page"))?;
-    let stack_top = stack_base + 4096u64;
+    let entry_point = VirtAddr::new(address_space::USER_CODE_BASE);
+    let segment = UserSegment {
+        virtual_start: entry_point,
+        bytes: &code,
+        flags: UserSegmentFlags::EXECUTABLE,
+    };
+    let layout = address_space::create_vnode_address_space(
+        &[segment],
+        address_space::DEFAULT_USER_STACK_PAGES,
+    )
+    .map_err(String::from)?;
 
-    let address_space_root = crate::arch::x86_64::paging::get_kernel_pml4();
-    create_user_task(
+    let mut tcb = TaskControlBlock::new_user_task(
         id,
-        name,
+        String::from(name),
         capabilities,
         entry_point,
-        stack_top,
-        address_space_root,
+        layout.user_stack_top,
+        layout.root_pml4(),
     );
+    tcb.user_stack_base = Some(layout.user_stack_base);
+    tcb.set_address_space_layout(layout.mapped_pages, layout.owned_frames, layout.root_pml4());
+    scheduler::add_task(tcb);
 
     crate::kprintln!(
         "[kernel] task: Spawned task {} from {} ({} bytes)",
