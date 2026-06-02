@@ -57,6 +57,8 @@ struct AetherFs {
     objects: BTreeMap<Hash, FsObject>,
     snapshots: BTreeMap<Hash, Snapshot>,
     head: Option<Hash>,
+    snapshot_blobs: BTreeMap<u64, Hash>,
+    latest_snapshot_pointer: Option<Hash>,
 }
 
 impl AetherFs {
@@ -81,15 +83,48 @@ impl AetherFs {
         self.head = Some(snapshot_hash);
         snapshot_hash
     }
+
+    fn store_snapshot_blob(&mut self, id: u64, data: &[u8]) -> Result<Hash, AetherFsWriteError> {
+        let object = FsObject::Blob(data.to_vec());
+        let snapshot_hash = self.put_object(object);
+
+        // Keep snapshot commits atomic from readers' perspective: the immutable
+        // snapshot blob and its durable pointer blob are written and verified
+        // before the latest pointer is advanced. If either write fails, the
+        // previous latest snapshot remains authoritative.
+        match self.objects.get(&snapshot_hash) {
+            Some(FsObject::Blob(stored)) if stored.as_slice() == data => {}
+            _ => return Err(AetherFsWriteError::ObjectWriteFailed),
+        }
+
+        let pointer = encode_snapshot_pointer(id, snapshot_hash);
+        let pointer_hash = self.put_object(FsObject::Blob(pointer.clone()));
+        match self.objects.get(&pointer_hash) {
+            Some(FsObject::Blob(stored)) if stored.as_slice() == pointer.as_slice() => {
+                self.snapshot_blobs.insert(id, snapshot_hash);
+                self.latest_snapshot_pointer = Some(pointer_hash);
+                Ok(snapshot_hash)
+            }
+            _ => Err(AetherFsWriteError::PointerWriteFailed),
+        }
+    }
 }
 
 static FS: Mutex<AetherFs> = Mutex::new(AetherFs {
     objects: BTreeMap::new(),
     snapshots: BTreeMap::new(),
     head: None,
+    snapshot_blobs: BTreeMap::new(),
+    latest_snapshot_pointer: None,
 });
 
 pub const BOOT_SNAPSHOT_HASH: Hash = Hash::zero();
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AetherFsWriteError {
+    ObjectWriteFailed,
+    PointerWriteFailed,
+}
 
 pub fn init() {
     let mut fs = FS.lock();
@@ -122,6 +157,40 @@ pub fn init() {
         "[kernel] aetherfs: initialized in-memory immutable store (snapshot={:02x?}).",
         snapshot_hash.0
     );
+}
+
+pub fn store_snapshot_blob(id: u64, data: &[u8]) -> Result<Hash, AetherFsWriteError> {
+    let mut fs = FS.lock();
+    fs.store_snapshot_blob(id, data)
+}
+
+pub fn load_snapshot_blob_by_id(id: u64) -> Option<Vec<u8>> {
+    let fs = FS.lock();
+    let hash = fs.snapshot_blobs.get(&id).copied()?;
+    match fs.get_object(hash) {
+        Some(FsObject::Blob(data)) => Some(data.clone()),
+        _ => None,
+    }
+}
+
+pub fn load_latest_snapshot_blob() -> Option<Vec<u8>> {
+    let fs = FS.lock();
+    let pointer_hash = fs.latest_snapshot_pointer?;
+    let pointer = match fs.get_object(pointer_hash) {
+        Some(FsObject::Blob(data)) => decode_snapshot_pointer(data)?,
+        _ => return None,
+    };
+
+    if let Some(indexed_hash) = fs.snapshot_blobs.get(&pointer.id) {
+        if *indexed_hash != pointer.snapshot_hash {
+            return None;
+        }
+    }
+
+    match fs.get_object(pointer.snapshot_hash) {
+        Some(FsObject::Blob(data)) => Some(data.clone()),
+        _ => None,
+    }
 }
 
 pub fn load_snapshot(hash: Hash) -> Option<Snapshot> {
@@ -213,6 +282,38 @@ pub fn write_file(_path: &str, _data: &[u8]) -> Result<(), String> {
 
 pub fn object_hash(object: &FsObject) -> Hash {
     hash_object(object)
+}
+
+const SNAPSHOT_POINTER_MAGIC: &[u8; 4] = b"ASNP";
+const SNAPSHOT_POINTER_SIZE: usize = 4 + 8 + 32;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct SnapshotPointer {
+    id: u64,
+    snapshot_hash: Hash,
+}
+
+fn encode_snapshot_pointer(id: u64, snapshot_hash: Hash) -> Vec<u8> {
+    let mut out = Vec::with_capacity(SNAPSHOT_POINTER_SIZE);
+    out.extend_from_slice(SNAPSHOT_POINTER_MAGIC);
+    out.extend_from_slice(&id.to_le_bytes());
+    out.extend_from_slice(&snapshot_hash.0);
+    out
+}
+
+fn decode_snapshot_pointer(bytes: &[u8]) -> Option<SnapshotPointer> {
+    if bytes.len() != SNAPSHOT_POINTER_SIZE || &bytes[0..4] != SNAPSHOT_POINTER_MAGIC {
+        return None;
+    }
+
+    let id = u64::from_le_bytes(bytes[4..12].try_into().ok()?);
+    let mut snapshot_hash = [0u8; 32];
+    snapshot_hash.copy_from_slice(&bytes[12..44]);
+
+    Some(SnapshotPointer {
+        id,
+        snapshot_hash: Hash(snapshot_hash),
+    })
 }
 
 fn hash_object(object: &FsObject) -> Hash {
