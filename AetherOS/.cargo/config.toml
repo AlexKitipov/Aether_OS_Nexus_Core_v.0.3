@@ -8,7 +8,7 @@ rustflags = [
 
 [alias]
 build-host = "build -p common"
-build-kernel = "build --release --target .cargo/aetheros-x86_64.json -p aetheros-kernel"
+build-kernel = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem -p aetheros-kernel"
 build-vnode-webview = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core -Zbuild-std-features=compiler-builtins-mem -p webview"
 build-vnode-display-compositor = "build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core -Zbuild-std-features=compiler-builtins-mem -p display-compositor"
 build-baremetal-all = "build --release --workspace --target .cargo/aetheros-x86_64.json"
