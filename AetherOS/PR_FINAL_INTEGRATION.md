@@ -75,7 +75,7 @@ No new feature work is introduced in this integration pass.
 Run from `Aether_OS_Nexus_Core_v.0.3/AetherOS`:
 
 ```bash
-cargo +nightly-2025-03-01 build --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
+cargo +nightly-2025-03-01 build --target x86_64-unknown-none.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
 bash ./scripts/build_kernel_image.sh
 make test
 cargo test --workspace

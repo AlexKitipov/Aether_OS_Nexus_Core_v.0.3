@@ -14,7 +14,7 @@ unset CARGO_BUILD_RUSTFLAGS
 TOOLCHAIN="nightly-2025-03-01"
 ROOTFS_DIR="rootfs"
 KERNEL_PKG="aetheros-kernel"
-KERNEL_TARGET=".cargo/aetheros-x86_64.json"
+KERNEL_TARGET="x86_64-unknown-none.json"
 VNODE_PKGS=(
   registry
   init-service
@@ -40,7 +40,7 @@ cargo +"${TOOLCHAIN}" build --release --target "${KERNEL_TARGET}" \
 mkdir -p "${ROOTFS_DIR}/vnode" target
 
 for vnode in "${VNODE_PKGS[@]}"; do
-  src="target/aetheros-x86_64/release/${vnode}"
+  src="target/x86_64-unknown-none/release/${vnode}"
   dst="${ROOTFS_DIR}/vnode/${vnode}"
   if [[ ! -f "${src}" ]]; then
     echo "[build_all] ERROR: expected binary not found: ${src}" >&2

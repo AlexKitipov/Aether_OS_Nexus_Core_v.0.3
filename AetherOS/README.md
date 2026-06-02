@@ -98,7 +98,7 @@ rustup component add llvm-tools-preview
 From `AetherOS/`:
 
 ```bash
-cargo +nightly-2025-03-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
+cargo +nightly-2025-03-01 build --release --target x86_64-unknown-none.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem
 ```
 
 Or use the helper:
@@ -182,7 +182,7 @@ Recommended fix:
 1. Remove or rename the global alias from `~/.cargo/config` or `~/.cargo/config.toml`.
 2. Use the pinned build flow from this repo:
    - `./scripts/build_kernel_image.sh`
-   - or `cargo +nightly-2025-03-01 build --release --target .cargo/aetheros-x86_64.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem`
+   - or `cargo +nightly-2025-03-01 build --release --target x86_64-unknown-none.json -Zbuild-std=core,alloc,compiler_builtins -Zbuild-std-features=compiler-builtins-mem`
 
 To inspect active alias configuration:
 

@@ -2,11 +2,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-KERNEL_PATH="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-kernel"
-TARGET_JSON=".cargo/aetheros-x86_64.json"
+KERNEL_PATH="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
+TARGET_JSON="x86_64-unknown-none.json"
 BOOT_MODE="${BOOT_MODE:-bios}"
-BIOS_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-bios.img"
-UEFI_IMAGE="${ROOT_DIR}/target/aetheros-x86_64/release/aetheros-uefi.img"
+BIOS_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-bios.img"
+UEFI_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-uefi.img"
 RUN_QEMU="${RUN_QEMU:-0}"
 TOOLCHAIN="nightly-2025-03-01"
 

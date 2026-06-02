@@ -12,6 +12,6 @@ unset RUSTFLAGS
 unset CARGO_ENCODED_RUSTFLAGS
 unset CARGO_BUILD_RUSTFLAGS
 
-cargo +"${TOOLCHAIN}" build --release --target .cargo/aetheros-x86_64.json \
+cargo +"${TOOLCHAIN}" build --release --target x86_64-unknown-none.json \
   -Zbuild-std=core,alloc,compiler_builtins \
   -Zbuild-std-features=compiler-builtins-mem
