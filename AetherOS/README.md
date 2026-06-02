@@ -78,7 +78,7 @@ aetheros/
 
 This project uses the modern `bootloader_api` flow. Legacy `bootloader` 0.10 / `bootimage` commands are not used.
 
-> If you run `cargo bootimage` with `bootloader 0.11.15`, it will fail because the legacy `bootimage` tool does not support the newer bootloader metadata flow.
+> If you run `cargo bootimage` with `bootloader 0.11.15`, it will fail because the legacy `bootimage` tool does not support the newer bootloader metadata flow. A message such as `Error: no executables built` is misleading in this workspace: `target/x86_64-unknown-none/release/aetheros-kernel` can exist, but `bootimage` only trusts executable paths emitted by the Cargo JSON build it starts and then tries to continue through the old bootloader metadata contract. Use `./scripts/build_kernel_image.sh` instead.
 
 ### Prerequisites
 
@@ -165,6 +165,15 @@ you are likely using stale build instructions, `bootimage`/legacy metadata flow,
 invocation where `cargo` and `rustc` come from different nightlies. This repo uses `bootloader_api` and
 `cargo +nightly-2025-03-01 build` directly (without `-Zjson-target-spec`).
 Run `./scripts/build_kernel_image.sh` (or the build command above) instead of `cargo bootimage`.
+
+If you see:
+
+```text
+Error: no executables built
+```
+
+while `target/x86_64-unknown-none/release/aetheros-kernel` exists, the existing file is not the problem.
+Legacy `cargo-bootimage` runs a fresh Cargo build with JSON messages and collects only the `executable` fields from that stream; it does not scan the target directory for already-built ELF files. In this workspace, that legacy probe can report no usable executables even though a previous or separate `cargo build` produced the kernel ELF. The supported path is to build the kernel explicitly and pass that exact ELF to `aetheros-image-builder` via `./scripts/build_kernel_image.sh`.
 
 If you see:
 
