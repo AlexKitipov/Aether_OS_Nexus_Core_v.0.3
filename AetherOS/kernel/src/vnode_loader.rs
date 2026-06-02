@@ -5,6 +5,7 @@ extern crate alloc;
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
+use x86_64::VirtAddr;
 // use postcard::to_allocvec;
 use sha2::{Digest, Sha256};
 use spin::Mutex;
@@ -42,6 +43,7 @@ pub struct VNode {
     pub entry: u64,
     pub permissions: Permissions,
     pub fs_capability: FsCapability,
+    pub load_segments: Vec<elf::ElfLoadSegment>,
 }
 
 #[derive(Debug, Clone)]
@@ -72,6 +74,7 @@ pub fn build_vnode_descriptor(
     entry: u64,
     permissions: Permissions,
     fs_capability: FsCapability,
+    load_segments: Vec<elf::ElfLoadSegment>,
 ) -> VNode {
     VNode {
         id,
@@ -80,6 +83,7 @@ pub fn build_vnode_descriptor(
         entry,
         permissions,
         fs_capability,
+        load_segments,
     }
 }
 
@@ -91,16 +95,24 @@ pub fn check_fs_cap(vnode: &VNode, path: &str, right: FsRights) -> bool {
     aetherfs::fs_resolve_path(vnode.fs_capability.root, path).is_some()
 }
 
-pub fn spawn_vnode_task(vnode: &VNode, capabilities: Vec<Capability>) -> Result<(), String> {
+pub fn spawn_vnode_task(
+    vnode: &VNode,
+    image: &[u8],
+    capabilities: Vec<Capability>,
+) -> Result<(), String> {
     let managed_capabilities = capabilities.clone();
-    let entry_point = x86_64::VirtAddr::new(vnode.entry);
-    let empty_executable_segment = UserSegment {
-        virtual_start: entry_point,
-        bytes: &[0x90],
-        flags: UserSegmentFlags::EXECUTABLE,
-    };
+    let entry_point = VirtAddr::new(vnode.entry);
+    let segment_images = materialize_load_segments(image, &vnode.load_segments)?;
+    let user_segments: Vec<UserSegment> = segment_images
+        .iter()
+        .map(|segment| UserSegment {
+            virtual_start: VirtAddr::new(segment.virtual_start),
+            bytes: &segment.bytes,
+            flags: segment.flags,
+        })
+        .collect();
     let layout = address_space::create_vnode_address_space(
-        &[empty_executable_segment],
+        &user_segments,
         address_space::DEFAULT_USER_STACK_PAGES,
     )
     .map_err(String::from)?;
@@ -157,13 +169,14 @@ pub fn load_vnode(vnode_name: &str, capabilities: Vec<Capability>) -> Result<(),
             root: boot_snapshot.root,
             rights: FsRights::ReadOnly,
         },
+        elf_header.load_segments,
     );
 
     if !check_fs_cap(&vnode, &vnode_path, FsRights::ReadOnly) {
         return Err(format!("FS capability check failed for {}", vnode_path));
     }
 
-    spawn_vnode_task(&vnode, capabilities)?;
+    spawn_vnode_task(&vnode, &image, capabilities)?;
 
     kprintln!("[kernel] vnode_loader: V-Node '{}' loaded from immutable storage.", vnode_name);
     Ok(())
@@ -187,7 +200,8 @@ pub fn spawn_from_snapshot(vnode: &crate::snapshot_engine::VNodeState) -> Result
         .ok_or_else(|| format!("V-Node image hash {:02x?} is not readable", vnode.image_hash))?;
     let elf_header = elf::ElfLoader::parse_elf_bytes(&image)?;
 
-    let current = aetherfs::current_snapshot().ok_or_else(|| String::from("AetherFS has no active snapshot"))?;
+    let current = aetherfs::current_snapshot()
+        .ok_or_else(|| String::from("AetherFS has no active snapshot"))?;
     let descriptor = build_vnode_descriptor(
         vnode.vnode_id,
         "restored-vnode",
@@ -198,9 +212,53 @@ pub fn spawn_from_snapshot(vnode: &crate::snapshot_engine::VNodeState) -> Result
             root: current.root,
             rights: FsRights::ReadOnly,
         },
+        elf_header.load_segments,
     );
 
-    spawn_vnode_task(&descriptor, Vec::new())
+    spawn_vnode_task(&descriptor, &image, Vec::new())
+}
+
+#[derive(Debug)]
+struct MaterializedLoadSegment {
+    virtual_start: u64,
+    bytes: Vec<u8>,
+    flags: UserSegmentFlags,
+}
+
+fn materialize_load_segments(
+    image: &[u8],
+    load_segments: &[elf::ElfLoadSegment],
+) -> Result<Vec<MaterializedLoadSegment>, String> {
+    load_segments
+        .iter()
+        .map(|segment| {
+            if segment.memory_size > usize::MAX as u64 {
+                return Err(String::from(
+                    "ELF PT_LOAD memory size is too large for this target.",
+                ));
+            }
+            let file_end = segment.file_end()? as usize;
+            let file_start = segment.file_offset as usize;
+            let segment_bytes = image
+                .get(file_start..file_end)
+                .ok_or_else(|| String::from("ELF PT_LOAD file bytes are outside the image."))?;
+            let mut bytes = Vec::new();
+            bytes
+                .try_reserve(segment.memory_size as usize)
+                .map_err(|_| String::from("Failed to reserve memory for ELF PT_LOAD segment."))?;
+            bytes.extend_from_slice(segment_bytes);
+            bytes.resize(segment.memory_size as usize, 0);
+
+            Ok(MaterializedLoadSegment {
+                virtual_start: segment.virtual_start,
+                bytes,
+                flags: UserSegmentFlags {
+                    writable: segment.writable,
+                    executable: segment.executable,
+                },
+            })
+        })
+        .collect()
 }
 
 fn sha2_256(bytes: &[u8]) -> [u8; 32] {
