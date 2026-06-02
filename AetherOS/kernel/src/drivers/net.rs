@@ -146,7 +146,6 @@ struct PciLocation {
 struct E1000State {
     mmio_base: u64,
     mmio_len: usize,
-    pci: PciLocation,
     mac: [u8; 6],
     rx_desc_virt: u64,
     tx_desc_virt: u64,
@@ -209,7 +208,6 @@ impl E1000NetDevice {
         let mut state = E1000State {
             mmio_base,
             mmio_len,
-            pci: probe.pci,
             mac: [0; 6],
             rx_desc_virt: rx_desc_region.virt,
             tx_desc_virt: tx_desc_region.virt,
