@@ -4,10 +4,12 @@
 
 use alloc::collections::BTreeMap;
 use spin::Mutex;
-use x86_64::instructions::port::Port;
 use x86_64::structures::idt::InterruptStackFrame;
 
-use crate::interrupts::pic::{self, PIC_1_DATA, PIC_1_OFFSET, PIC_2_DATA};
+use crate::interrupts::{
+    self,
+    pic::{self, PIC_1_OFFSET},
+};
 use crate::{ipc, kprintln};
 
 /// Maps an IRQ number to an IPC channel ID, which the kernel will use
@@ -16,26 +18,11 @@ static IRQ_TO_CHANNEL_MAP: Mutex<BTreeMap<u8, ipc::ChannelId>> = Mutex::new(BTre
 
 /// Initializes interrupt controller plumbing.
 pub fn init() {
-    // Wire PIC + initial vectors before interrupts are enabled globally.
-    unsafe {
-        pic::remap();
-    }
-
-    // Keep timer/keyboard vectors present even before userspace IRQ
-    // channel registration begins.
-    crate::arch::x86_64::idt::set_irq_handler(PIC_1_OFFSET + 0, irq_entry_0);
-    crate::arch::x86_64::idt::set_irq_handler(PIC_1_OFFSET + 1, irq_entry_1);
-    crate::arch::x86_64::idt::reload();
-
-    // PIT heartbeat source setup stays in the common timer module.
-    crate::timer::init();
-
-    unsafe {
-        unmask_irq(0);
-        unmask_irq(1);
-    }
-
-    kprintln!("[kernel] irq: PIC remapped and IRQ vectors installed.");
+    // Keep PIC remap, fixed IRQ vector installation, PIT setup, and initial
+    // unmasking in the common interrupt subsystem. This architecture module
+    // owns dynamic IRQ-to-IPC registration only; delegating here prevents a
+    // second independent PIC initialization sequence from drifting out of sync.
+    interrupts::init();
 }
 
 /// Register an interrupt handler.
@@ -58,7 +45,7 @@ pub fn register_irq_handler(irq_number: u8, channel_id: ipc::ChannelId) {
     crate::arch::x86_64::idt::set_irq_handler(vector, IRQ_HANDLER_ENTRIES[irq_number as usize]);
 
     unsafe {
-        unmask_irq(irq_number);
+        interrupts::unmask_irq(irq_number);
     }
 
     kprintln!(
@@ -102,18 +89,6 @@ pub fn handle_irq(irq_number: u8) {
     }
 
     acknowledge_irq(irq_number);
-}
-
-unsafe fn unmask_irq(irq: u8) {
-    let (port, bit) = if irq < 8 {
-        (PIC_1_DATA, irq)
-    } else {
-        (PIC_2_DATA, irq - 8)
-    };
-
-    let mut data: Port<u8> = Port::new(port);
-    let current = data.read();
-    data.write(current & !(1 << bit));
 }
 
 macro_rules! define_irq_entry {
