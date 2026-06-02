@@ -6,8 +6,11 @@ use core::sync::atomic::{AtomicU64, Ordering};
 
 use x86_64::instructions::port::Port;
 use x86_64::instructions::{hlt, interrupts};
+use x86_64::structures::idt::InterruptStackFrame;
+use x86_64::VirtAddr;
 
 use crate::kprintln;
+use crate::task::tcb::Context;
 
 /// PIT base input clock in Hz.
 const PIT_BASE_FREQUENCY_HZ: u32 = 1_193_182;
@@ -66,6 +69,43 @@ pub const fn frequency_hz() -> u32 {
 #[inline]
 pub fn uptime_ms() -> u64 {
     get_current_ticks().saturating_mul(1_000) / PIT_FREQUENCY_HZ as u64
+}
+
+/// Builds a scheduler context snapshot from the hardware frame the CPU pushed
+/// for an interrupt.
+///
+/// The PIT IRQ path uses this as the lock-free/try-lock-safe handoff boundary:
+/// accounting and reschedule intent stay deferred first, and a real preemption
+/// can only happen at IRQ exit after the current task's return `rip`, `rsp`,
+/// and `rflags` have been captured.
+#[inline]
+pub fn context_from_interrupt_stack_frame(stack_frame: &InterruptStackFrame) -> Context {
+    Context {
+        rip: stack_frame.instruction_pointer.as_u64(),
+        rsp: stack_frame.stack_pointer.as_u64(),
+        rflags: stack_frame.cpu_flags,
+        ..Context::default()
+    }
+}
+
+/// Restores scheduler context fields into the hardware frame used by `iretq`.
+///
+/// # Safety
+///
+/// The caller must ensure that `context.rip` and `context.rsp` are canonical,
+/// mapped for the currently selected address space, and valid for the privilege
+/// level represented by the interrupt frame's segment selectors.
+#[inline]
+pub unsafe fn restore_interrupt_stack_frame(
+    stack_frame: &mut InterruptStackFrame,
+    context: &Context,
+) {
+    let mut frame = unsafe { stack_frame.as_mut() };
+    frame.update(|frame| {
+        frame.instruction_pointer = VirtAddr::new(context.rip);
+        frame.stack_pointer = VirtAddr::new(context.rsp);
+        frame.cpu_flags = context.rflags;
+    });
 }
 
 /// Sleeps for at least `ms` milliseconds using the PIT tick counter.
