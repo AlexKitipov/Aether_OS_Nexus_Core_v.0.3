@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 KERNEL_PATH="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
 TARGET_JSON="x86_64-unknown-none.json"
-BOOT_MODE="${BOOT_MODE:-bios}"
+BOOT_MODE="${BOOT_MODE:-uefi}"
 BIOS_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-bios.img"
 UEFI_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-uefi.img"
 RUN_QEMU="${RUN_QEMU:-0}"
