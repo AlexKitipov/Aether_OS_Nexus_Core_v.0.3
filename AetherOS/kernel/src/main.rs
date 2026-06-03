@@ -12,7 +12,7 @@ use apm::ApmManager;
 #[cfg(target_os = "none")]
 use arx::ArxManager;
 #[cfg(target_os = "none")]
-use bootloader_api::{entry_point, BootInfo, BootloaderConfig};
+use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 #[cfg(target_os = "none")]
 use core::panic::PanicInfo;
 
@@ -22,6 +22,14 @@ const BOOTLOADER_CONFIG: BootloaderConfig = {
     // Keep the stack-size contract from the previous hand-written entry path,
     // but let bootloader_api 0.11 own the stack setup and BootInfo ABI wrapper.
     config.kernel_stack_size = 4096 * 4;
+    // Avoid bootloader_api 0.11 dynamic stack placement in the low identity
+    // range. With a 16KiB stack, the default low dynamic allocator can place
+    // the stack in the gap between the kernel text and rodata segments; the
+    // bootloader later identity-maps its GDT frame and can panic with
+    // PageAlreadyMapped when that frame address aliases the stack's virtual
+    // range. Pinning the guard page/stack to a higher-half address keeps the
+    // low identity range free for bootloader hand-off mappings.
+    config.mappings.kernel_stack = Mapping::FixedAddress(0xffff_8000_0000_0000);
     config
 };
 
