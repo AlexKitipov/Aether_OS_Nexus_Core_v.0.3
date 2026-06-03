@@ -17,10 +17,16 @@ use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
 
 #[cfg(target_os = "none")]
-const KERNEL_STACK_SIZE: u64 = 4096 * 4;
+const KERNEL_STACK_SIZE: u64 = 4096 * 16;
 
 #[cfg(target_os = "none")]
-const KERNEL_STACK_GUARD_ADDRESS: u64 = 0xffff_8000_0010_0000;
+const HIGHER_HALF_DYNAMIC_START: u64 = 0xffff_8000_0000_0000;
+
+#[cfg(target_os = "none")]
+const HIGHER_HALF_DYNAMIC_END: u64 = 0xffff_ffff_ffff_f000;
+
+#[cfg(target_os = "none")]
+const KERNEL_STACK_GUARD_ADDRESS: u64 = 0xffff_9000_0000_0000;
 
 #[cfg(target_os = "none")]
 const BOOTLOADER_CONFIG: BootloaderConfig = {
@@ -28,12 +34,16 @@ const BOOTLOADER_CONFIG: BootloaderConfig = {
     // Keep the stack-size contract from the previous hand-written entry path,
     // but let bootloader_api 0.11 own the stack setup and BootInfo ABI wrapper.
     config.kernel_stack_size = KERNEL_STACK_SIZE;
-    // Avoid bootloader_api 0.11 dynamic stack placement in the low identity
-    // range. Do not place the fixed stack at the higher-half canonical
-    // boundary: the first pushes can move RSP below 0xffff_8000_0000_0000,
-    // which is non-canonical and raises #GP before the kernel can install its
-    // own GDT/IDT/TSS. Leave slack above the boundary so the boot stack stays
-    // canonical throughout early entry.
+    // Constrain all bootloader-selected dynamic mappings to canonical
+    // higher-half addresses. The bootloader defaults can place the initial
+    // stack close to the 0xffff_8000_0000_0000 canonical boundary; early Rust
+    // entry then pushes below that boundary, making RSP non-canonical and
+    // causing #GP before our own GDT/IDT/TSS setup can run.
+    config.mappings.dynamic_range_start = Some(HIGHER_HALF_DYNAMIC_START);
+    config.mappings.dynamic_range_end = Some(HIGHER_HALF_DYNAMIC_END);
+    // Use an explicit guard-page base well inside the canonical higher half so
+    // bootloader_api maps the usable stack above it and early entry has plenty
+    // of downward-growth headroom.
     config.mappings.kernel_stack = Mapping::FixedAddress(KERNEL_STACK_GUARD_ADDRESS);
     config
 };
