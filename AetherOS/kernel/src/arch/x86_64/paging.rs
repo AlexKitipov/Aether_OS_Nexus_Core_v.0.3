@@ -242,6 +242,10 @@ pub fn with_manager<R>(f: impl FnOnce(&mut PageTableManager) -> R) -> R {
     f(&mut guard)
 }
 
+pub fn is_initialized() -> bool {
+    PAGE_TABLE_MANAGER.get().is_some()
+}
+
 pub fn create_user_address_space() -> Result<AddressSpace, PagingError> {
     with_manager(|mgr| mgr.create_user_address_space())
 }

@@ -50,6 +50,10 @@ pub fn init(
 
     init_console(framebuffer);
 
+    init_memory_and_heap(memory_regions, physical_memory_offset);
+
+    arch::x86_64::boot::ensure_bootstrap_cpu_tables_mapped();
+
     gdt::init();
     kprintln!("[kernel] GDT initialized.");
 
@@ -59,7 +63,6 @@ pub fn init(
     irq::init();
     kprintln!("[kernel] IRQ subsystem initialized.");
 
-    init_memory_and_heap(memory_regions, physical_memory_offset);
     init_runtime_subsystems();
 
     x86_64::instructions::interrupts::enable();
@@ -93,7 +96,9 @@ fn init_memory_and_heap(
     kprintln!("[kernel] Memory manager initialized.");
 
     let heap_result = memory::with_frame_allocator(|frame_allocator| {
-        let mut mapper = unsafe { arch::x86_64::paging::init_mapper(x86_64::VirtAddr::new(offset)) };
+        let mut mapper = unsafe {
+            arch::x86_64::paging::init_mapper(x86_64::VirtAddr::new(offset))
+        };
         arch::x86_64::paging::map_heap_region(
             &mut mapper,
             frame_allocator,

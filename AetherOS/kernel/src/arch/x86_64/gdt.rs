@@ -48,6 +48,22 @@ static DOUBLE_FAULT_STACK: DoubleFaultStack = DoubleFaultStack([0; DOUBLE_FAULT_
 static TSS: Once<TaskStateSegment> = Once::new();
 static GDT: Once<(GlobalDescriptorTable, Selectors)> = Once::new();
 
+/// Returns the address of the lazily initialized TSS storage for early paging setup.
+pub fn tss_address() -> u64 {
+    addr_of!(TSS) as u64
+}
+
+/// Returns the address of the lazily initialized GDT storage for early paging setup.
+pub fn gdt_address() -> u64 {
+    addr_of!(GDT) as u64
+}
+
+/// Returns the byte range occupied by the dedicated double-fault IST stack.
+pub fn double_fault_stack_address_range() -> (u64, u64) {
+    let (start, end) = double_fault_stack_range();
+    (start.as_u64(), end.as_u64())
+}
+
 fn double_fault_stack_range() -> (VirtAddr, VirtAddr) {
     let stack_start = VirtAddr::from_ptr(addr_of!(DOUBLE_FAULT_STACK.0));
     let stack_end = stack_start + DOUBLE_FAULT_STACK_SIZE;
