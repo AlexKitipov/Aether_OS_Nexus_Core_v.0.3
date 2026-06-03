@@ -14,6 +14,11 @@ use crate::{arch::x86_64::gdt, hlt_loop, kprintln};
 /// Static Interrupt Descriptor Table, initialized during early boot.
 static mut IDT: InterruptDescriptorTable = InterruptDescriptorTable::new();
 
+/// Returns the IDT storage address for early paging setup before `lidt`.
+pub fn idt_address() -> u64 {
+    core::ptr::addr_of!(IDT) as u64
+}
+
 /// Initializes the IDT with core CPU exception handlers and loads it via `lidt`.
 pub fn init() {
     interrupts::without_interrupts(|| unsafe {

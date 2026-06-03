@@ -8,6 +8,7 @@ use core::arch::x86_64::__cpuid;
 use core::arch::global_asm;
 
 use bootloader_api::BootInfo;
+use x86_64::structures::paging::PageTableFlags;
 
 use super::{gdt, idt, paging};
 use crate::{heap, interrupts, memory};
@@ -29,6 +30,8 @@ const CR4_PGE: u64 = 1 << 7;
 const EFER_LME: u64 = 1 << 8;
 const EFER_LMA: u64 = 1 << 10;
 const EFER_NXE: u64 = 1 << 11;
+
+const PAGE_SIZE: u64 = 4096;
 
 const CPUID_EXTENDED_FUNCTION_INFO: u32 = 0x8000_0001;
 const CPUID_EXTENDED_MAX_LEAF: u32 = 0x8000_0000;
@@ -243,6 +246,7 @@ pub fn long_mode_init(config: LongModeConfig) -> Result<(), BootError> {
 
 /// Full architecture initialization pipeline for booting into kernel mode.
 pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
+    ensure_bootstrap_cpu_tables_mapped();
     gdt::init();
     idt::init();
     check_long_mode_support()?;
@@ -251,6 +255,80 @@ pub fn architecture_init(config: LongModeConfig) -> Result<(), BootError> {
 
     kprintln!("[kernel] boot: Architecture initialized.");
     Ok(())
+}
+
+/// Ensures CPU descriptor-table statics are present in the active page tables
+/// before `lgdt`, `ltr`, or `lidt` can make the CPU fetch them implicitly.
+pub fn ensure_bootstrap_cpu_tables_mapped() {
+    if !paging::is_initialized() {
+        kprintln!(
+            "[kernel] boot: paging manager not ready; assuming bootloader mapped CPU tables."
+        );
+        return;
+    }
+
+    map_bootstrap_range(
+        "IDT",
+        idt::idt_address(),
+        core::mem::size_of::<x86_64::structures::idt::InterruptDescriptorTable>() as u64,
+    );
+    map_bootstrap_range("GDT", gdt::gdt_address(), 4096);
+    map_bootstrap_range("TSS", gdt::tss_address(), 4096);
+
+    let (df_stack_start, df_stack_end) = gdt::double_fault_stack_address_range();
+    map_bootstrap_range(
+        "double-fault IST stack",
+        df_stack_start,
+        df_stack_end.saturating_sub(df_stack_start),
+    );
+}
+
+fn map_bootstrap_range(label: &str, start: u64, size: u64) {
+    let start_page = start & !(PAGE_SIZE - 1);
+    let end = start
+        .saturating_add(size.max(1))
+        .saturating_add(PAGE_SIZE - 1)
+        & !(PAGE_SIZE - 1);
+    let mut page = start_page;
+
+    while page < end {
+        let Some(phys) = paging::try_virt_to_phys(page) else {
+            kprintln!(
+                "[kernel] boot: cannot derive physical address for {} page {:#x}; leaving bootloader mapping in place.",
+                label,
+                page
+            );
+            page = page.saturating_add(PAGE_SIZE);
+            continue;
+        };
+
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+        match paging::map_kernel_page(
+            x86_64::VirtAddr::new(page),
+            x86_64::PhysAddr::new(phys),
+            flags,
+        ) {
+            Ok(()) => kprintln!(
+                "[kernel] boot: mapped {} page virt {:#x} -> phys {:#x}.",
+                label,
+                page,
+                phys
+            ),
+            Err(_) => {
+                // Already-present mappings are expected when the bootloader did
+                // include the full kernel image. Keep booting: the important
+                // invariant is that these addresses are reachable before the CPU
+                // consults the descriptor tables.
+                kprintln!(
+                    "[kernel] boot: {} page virt {:#x} already mapped or unavailable; continuing.",
+                    label,
+                    page
+                );
+            }
+        }
+
+        page = page.saturating_add(PAGE_SIZE);
+    }
 }
 
 /// Architecture boot entry point for setup orchestration with full bootloader
