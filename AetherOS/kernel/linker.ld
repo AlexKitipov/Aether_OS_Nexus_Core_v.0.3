@@ -9,7 +9,7 @@
  */
 ENTRY(_start)
 
-KERNEL_LOAD_ADDR = 0x00100000; /* 1 MiB physical load address */
+KERNEL_LOAD_ADDR = 0x00200000; /* 2 MiB physical load address */
 
 MEMORY {
     /*
