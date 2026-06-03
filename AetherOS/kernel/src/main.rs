@@ -17,19 +17,24 @@ use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
 
 #[cfg(target_os = "none")]
+const KERNEL_STACK_SIZE: u64 = 4096 * 4;
+
+#[cfg(target_os = "none")]
+const KERNEL_STACK_GUARD_ADDRESS: u64 = 0xffff_8000_0010_0000;
+
+#[cfg(target_os = "none")]
 const BOOTLOADER_CONFIG: BootloaderConfig = {
     let mut config = BootloaderConfig::new_default();
     // Keep the stack-size contract from the previous hand-written entry path,
     // but let bootloader_api 0.11 own the stack setup and BootInfo ABI wrapper.
-    config.kernel_stack_size = 4096 * 4;
+    config.kernel_stack_size = KERNEL_STACK_SIZE;
     // Avoid bootloader_api 0.11 dynamic stack placement in the low identity
-    // range. With a 16KiB stack, the default low dynamic allocator can place
-    // the stack in the gap between the kernel text and rodata segments; the
-    // bootloader later identity-maps its GDT frame and can panic with
-    // PageAlreadyMapped when that frame address aliases the stack's virtual
-    // range. Pinning the guard page/stack to a higher-half address keeps the
-    // low identity range free for bootloader hand-off mappings.
-    config.mappings.kernel_stack = Mapping::FixedAddress(0xffff_8000_0000_0000);
+    // range. Do not place the fixed stack at the higher-half canonical
+    // boundary: the first pushes can move RSP below 0xffff_8000_0000_0000,
+    // which is non-canonical and raises #GP before the kernel can install its
+    // own GDT/IDT/TSS. Leave slack above the boundary so the boot stack stays
+    // canonical throughout early entry.
+    config.mappings.kernel_stack = Mapping::FixedAddress(KERNEL_STACK_GUARD_ADDRESS);
     config
 };
 
