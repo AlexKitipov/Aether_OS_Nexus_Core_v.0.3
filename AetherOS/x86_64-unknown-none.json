@@ -17,9 +17,6 @@
   "features": "+sse2",
   "relocation-model": "static",
   "code-model": "kernel",
-  "crt-static": false,
-  "no-compiler-rt": true,
-  "i128": true,
   "position-independent-executables": false,
   "stack-probes": { "kind": "none" },
   "pre-link-args": {

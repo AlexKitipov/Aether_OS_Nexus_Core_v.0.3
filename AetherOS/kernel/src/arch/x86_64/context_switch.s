@@ -6,7 +6,6 @@
 //
 // Keep these offsets synchronized with `TaskContext` in
 // `kernel/src/task/tcb.rs`; Rust compile-time assertions validate them.
-.intel_syntax noprefix
 .global context_switch
 .type context_switch, @function
 context_switch:
