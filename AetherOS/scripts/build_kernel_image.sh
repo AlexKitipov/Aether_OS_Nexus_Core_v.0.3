@@ -24,7 +24,7 @@ if [[ "${BOOT_MODE}" != "bios" && "${BOOT_MODE}" != "uefi" && "${BOOT_MODE}" != 
   exit 1
 fi
 
-if ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
+if [[ "${RUN_QEMU}" == "1" ]] && ! command -v qemu-system-x86_64 >/dev/null 2>&1; then
   echo "qemu-system-x86_64 is not installed. Install QEMU first (example: sudo apt-get install qemu-system-x86)." >&2
 fi
 
