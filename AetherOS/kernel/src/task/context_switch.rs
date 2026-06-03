@@ -18,7 +18,6 @@ const _: () = {
 };
 
 #[cfg(all(target_arch = "x86_64", target_os = "none"))]
-#[allow(bad_asm_style)]
 core::arch::global_asm!(include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/src/arch/x86_64/context_switch.s"
