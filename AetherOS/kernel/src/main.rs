@@ -29,7 +29,10 @@ const HIGHER_HALF_DYNAMIC_END: u64 = 0xffff_ffff_ffff_f000;
 const PHYSICAL_MEMORY_OFFSET: u64 = 0xffff_c000_0000_0000;
 
 #[cfg(target_os = "none")]
-const KERNEL_STACK_GUARD_ADDRESS: u64 = 0xffff_9000_0000_0000;
+const KERNEL_STACK_TOP_ADDRESS: u64 = 0xffff_9000_0000_0000;
+
+#[cfg(target_os = "none")]
+const KERNEL_STACK_GUARD_ADDRESS: u64 = KERNEL_STACK_TOP_ADDRESS - KERNEL_STACK_SIZE - 4096;
 
 #[cfg(target_os = "none")]
 const BOOTLOADER_CONFIG: BootloaderConfig = {
@@ -45,9 +48,11 @@ const BOOTLOADER_CONFIG: BootloaderConfig = {
     config.mappings.dynamic_range_start = Some(HIGHER_HALF_DYNAMIC_START);
     config.mappings.dynamic_range_end = Some(HIGHER_HALF_DYNAMIC_END);
     config.mappings.physical_memory = Some(Mapping::FixedAddress(PHYSICAL_MEMORY_OFFSET));
-    // Use an explicit guard-page base well inside the canonical higher half so
-    // bootloader_api maps the usable stack above it and early entry has plenty
-    // of downward-growth headroom.
+    // bootloader_api interprets `kernel_stack = FixedAddress(addr)` as the
+    // guard-page base, with the usable stack mapped above it. Keep the desired
+    // initial stack top at `KERNEL_STACK_TOP_ADDRESS` by placing the guard below
+    // the full stack reservation. This keeps early downward-growing pushes in
+    // the mapped stack window instead of below the guard page.
     config.mappings.kernel_stack = Mapping::FixedAddress(KERNEL_STACK_GUARD_ADDRESS);
     config
 };
