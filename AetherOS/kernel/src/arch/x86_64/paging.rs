@@ -395,17 +395,9 @@ pub fn higher_half_to_phys(virt: u64) -> Option<u64> {
 }
 
 pub fn init_bootstrap_mappings(identity_limit: u64) {
-    let capped_limit = identity_limit.min(EARLY_IDENTITY_LIMIT);
-    if capped_limit == 0 {
-        return;
-    }
-
-    register_virt_mapping(0, 0, capped_limit as usize);
-    if let Some(offset) = physical_memory_offset() {
-        register_virt_mapping(offset, 0, capped_limit as usize);
-    } else {
-        register_virt_mapping(KERNEL_VIRT_OFFSET, 0, capped_limit as usize);
-    }
+    // Identity/direct-map bootstrap ranges are translated arithmetically below;
+    // populating a BTreeMap for every early page allocates before the heap exists.
+    let _ = identity_limit;
 }
 
 pub fn register_virt_mapping(virt_addr: u64, phys_addr: u64, size_bytes: usize) {
@@ -462,7 +454,21 @@ pub fn try_virt_to_phys(virt_addr: u64) -> Option<u64> {
     let page_offset = virt_addr & (FRAME_SIZE - 1);
 
     let mappings = BOOTSTRAP_TRANSLATIONS.lock();
-    mappings.get(&page_base).map(|phys_base| *phys_base + page_offset)
+    if let Some(phys_base) = mappings.get(&page_base) {
+        return Some(*phys_base + page_offset);
+    }
+
+    if let Some(offset) = physical_memory_offset() {
+        if virt_addr >= offset {
+            return Some(virt_addr - offset);
+        }
+    }
+
+    if virt_addr < EARLY_IDENTITY_LIMIT {
+        return Some(virt_addr);
+    }
+
+    None
 }
 
 

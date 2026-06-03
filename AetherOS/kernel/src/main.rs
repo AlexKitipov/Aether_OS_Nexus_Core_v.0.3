@@ -17,13 +17,16 @@ use bootloader_api::{config::Mapping, entry_point, BootInfo, BootloaderConfig};
 use core::panic::PanicInfo;
 
 #[cfg(target_os = "none")]
-const KERNEL_STACK_SIZE: u64 = 4096 * 16;
+const KERNEL_STACK_SIZE: u64 = 4096 * 128;
 
 #[cfg(target_os = "none")]
 const HIGHER_HALF_DYNAMIC_START: u64 = 0xffff_8000_0000_0000;
 
 #[cfg(target_os = "none")]
 const HIGHER_HALF_DYNAMIC_END: u64 = 0xffff_ffff_ffff_f000;
+
+#[cfg(target_os = "none")]
+const PHYSICAL_MEMORY_OFFSET: u64 = 0xffff_c000_0000_0000;
 
 #[cfg(target_os = "none")]
 const KERNEL_STACK_GUARD_ADDRESS: u64 = 0xffff_9000_0000_0000;
@@ -41,6 +44,7 @@ const BOOTLOADER_CONFIG: BootloaderConfig = {
     // causing #GP before our own GDT/IDT/TSS setup can run.
     config.mappings.dynamic_range_start = Some(HIGHER_HALF_DYNAMIC_START);
     config.mappings.dynamic_range_end = Some(HIGHER_HALF_DYNAMIC_END);
+    config.mappings.physical_memory = Some(Mapping::FixedAddress(PHYSICAL_MEMORY_OFFSET));
     // Use an explicit guard-page base well inside the canonical higher half so
     // bootloader_api maps the usable stack above it and early entry has plenty
     // of downward-growth headroom.
