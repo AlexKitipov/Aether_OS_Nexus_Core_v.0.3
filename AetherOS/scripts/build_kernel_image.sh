@@ -2,12 +2,13 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-KERNEL_PATH="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel"
+KERNEL_PATH="${KERNEL_PATH:-${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-kernel}"
 TARGET_JSON="x86_64-unknown-none.json"
 BOOT_MODE="${BOOT_MODE:-uefi}"
 BIOS_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-bios.img"
 UEFI_IMAGE="${ROOT_DIR}/target/x86_64-unknown-none/release/aetheros-uefi.img"
 RUN_QEMU="${RUN_QEMU:-0}"
+SKIP_KERNEL_BUILD="${SKIP_KERNEL_BUILD:-0}"
 TOOLCHAIN="nightly-2025-03-01"
 
 cd "${ROOT_DIR}"
@@ -42,10 +43,18 @@ rustup override set "${TOOLCHAIN}"
 rustup component add rust-src --toolchain "${TOOLCHAIN}"
 rustup component add llvm-tools-preview --toolchain "${TOOLCHAIN}"
 
-cargo +"${TOOLCHAIN}" build --release --target "${TARGET_JSON}" \
-  -Zbuild-std=core,alloc,compiler_builtins \
-  -Zbuild-std-features=compiler-builtins-mem \
-  -p aetheros-kernel
+if [[ "${SKIP_KERNEL_BUILD}" == "1" ]]; then
+  if [[ ! -f "${KERNEL_PATH}" ]]; then
+    echo "[build_kernel_image] ERROR: SKIP_KERNEL_BUILD=1 requires an existing kernel ELF at ${KERNEL_PATH}" >&2
+    exit 1
+  fi
+  echo "[build_kernel_image] Reusing kernel ELF: ${KERNEL_PATH}"
+else
+  cargo +"${TOOLCHAIN}" build --release --target "${TARGET_JSON}" \
+    -Zbuild-std=core,alloc,compiler_builtins \
+    -Zbuild-std-features=compiler-builtins-mem \
+    -p aetheros-kernel
+fi
 
 echo "Built kernel artifact: ${KERNEL_PATH}"
 
