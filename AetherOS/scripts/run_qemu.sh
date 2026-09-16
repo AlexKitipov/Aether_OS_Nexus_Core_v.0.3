@@ -21,8 +21,10 @@ case "${BOOT_MODE}" in
 
     exec qemu-system-x86_64 \
       -drive "format=raw,file=${BIOS_IMAGE}" \
+      -display none \
       -serial stdio \
       -no-reboot \
+      -no-shutdown \
       -d int
     ;;
   uefi)
@@ -40,8 +42,10 @@ case "${BOOT_MODE}" in
     exec qemu-system-x86_64 \
       -drive "if=pflash,format=raw,readonly=on,file=${OVMF_CODE}" \
       -drive "format=raw,file=${UEFI_IMAGE}" \
+      -display none \
       -serial stdio \
       -no-reboot \
+      -no-shutdown \
       -d int
     ;;
   both)

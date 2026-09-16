@@ -131,7 +131,18 @@ Or use the helper:
 ### Run in QEMU
 
 ```bash
-qemu-system-x86_64 -kernel target/x86_64-unknown-none/release/aetheros-kernel
+cd AetherOS
+BOOT_MODE=bios ./scripts/build_kernel_image.sh
+BOOT_MODE=bios ./scripts/run_qemu.sh
+```
+
+Do not use `qemu-system-x86_64 -kernel` with the kernel ELF: it bypasses the `bootloader_api` 0.11 boot handoff. The BIOS image at `target/x86_64-unknown-none/release/aetheros-bios.img` is the reproducible QEMU smoke-test artifact. UEFI remains an optional manual path and requires `OVMF_CODE`.
+
+To run the bounded smoke test and retain separate serial and QEMU exception/reset logs:
+
+```bash
+cd AetherOS
+./scripts/test_qemu.sh
 ```
 
 ### Workspace helper flow
