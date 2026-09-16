@@ -6,7 +6,7 @@
 #[cfg(target_os = "none")]
 use adi::interface::ADIInterface;
 #[cfg(target_os = "none")]
-use aetheros_kernel::{init, task};
+use aetheros_kernel::{console, drivers, init, task};
 #[cfg(target_os = "none")]
 use apm::ApmManager;
 #[cfg(target_os = "none")]
@@ -69,6 +69,12 @@ entry_point!(kernel_entry, config = &BOOTLOADER_CONFIG);
 ///   mutable handoff contract remains owned by the bootloader_api wrapper.
 #[cfg(target_os = "none")]
 fn kernel_entry(boot_info: &'static mut BootInfo) -> ! {
+    // This is the first Rust code reached after the bootloader wrapper. Do not
+    // route these markers through framebuffer/VGA or a lock: they are the
+    // diagnostic boundary for faults during memory or descriptor setup.
+    drivers::serial::init();
+    console::emergency_print(format_args!("[BOOT] ENTRY\n"));
+    console::emergency_print(format_args!("[BOOT] BOOTINFO_VALID\n"));
     // BootInfo layout assumptions (bootloader_api 0.11.15):
     // - `memory_regions` is passed by shared reference into allocator bootstrap.
     // - `framebuffer` is `Optional<FrameBuffer>` and is converted via `as_mut()`.
@@ -113,8 +119,10 @@ fn main() {
 #[cfg(target_os = "none")]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    aetheros_kernel::kprintln!("[kernel] !!! KERNEL PANIC !!!");
-    aetheros_kernel::kprintln!("[kernel] Error: {}", info);
+    // A panic can happen while normal console output holds a secondary sink
+    // lock, so use the direct COM1 writer exclusively here.
+    aetheros_kernel::console::emergency_print(format_args!("[kernel] !!! KERNEL PANIC !!!\n"));
+    aetheros_kernel::console::emergency_print(format_args!("[kernel] Error: {}\n", info));
     // In a production system, this would involve a stack trace, dumping registers,
     // or rebooting. For now, we simply halt the system.
     loop {

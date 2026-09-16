@@ -55,18 +55,22 @@ pub fn init(
     arch::x86_64::boot::ensure_bootstrap_cpu_tables_mapped();
 
     gdt::init();
+    kprintln!("[BOOT] GDT_READY");
     kprintln!("[kernel] GDT initialized.");
 
     idt::init();
+    kprintln!("[BOOT] IDT_READY");
     kprintln!("[kernel] IDT initialized.");
 
     irq::init();
+    kprintln!("[BOOT] IRQ_READY");
     kprintln!("[kernel] IRQ subsystem initialized.");
 
     init_runtime_subsystems();
 
     x86_64::instructions::interrupts::enable();
     kprintln!("[kernel] Interrupts enabled.");
+    kprintln!("[BOOT] READY");
     kprintln!("[kernel] Nexus Core v0.3 READY.");
 }
 
@@ -93,6 +97,7 @@ fn init_memory_and_heap(
         .expect("[kernel] heap mapping failed: physical_memory_offset is unavailable");
     arch::x86_64::paging::configure_physical_memory_offset(offset);
     memory::init_virtual_memory_bootstrap();
+    kprintln!("[BOOT] MEMORY_READY");
     kprintln!("[kernel] Memory manager initialized.");
 
     let heap_result = memory::with_frame_allocator(|frame_allocator| {
@@ -116,6 +121,7 @@ fn init_memory_and_heap(
             // Only after these steps do we expose dynamic page allocation.
             memory::finalize_allocator_init();
             heap::init_heap();
+            kprintln!("[BOOT] HEAP_READY");
             kprintln!("[kernel] Heap initialized.");
         }
         Some(Err(error)) => {
